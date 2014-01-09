@@ -10,20 +10,6 @@
   <packaging>jar</packaging>
   <name>Beangle Tomcat Jdbc encrypt</name>
   <version>0.0.1-SNAPSHOT</version>
-
-  <url>https://github.com/beangle/tomcat-jdbc-encrypt</url>
-  
-  <issueManagement>
-    <system>github</system>
-    <url>https://github.com/beangle/tomcat-jdbc-encrypt/issues</url>
-  </issueManagement>
-
-  <scm>
-    <connection>scm:git:git://github.com/beangle/tomcat-jdbc-encrypt.git</connection>
-    <developerConnection>scm:git:git@github.com:beangle/tomcat-jdbc-encrypt.git</developerConnection>
-    <url>https://github.com/beangle/tomcat-jdbc-encrypt</url>
-    <tag>HEAD</tag>
-  </scm>
   
   <properties>
     <bundle.symbolicName>org.beangle.tomcat.jdbc</bundle.symbolicName>
