@@ -9,7 +9,7 @@
   <artifactId>beangle-tomcat-jdbc-encrypt</artifactId>
   <packaging>jar</packaging>
   <name>Beangle Tomcat Jdbc encrypt</name>
-  <version>0.0.1</version>
+  <version>0.0.1-SNAPSHOT</version>
   
   <properties>
     <bundle.symbolicName>org.beangle.tomcat.jdbc</bundle.symbolicName>
@@ -41,8 +41,4 @@
       </plugin>
     </plugins>
   </build>
-
-  <scm>
-    <tag>0.0.1</tag>
-  </scm>
 </project>
