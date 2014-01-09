@@ -1,6 +1,17 @@
-*.class
+# Typically *NIX text editors, by default, append '~' to files on saving to make backups
+*~
 
-# Package Files #
-*.jar
-*.war
-*.ear
+# Build output directies
+target
+
+# Eclipse specific files/directories
+.classpath
+.project
+.settings
+.metadata
+.tomcatplugin
+test-output
+RemoteSystemsTempFiles
+Servers
+work
+.#webclasspath
