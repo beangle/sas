@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <tomcat>
-  <farm name="tomcat" version="7.0.50">
+  <farm name="tomcat7" version="7.0.50">
     <jvm opts="-XXmx1G -XXms1G"/>
 
     <http URIEncoding="UTF-8" enableLookups="false" disableUploadTimeout="true"
@@ -11,13 +11,14 @@
     <server name="server1" shutdownPort="8005"  httpPort="8080"  httpsPort="8443"  ajpPort="9009"/>
     <server name="server2" shutdownPort="8006"  httpPort="8081"  httpsPort="8444"  ajpPort="9010"/>
     <server name="server3" shutdownPort="8007"  httpPort="8082"  httpsPort="8445"  ajpPort="9011"/>
-    <server name="server4" shutdownPort="8008"  httpPort="8083"  httpsPort="8446"  ajpPort="9012"/>
-    <server name="server5" shutdownPort="8009"  httpPort="8084"  httpsPort="8447"  ajpPort="9013"/>
   </farm>
 
   <webapp docBase="webapps">
-    <context path="/"  reloadable="false" runAt="tomcat">
-      <datasource name="jdbc/beangle" url="oracle" username="beangle"/>
+    <context path="/"  reloadable="false" runAt="tomcat7">
+      <datasource name="jdbc/eams" url="jdbc:oracle:thin:@//localhost:1521/orcl" driver="oracle" username="eams"/>
+      <datasource name="jdbc/a" url="jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(LOAD_BALANCE=OFF)(FAILOVER=ON)(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.1.1)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.1.2)(PORT=1521)))(CONNECT_DATA=SERVICE_NAME=orcl)(SERVER=DEDICATED)))" driver="oracle" username="eams"/>
+      <datasource name="jdbc/test" url="jdbc:oracle:thin:@localhost:112121:orcl.do" driver="oracle" username="test"/>
+      <datasource name="exit" url="jdbc:oracle:thin:@//localhost:a/a" driver="oracle" username="exit"/>
     </context>
   </webapp>
 </tomcat>

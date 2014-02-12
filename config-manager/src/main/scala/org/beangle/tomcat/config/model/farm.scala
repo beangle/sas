@@ -1,20 +1,9 @@
 package org.beangle.tomcat.config.model
 import org.beangle.commons.lang.Range.range
 object Farm {
-  val single = build()
-
-  private def build(): Farm = {
-    val farm = new Farm
-    val server1 = new Server("server1", 8005)
-    server1.port(8080, 8443, 8009)
-    farm.servers += server1
-    farm.jvmopts = "-XXmx1G -XXms1G"
-    farm
-  }
-
-  def build(serverCount: Int): Farm = {
+  def build(name: String, serverCount: Int): Farm = {
     if (serverCount > 10) throw new RuntimeException("Cannot create farm contain so much servers.")
-    val farm = new Farm
+    val farm = new Farm(name)
     range(0, serverCount).foreach { i =>
       val server1 = new Server("server" + (i + 1), 8005 + i)
       server1.port(8080 + i, 8443 + i, 9009 + i)
@@ -25,7 +14,7 @@ object Farm {
   }
 }
 
-class Farm(var name: String = "tomcat") {
+class Farm(var name: String) {
 
   var version = "7.0.50"
 
