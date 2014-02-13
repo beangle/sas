@@ -1,5 +1,26 @@
+
+/*
+ * Beangle, Agile Development Scaffold and Toolkit
+ *
+ * Copyright (c) 2005-2014, Beangle Software.
+ *
+ * Beangle is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Beangle is distributed in the hope that it will be useful.
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Beangle.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.beangle.tomcat.config.model
+
 import org.beangle.commons.lang.Range.range
+
 object Farm {
   def build(name: String, serverCount: Int): Farm = {
     if (serverCount > 10) throw new RuntimeException("Cannot create farm contain so much servers.")
@@ -16,15 +37,11 @@ object Farm {
 
 class Farm(var name: String) {
 
-  var version = "7.0.50"
-
   var http = new HttpConnector
 
   var ajp: AjpConnector = _
 
   var servers = new collection.mutable.ListBuffer[Server]
-
-  var contexts = new collection.mutable.ListBuffer[Context]
 
   var jvmopts: String = _
 }

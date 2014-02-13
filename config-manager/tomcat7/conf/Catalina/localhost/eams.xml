@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Context path="/eams" reloadable="false">
+<Resource 
+  name="jdbc/eams"
+  factory="org.beangle.tomcat.jdbc.EncryptedDataSourceFactory"
+  driverClassName="oracle.jdbc.driver.OracleDriver"
+  url="jdbc:oracle:thin:@localhost:1521:orcl"
+  type="javax.sql.DataSource"
+  username="eams"
+  password="fe9f4e410aef7ebc32fd2dac385ae687"
+  />
+<Resource 
+  name="jdbc/eams2"
+  factory="org.beangle.tomcat.jdbc.EncryptedDataSourceFactory"
+  driverClassName="oracle.jdbc.driver.OracleDriver"
+  url="jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(LOAD_BALANCE=OFF)(FAILOVER=ON)(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.1.1)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=192.1681.1.2)(PORT=1521)))(CONNECT_DATA=SERVICE_NAME=orcl)(SERVER=DEDICATED)))"
+  type="javax.sql.DataSource"
+  username="eams2"
+  password="fe9f4e410aef7ebc32fd2dac385ae687"
+  />
+</Context>

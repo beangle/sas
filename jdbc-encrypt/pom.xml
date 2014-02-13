@@ -26,6 +26,7 @@
   </dependencies>
 
   <build>
+    <sourceDirectory>src/main/java</sourceDirectory>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -39,6 +40,33 @@
           </archive>
         </configuration>
       </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-eclipse-plugin</artifactId>
+        <version>2.9</version>
+        <configuration>
+          <downloadSources>true</downloadSources>
+          <useProjectReferences>true</useProjectReferences>
+          <projectNameTemplate>[artifactId]</projectNameTemplate>
+          <sourceIncludes>
+            <sourceInclude>**/*.scala</sourceInclude>
+            <sourceInclude>**/*.java</sourceInclude>
+          </sourceIncludes>
+          <buildcommands>
+            <buildcommand>org.scala-ide.sdt.core.scalabuilder</buildcommand>
+          </buildcommands>
+          <projectnatures>
+            <projectnature>org.eclipse.jdt.core.javanature</projectnature>
+            <projectnature>org.scala-ide.sdt.core.scalanature</projectnature>
+          </projectnatures>
+          <classpathContainers>
+            <classpathContainer>org.eclipse.jdt.launching.JRE_CONTAINER</classpathContainer>
+            <classpathContainer>org.scala-ide.sdt.launching.SCALA_CONTAINER</classpathContainer>
+          </classpathContainers>
+        </configuration>
+      </plugin>
+      
     </plugins>
   </build>
 

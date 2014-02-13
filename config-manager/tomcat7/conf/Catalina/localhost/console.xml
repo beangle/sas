@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Context path="/console" reloadable="false">
+<Resource 
+  name="jdbc/console"
+  factory="org.beangle.tomcat.jdbc.EncryptedDataSourceFactory"
+  driverClassName="oracle.jdbc.driver.OracleDriver"
+  url="jdbc:oracle:thin:@//localhost:1521/console"
+  type="javax.sql.DataSource"
+  username="console"
+  password="fe9f4e410aef7ebc32fd2dac385ae687"
+  />
+</Context>

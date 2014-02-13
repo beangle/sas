@@ -1,8 +1,8 @@
 [#ftl]
 <?xml version='1.0' encoding='utf-8'?>
-<tomcat>
+<tomcat version="${config.version}">
 [#list config.farms as farm]
-  <farm name="${farm.name}" version="${farm.version}">
+  <farm name="${farm.name}" >
 [#if farm.jvmopts??]
     <jvm opts="${farm.jvmopts}"/>
 [/#if]

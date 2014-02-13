@@ -5,11 +5,7 @@
 target
 
 # Eclipse specific files/directories
-.classpath
-.project
-.settings
-.metadata
-.tomcatplugin
+.*
 test-output
 RemoteSystemsTempFiles
 Servers

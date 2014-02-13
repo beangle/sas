@@ -1,22 +1,44 @@
+/*
+ * Beangle, Agile Development Scaffold and Toolkit
+ *
+ * Copyright (c) 2005-2014, Beangle Software.
+ *
+ * Beangle is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Beangle is distributed in the hope that it will be useful.
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Beangle.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.beangle.tomcat.config.shell
 
-import java.io.{ File, StringWriter }
+import java.io.{ File, FileInputStream }
+
 import org.beangle.commons.io.Files
-import org.beangle.commons.lang.Consoles.{ prompt, shell, confirm }
+import org.beangle.commons.lang.{ Strings, SystemInfo }
+import org.beangle.commons.lang.Consoles.{ confirm, prompt, shell }
 import org.beangle.commons.lang.Numbers.{ isDigits, toInt }
-import org.beangle.commons.lang.Range.{ range }
-import org.beangle.commons.lang.SystemInfo
-import org.beangle.tomcat.config.internal.ScalaObjectWrapper
-import org.beangle.tomcat.config.model.{ Context, DataSource, Farm, TomcatConfig, Webapp }
-import freemarker.cache.ClassTemplateLoader
-import freemarker.template.Configuration
-import org.beangle.commons.lang.Strings
-import org.beangle.data.jdbc.vendor.{ Vendors, DriverInfo, UrlFormat }
+import org.beangle.commons.lang.Range.range
+import org.beangle.data.jdbc.vendor.{ UrlFormat, Vendors }
+import org.beangle.tomcat.config.model.{ Context, DataSource, Farm, TomcatConfig }
+import org.beangle.tomcat.config.util.Serializer.toXml
 
 object Config {
 
-  def read(): Option[Configuration] = {
-    None
+  var currentFarm: Option[Farm] = None
+  var currentContext: Option[Context] = None
+
+  def read(target: File): Option[TomcatConfig] = {
+    if (target.exists()) {
+      Some(TomcatConfig(scala.xml.XML.load(new FileInputStream(target))))
+    } else
+      None
   }
 
   def createFarm(conf: TomcatConfig): Farm = {
@@ -82,6 +104,7 @@ object Config {
 
     }
   }
+
   def createDataSource(conf: TomcatConfig): DataSource = {
     if (conf.webapp.contexts.isEmpty) {
       println("create context first!")
@@ -125,49 +148,70 @@ object Config {
 
   def createConfig(target: File) {
     println("Create a new tomcat config file :" + target)
+    target.createNewFile()
     val conf = new TomcatConfig
     val farm = createFarm(conf)
     val context = createContext(conf)
     createDataSource(conf)
-    Files.writeStringToFile(target, toString(conf))
+    Files.writeStringToFile(target, toXml(conf))
+  }
+
+  def setJvmOpts(conf: TomcatConfig) {
+    if (conf.farmNames.isEmpty) {
+      println("farm is empty,create first.")
+    } else {
+      currentFarm match {
+        case Some(farm) => farm.jvmopts = prompt("jvm opts:")
+        case None => {
+          val farmName = prompt("choose farm name?", null, name => conf.farmNames.contains(name))
+          conf.farms.find(f => f.name == farmName).foreach { f =>
+            f.jvmopts = prompt("jvm opts:")
+          }
+        }
+      }
+    }
+  }
+
+  def useFarm(conf: TomcatConfig) {
+    if (conf.farmNames.isEmpty) {
+      println("farm is empty,create first.")
+    } else {
+      val farmName = prompt("choose farm name?", null, name => conf.farmNames.contains(name))
+      conf.farms.find(f => f.name == farmName).foreach { f => currentFarm = Some(f)
+      }
+    }
   }
 
   def main(args: Array[String]) {
-    val target = new File(SystemInfo.user.dir + "/" + "tomcat-config.xml")
-    if (!target.exists()) {
-      target.createNewFile()
+    val target = new File(SystemInfo.user.dir + "/" + "config.xml")
+    val confOpt = read(target)
+    if (confOpt.isEmpty) {
       createConfig(target)
     } else {
       println("Read tomcat config file :" + target)
-      //fixme
-      val conf = new TomcatConfig
+      val conf = confOpt.get
       println("print command:help,info,create farm,create context,create resource or exit")
-      shell("tomcat > ", Set("exit", "quit", "q"), command => command match {
-        case "info" => println(toString(conf))
+
+      shell({
+        val prefix =
+          if (currentContext.isDefined) currentContext.get.path
+          else if (currentFarm.isDefined) currentFarm.get.name
+          else "tomcat"
+        prefix + " >"
+      }, Set("exit", "quit", "q"), command => command match {
+        case "info" => println(toXml(conf))
         case "create farm" => createFarm(conf)
         case "remove farm" => removeFarm(conf)
+        case "use farm" => useFarm(conf)
         case "create context" => createContext(conf)
         case "remove context" => removeContext(conf)
         case "create datasource" => createDataSource(conf)
         case "remove datasource" => removeDataSource(conf)
+        case "jvmopts" => setJvmOpts(conf)
         case t => if (Strings.isNotEmpty(t)) println(t + ": command not found...")
       })
-      Files.writeStringToFile(target, toString(conf))
+      Files.writeStringToFile(target, toXml(conf))
     }
-  }
-
-  def toString(conf: TomcatConfig): String = {
-    val data = new collection.mutable.HashMap[String, Any]()
-    data.put("config", conf)
-    val sw = new StringWriter()
-    val cfg = new Configuration()
-    cfg.setTemplateLoader(new ClassTemplateLoader(getClass, "/"))
-    cfg.setObjectWrapper(new ScalaObjectWrapper())
-    cfg.setNumberFormat("0.##")
-    val freemarkerTemplate = cfg.getTemplate("tomcat-config.xml.ftl")
-    freemarkerTemplate.process(data, sw)
-    sw.close()
-    sw.toString()
   }
 
 }
