@@ -113,4 +113,15 @@ object Template {
     freemarkerTemplate.process(data, sw)
     Files.writeStringToFile(new File(targetDir + "/" + farm.name + path + "/" + context.name + ".xml"), sw.toString)
   }
+
+  def generateEnv(config: TomcatConfig, farm: Farm, targetDir: String) {
+    val data = new collection.mutable.HashMap[String, Any]()
+    data.put("config", config)
+    data.put("farm", farm)
+    val sw = new StringWriter()
+    val path = "/bin"
+    val freemarkerTemplate = cfg.getTemplate("tomcat" + path + "/setenv.sh.ftl")
+    freemarkerTemplate.process(data, sw)
+    Files.writeStringToFile(new File(targetDir + "/" + farm.name + path + "/setenv.sh"), sw.toString)
+  }
 }

@@ -19,15 +19,19 @@
 package org.beangle.tomcat.config.shell
 
 import java.io.{ File, FileInputStream }
-
 import org.beangle.commons.io.Files
 import org.beangle.commons.lang.{ Strings, SystemInfo }
 import org.beangle.commons.lang.Consoles.{ confirm, prompt, shell }
+import org.beangle.commons.lang.Consoles
 import org.beangle.commons.lang.Numbers.{ isDigits, toInt }
 import org.beangle.commons.lang.Range.range
 import org.beangle.data.jdbc.vendor.{ UrlFormat, Vendors }
 import org.beangle.tomcat.config.model.{ Context, DataSource, Farm, TomcatConfig }
 import org.beangle.tomcat.config.util.Serializer.toXml
+import org.beangle.tomcat.config.util.Template
+import org.beangle.tomcat.jdbc.Encryptor
+import org.beangle.commons.io.IOs
+import org.beangle.commons.lang.ClassLoaders
 
 object Config {
 
@@ -182,8 +186,37 @@ object Config {
     }
   }
 
+  def applyConfig(conf: TomcatConfig, workdir: String) {
+    for (farm <- conf.farms; server <- farm.servers) {
+      Template.generate(conf, farm, server, workdir)
+      Template.generateEnv(conf, farm, workdir)
+      copyResources(Array("/bin/startServer.sh", "/bin/stopServer.sh", "/conf/logging.properties"), workdir + "/" + farm.name)
+    }
+    for (context <- conf.webapp.contexts) {
+      conf.farms.find(f => f.name == context.runAt).foreach { farm =>
+        for (ds <- context.dataSources) {
+          if (null == ds.driverClassName) {
+            ds.driverClassName = Vendors.drivers.get(ds.driver) match {
+              case Some(di) => di.className
+              case None => println("cannot find driver " + ds.driver + "className"); "unknown"
+            }
+          }
+          if (null == ds.password) ds.password = new Encryptor(null).encrypt(Consoles.readPassword("enter datasource [%1$s] %2$s password:", ds.name, ds.username))
+        }
+        Template.generate(conf, farm, context, workdir)
+      }
+    }
+  }
+
+  private def copyResources(paths: Array[String], target: String) {
+    for (path <- paths)
+      IOs.copy(ClassLoaders.getResourceAsStream("tomcat/" + path, getClass), Files.openOutputStream(new File(target + path)))
+  }
+
   def main(args: Array[String]) {
-    val target = new File(SystemInfo.user.dir + "/" + "config.xml")
+    val workdir = if(args.length==0) SystemInfo.user.dir else args(0)
+    val target = new File(workdir + "/config.xml")
+
     val confOpt = read(target)
     if (confOpt.isEmpty) {
       createConfig(target)
@@ -208,6 +241,7 @@ object Config {
         case "create datasource" => createDataSource(conf)
         case "remove datasource" => removeDataSource(conf)
         case "jvmopts" => setJvmOpts(conf)
+        case "apply" => applyConfig(conf, workdir)
         case t => if (Strings.isNotEmpty(t)) println(t + ": command not found...")
       })
       Files.writeStringToFile(target, toXml(conf))
