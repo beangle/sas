@@ -51,4 +51,6 @@ class DataSource(var name: String) {
   var password: String = _
 
   var driverClassName: String = _
+
+  val properties = new collection.mutable.HashMap[String, String]
 }

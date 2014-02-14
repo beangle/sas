@@ -10,6 +10,9 @@
   type="javax.sql.DataSource"
   username="${resource.username}"
   password="${resource.password}"
+  [#list resource.properties?keys as p]
+  ${p}="${resource.properties[p]}"
+  [/#list]
   />
 [/#list]
 </Context>

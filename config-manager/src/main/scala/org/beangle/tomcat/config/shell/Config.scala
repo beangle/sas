@@ -105,7 +105,6 @@ object Config {
       context.dataSources.find(c => c.name == name).foreach { d =>
         if (confirm("remove context path [" + d.name + "](Y/n)?")) context.dataSources -= d
       }
-
     }
   }
 
@@ -214,7 +213,7 @@ object Config {
   }
 
   def main(args: Array[String]) {
-    val workdir = if(args.length==0) SystemInfo.user.dir else args(0)
+    val workdir = if (args.length == 0) SystemInfo.user.dir else args(0)
     val target = new File(workdir + "/config.xml")
 
     val confOpt = read(target)
@@ -241,10 +240,14 @@ object Config {
         case "create datasource" => createDataSource(conf)
         case "remove datasource" => removeDataSource(conf)
         case "jvmopts" => setJvmOpts(conf)
-        case "apply" => applyConfig(conf, workdir)
+        case "save" => Files.writeStringToFile(target, toXml(conf))
+        case "apply" => {
+          Files.writeStringToFile(target, toXml(conf))
+          applyConfig(conf, workdir)
+        }
         case t => if (Strings.isNotEmpty(t)) println(t + ": command not found...")
       })
-      Files.writeStringToFile(target, toXml(conf))
+
     }
   }
 

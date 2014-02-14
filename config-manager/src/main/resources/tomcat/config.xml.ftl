@@ -33,7 +33,7 @@
     [#list config.webapp.contexts as context]
     <context path="${context.path}"  reloadable="${context.reloadable?c}" runAt="${context.runAt}">
       [#list context.dataSources as resource]
-      <datasource name="${resource.name}" url="${resource.url}" driver="${resource.driver}" username="${resource.username}"/>
+      <datasource name="${resource.name}" url="${resource.url}" driver="${resource.driver}" username="${resource.username}"   [#list resource.properties?keys as p] ${p}="${resource.properties[p]}"[/#list]/>
       [/#list]
     </context>
     [/#list]
