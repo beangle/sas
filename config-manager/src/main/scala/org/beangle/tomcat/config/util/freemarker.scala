@@ -122,6 +122,8 @@ object Template {
     val path = "/bin"
     val freemarkerTemplate = cfg.getTemplate("tomcat" + path + "/setenv.sh.ftl")
     freemarkerTemplate.process(data, sw)
-    Files.writeStringToFile(new File(targetDir + "/" + farm.name + path + "/setenv.sh"), sw.toString)
+    val target = new File(targetDir + "/" + farm.name + path + "/setenv.sh")
+    Files.writeStringToFile(target, sw.toString)
+    target.setExecutable(true)
   }
 }
