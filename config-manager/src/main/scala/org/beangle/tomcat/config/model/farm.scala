@@ -30,7 +30,7 @@ object Farm {
       server1.port(8080 + i, 8443 + i, 9009 + i)
       farm.servers += server1
     }
-    farm.jvmopts = "-XXmx1G -XXms1G"
+    farm.jvmopts = "-noverify -Xmx1.5G -Xms1.5G -XX:MaxPermSize=256m"
     farm
   }
 }

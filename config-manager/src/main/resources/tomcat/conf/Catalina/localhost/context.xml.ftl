@@ -1,6 +1,6 @@
 [#ftl/]
 <?xml version='1.0' encoding='utf-8'?>
-<Context path="${context.path}" reloadable="${context.reloadable?c}">
+<Context path="${context.path}" reloadable="${context.reloadable?c}" privileged="true"  debug="0">
 [#list context.dataSources as resource]
 <Resource 
   name="${resource.name}"
