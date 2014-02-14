@@ -23,13 +23,14 @@ import org.beangle.commons.lang.Range.range
 
 object Farm {
   def build(name: String, serverCount: Int): Farm = {
-    if (serverCount > 10) throw new RuntimeException("Cannot create farm contain so much servers.")
+    require(serverCount > 0 && serverCount <= 10, "Cannot create farm contain so much servers.")
     val farm = new Farm(name)
     range(0, serverCount).foreach { i =>
       val server1 = new Server("server" + (i + 1), 8005 + i)
       server1.port(8080 + i, 8443 + i, 9009 + i)
       farm.servers += server1
     }
+    if (1 == serverCount) farm.servers.head.name = "server"
     farm.jvmopts = "-noverify -Xmx1.5G -Xms1.5G -XX:MaxPermSize=256m"
     farm
   }

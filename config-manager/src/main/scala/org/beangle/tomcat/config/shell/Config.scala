@@ -49,7 +49,7 @@ object Config {
 
   def createFarm(conf: TomcatConfig): Farm = {
     val farmName = prompt("farm name?", "tomcat7", name => !conf.farmNames.contains(name))
-    val farm = prompt("create tomcat farm(single or cluster)?", "cluster", c => c == "cluster" || c == "single") match {
+    val farm = prompt("create tomcat farm(single or cluster)?", "single", c => c == "cluster" || c == "single") match {
       case "cluster" => Farm.build(farmName, toInt(prompt("enter server count(<10):", "3", cnt => isDigits(cnt) && toInt(cnt) <= 10)))
       case "single" => Farm.build(farmName, 1)
     }
