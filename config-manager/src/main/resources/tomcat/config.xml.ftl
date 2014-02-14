@@ -29,7 +29,7 @@
   </farm>
 [/#list]
 
-  <webapp docBase="${config.webapp.docBase}">
+  <webapp base="${config.webapp.base}">
     [#list config.webapp.contexts as context]
     <context path="${context.path}"  reloadable="${context.reloadable?c}" runAt="${context.runAt}">
       [#list context.dataSources as resource]

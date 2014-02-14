@@ -59,7 +59,7 @@ object TomcatConfig {
     }
 
     (xml \ "webapp").foreach { webappElem =>
-      conf.webapp.docBase = (webappElem \ "@docBase").text
+      conf.webapp.base = (webappElem \ "@base").text
       (webappElem \ "context").foreach { contextElem =>
         val context = new Context((contextElem \ "@path").text)
         context.reloadable = (contextElem \ "@path").text == "true"

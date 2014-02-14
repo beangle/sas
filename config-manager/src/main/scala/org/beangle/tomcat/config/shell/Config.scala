@@ -33,6 +33,8 @@ import org.beangle.tomcat.jdbc.Encryptor
 import org.beangle.commons.io.IOs
 import org.beangle.commons.lang.ClassLoaders
 
+class Config
+
 object Config {
 
   var currentFarm: Option[Farm] = None
@@ -209,9 +211,28 @@ object Config {
 
   private def copyResources(paths: Array[String], target: String) {
     for (path <- paths)
-      IOs.copy(ClassLoaders.getResourceAsStream("tomcat/" + path, getClass), Files.openOutputStream(new File(target + path)))
+      IOs.copy(ClassLoaders.getResourceAsStream("tomcat" + path, getClass), Files.openOutputStream(new File(target + path)))
   }
 
+  def setAppBase(conf: TomcatConfig) {
+    conf.webapp.base = prompt("set app base:", "webapps")
+  }
+
+  def printHelp() {
+    val helpString = "  info              print config xml content\n" +
+      "  save              save tomcat config\n" +
+      "  apply             apply the tomcat config to tomcat server\n" +
+      "  create farm       create a tomcat farm profile\n" +
+      "  remove farm       remove a tomcat farm profile\n" +
+      "  create context    create a webapp context\n" +
+      "  remove context    remove a webapp context\n" +
+      "  create datasource create a datasource config\n" +
+      "  remove datasource remove a datasource config\n" +
+      "  jvmopts           set jvm options\n" +
+      "  appbase           set app base directory\n" +
+      "  help              print this help conent\n";
+    println(helpString)
+  }
   def main(args: Array[String]) {
     val workdir = if (args.length == 0) SystemInfo.user.dir else args(0)
     val target = new File(workdir + "/config.xml")
@@ -222,7 +243,7 @@ object Config {
     } else {
       println("Read tomcat config file :" + target)
       val conf = confOpt.get
-      println("print command:help,info,create farm,create context,create resource or exit")
+      println("command:help info save apply exit(quit/q)")
 
       shell({
         val prefix =
@@ -240,11 +261,10 @@ object Config {
         case "create datasource" => createDataSource(conf)
         case "remove datasource" => removeDataSource(conf)
         case "jvmopts" => setJvmOpts(conf)
+        case "appbase" => setAppBase(conf)
         case "save" => Files.writeStringToFile(target, toXml(conf))
-        case "apply" => {
-          Files.writeStringToFile(target, toXml(conf))
-          applyConfig(conf, workdir)
-        }
+        case "apply" => applyConfig(conf, workdir)
+        case "help" => printHelp()
         case t => if (Strings.isNotEmpty(t)) println(t + ": command not found...")
       })
 

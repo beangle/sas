@@ -20,7 +20,7 @@ package org.beangle.tomcat.config.model
 
 class Webapp {
 
-  var docBase: String = "webapps"
+  var base: String = "webapps"
 
   var contexts = new collection.mutable.ListBuffer[Context]
 
