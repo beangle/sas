@@ -23,7 +23,7 @@
       connectionTimeout="${http.connectionTimeout}"
       disableUploadTimeout="${http.disableUploadTimeout?c}"
       [#if http.compression!="off"]
-      compression="${http.compression}" 
+      compression="${http.compression}"
       compressionMinSize="${http.compressionMinSize}"
       compressableMimeType="${http.compressionMimeType}"
       [#else]
@@ -31,7 +31,7 @@
       [/#if]
       />
     [/#if]
-    
+
     [#if farm.ajp??]
     <Connector port="${server.ajpPort}" protocol="AJP/1.3"
       URIEncoding="${http.URIEncoding}"
