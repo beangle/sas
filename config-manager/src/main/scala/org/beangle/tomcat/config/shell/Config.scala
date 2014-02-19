@@ -202,11 +202,19 @@ object Config {
               case None => println("cannot find driver " + ds.driver + "className"); "unknown"
             }
           }
+          val format = new UrlFormat(ds.url)
+          if (!format.params.isEmpty) {
+            val params = format.params
+            val values = new collection.mutable.HashMap[String, String]
+            params.foreach { param => values.put(param, prompt("enter " + param + ":")) }
+            ds.url = format.fill(values.toMap)
+          }
           if (null == ds.password) ds.password = new Encryptor(null).encrypt(Consoles.readPassword("enter datasource [%1$s] %2$s password:", ds.name, ds.username))
         }
         Template.generate(conf, farm, context, workdir)
       }
     }
+    println("Apply configuration success,check it in " + workdir)
   }
 
   private def copyResources(paths: Array[String], target: String) {

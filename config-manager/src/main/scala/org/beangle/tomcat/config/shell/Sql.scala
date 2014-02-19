@@ -18,18 +18,18 @@
  */
 package org.beangle.tomcat.config.shell
 
-import java.io.{ File, FileInputStream }
+import java.io.{File, FileInputStream}
 import scala.Array.canBuildFrom
-import org.beangle.commons.io.Files.{ / => / }
+import org.beangle.commons.io.Files.{/ => /}
 import org.beangle.commons.lang.Consoles
-import org.beangle.commons.lang.Consoles.{ prompt, shell }
-import org.beangle.commons.lang.Strings.{ isBlank, isNotEmpty, split, substringAfter, trim }
+import org.beangle.commons.lang.Consoles.{prompt, shell,readPassword}
+import org.beangle.commons.lang.Strings.{isBlank, isNotEmpty, split, substringAfter, trim}
 import org.beangle.commons.lang.SystemInfo
-import org.beangle.commons.lang.time.Stopwatch
 import org.beangle.commons.logging.Logging
-import org.beangle.data.jdbc.script.{ OracleParser, Scripts }
+import org.beangle.data.jdbc.script.{OracleParser, Runner}
 import org.beangle.data.jdbc.util.PoolingDataSourceFactory
-import org.beangle.tomcat.config.model.{ DataSource, TomcatConfig }
+import org.beangle.data.jdbc.vendor.{UrlFormat, Vendors}
+import org.beangle.tomcat.config.model.{DataSource, TomcatConfig}
 import java.net.URL
 
 object Sql extends Logging {
@@ -62,14 +62,14 @@ object Sql extends Logging {
       }
 
       if (datasources.size == 1) dataSource = datasources.values.head
-      println("Sql executor:help info exec exit(quit/q)")
+      println("Sql executor:help ls exec exit(quit/q)")
       shell({
         val prefix =
           if (null != dataSource) dataSource.name
           else "sql"
         prefix + " >"
       }, Set("exit", "quit", "q"), command => command match {
-        case "info" => info(conf)
+        case "ls" => info(conf)
         case "help" => printHelp()
         case t => {
           if (t.startsWith("use")) use(conf, trim(substringAfter(t, "use")))
@@ -106,30 +106,39 @@ object Sql extends Logging {
         }
       }
 
-      val scripts = new Scripts(OracleParser, urls: _*)
+      val runner = new Runner(OracleParser, urls: _*)
       if (null == dataSource) use(conf, null)
       if (null == dataSource || urls.isEmpty) {
         println("Execute sql aborted.")
       } else {
+        if (null == dataSource.driverClassName) {
+          dataSource.driverClassName = Vendors.drivers.get(dataSource.driver) match {
+            case Some(di) => di.className
+            case None => println("cannot find driver " + dataSource.driver + "className"); "unknown"
+          }
+        }
+        val format = new UrlFormat(dataSource.url)
+        if (!format.params.isEmpty) {
+          val params = format.params
+          val values = new collection.mutable.HashMap[String, String]
+          params.foreach { param => values.put(param, prompt("enter " + param + ":")) }
+          dataSource.url = format.fill(values.toMap)
+        }
+
         if (null == dataSource.password)
-          dataSource.password = Consoles.readPassword("enter datasource [%1$s] %2$s password:", dataSource.name, dataSource.username)
+          dataSource.password = readPassword("enter datasource [%1$s] %2$s password:", dataSource.name, dataSource.username)
 
         val ds = new PoolingDataSourceFactory(dataSource.driverClassName,
           dataSource.url, dataSource.username, dataSource.password, dataSource.properties).getObject
-        val watch = new Stopwatch(true)
-        for (script <- scripts.list) {
-          val sw = new Stopwatch(true)
-          script.execute(ds, true)
-          logger.info("exec {} using {}", script.source, sw)
-        }
-        logger.info("exec {} using {}", file, watch)
+
+        runner.execute(ds, true)
       }
     }
   }
 
   def printHelp() {
     println("""Avaliable command:
-  info                      print datasource and sql file"
+  ls                        print datasource and sql file"
   exec [sqlfile1,sqlfile2]  execute simple file 
   exec all                  execute all sql file
   help              print this help conent""")
