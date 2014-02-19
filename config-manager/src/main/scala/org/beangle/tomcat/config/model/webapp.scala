@@ -18,6 +18,8 @@
  */
 package org.beangle.tomcat.config.model
 
+import org.beangle.commons.lang.Objects
+
 class Webapp {
 
   var base: String = "webapps"
@@ -52,5 +54,11 @@ class DataSource(var name: String) {
 
   var driverClassName: String = _
 
-  val properties = new collection.mutable.HashMap[String, String]
+  import java.{ util => ju }
+  val properties = new ju.Properties
+
+  override def toString(): String = {
+    Objects.toStringBuilder(this).add("name", name).add("username", username)
+      .add("url", url).add("driver", driver).add("properties", properties).toString
+  }
 }

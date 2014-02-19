@@ -69,7 +69,9 @@ object TomcatConfig {
           ds.driver = (dsElem \ "@driver").text
           ds.username = (dsElem \ "@username").text
           ds.url = (dsElem \ "@url").text
-          ds.properties ++= (dsElem.attributes.asAttrMap -- Set("name", "driver", "url", "username"))
+          for ((k, v) <- (dsElem.attributes.asAttrMap -- Set("name", "driver", "url", "username"))) {
+            ds.properties.put(k, v)
+          }
           context.dataSources += ds
         }
         conf.webapp.contexts += context

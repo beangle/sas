@@ -158,7 +158,7 @@ object Config {
     val farm = createFarm(conf)
     val context = createContext(conf)
     createDataSource(conf)
-    Files.writeStringToFile(target, toXml(conf))
+    Files.writeString(target, toXml(conf))
   }
 
   def setJvmOpts(conf: TomcatConfig) {
@@ -211,7 +211,7 @@ object Config {
 
   private def copyResources(paths: Array[String], target: String) {
     for (path <- paths)
-      IOs.copy(ClassLoaders.getResourceAsStream("tomcat" + path, getClass), Files.openOutputStream(new File(target + path)))
+      IOs.copy(ClassLoaders.getResourceAsStream("tomcat" + path, getClass), Files.writeOpen(new File(target + path)))
   }
 
   def setAppBase(conf: TomcatConfig) {
@@ -219,20 +219,20 @@ object Config {
   }
 
   def printHelp() {
-    val helpString = "  info              print config xml content\n" +
-      "  save              save tomcat config\n" +
-      "  apply             apply the tomcat config to tomcat server\n" +
-      "  create farm       create a tomcat farm profile\n" +
-      "  remove farm       remove a tomcat farm profile\n" +
-      "  create context    create a webapp context\n" +
-      "  remove context    remove a webapp context\n" +
-      "  create datasource create a datasource config\n" +
-      "  remove datasource remove a datasource config\n" +
-      "  jvmopts           set jvm options\n" +
-      "  appbase           set app base directory\n" +
-      "  help              print this help conent\n";
-    println(helpString)
+    println("""  info              print config xml content"
+  save              save tomcat config 
+  apply             apply the tomcat config to tomcat server
+  create farm       create a tomcat farm profile
+  remove farm       remove a tomcat farm profile
+  create context    create a webapp context
+  remove context    remove a webapp context
+  create datasource create a datasource config
+  remove datasource remove a datasource config
+  jvmopts           set jvm options
+  appbase           set app base directory
+  help              print this help conent""")
   }
+
   def main(args: Array[String]) {
     val workdir = if (args.length == 0) SystemInfo.user.dir else args(0)
     val target = new File(workdir + "/config.xml")
@@ -262,7 +262,7 @@ object Config {
         case "remove datasource" => removeDataSource(conf)
         case "jvmopts" => setJvmOpts(conf)
         case "appbase" => setAppBase(conf)
-        case "save" => Files.writeStringToFile(target, toXml(conf))
+        case "save" => Files.writeString(target, toXml(conf))
         case "apply" => applyConfig(conf, workdir)
         case "help" => printHelp()
         case t => if (Strings.isNotEmpty(t)) println(t + ": command not found...")

@@ -99,7 +99,7 @@ object Template {
     val sw = new StringWriter()
     val freemarkerTemplate = cfg.getTemplate("tomcat/conf/server.xml.ftl")
     freemarkerTemplate.process(data, sw)
-    Files.writeStringToFile(new File(targetDir + "/" + farm.name + "/conf/" + server.name + ".xml"), sw.toString)
+    Files.writeString(new File(targetDir + "/" + farm.name + "/conf/" + server.name + ".xml"), sw.toString)
   }
 
   def generate(config: TomcatConfig, farm: Farm, context: Context, targetDir: String) {
@@ -111,7 +111,7 @@ object Template {
     val path = "/conf/Catalina/localhost"
     val freemarkerTemplate = cfg.getTemplate("tomcat" + path + "/context.xml.ftl")
     freemarkerTemplate.process(data, sw)
-    Files.writeStringToFile(new File(targetDir + "/" + farm.name + path + "/" + context.name + ".xml"), sw.toString)
+    Files.writeString(new File(targetDir + "/" + farm.name + path + "/" + context.name + ".xml"), sw.toString)
   }
 
   def generateEnv(config: TomcatConfig, farm: Farm, targetDir: String) {
@@ -123,7 +123,7 @@ object Template {
     val freemarkerTemplate = cfg.getTemplate("tomcat" + path + "/setenv.sh.ftl")
     freemarkerTemplate.process(data, sw)
     val target = new File(targetDir + "/" + farm.name + path + "/setenv.sh")
-    Files.writeStringToFile(target, sw.toString)
+    Files.writeString(target, sw.toString)
     target.setExecutable(true)
   }
 }
