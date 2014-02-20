@@ -45,7 +45,7 @@
       />
     [/#if]
     <Engine name="Catalina" defaultHost="localhost">
-      <Host name="localhost" appBase="${config.webapp.base}" unpackWARs="true" autoDeploy="true">
+      <Host name="localhost" appBase="${container.webapp.base}" unpackWARs="true" autoDeploy="true">
     </Engine>
   </Service>
 </Server>

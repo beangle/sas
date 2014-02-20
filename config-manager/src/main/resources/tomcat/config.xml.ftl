@@ -1,7 +1,7 @@
 [#ftl]
 <?xml version='1.0' encoding='utf-8'?>
-<tomcat version="${config.version}">
-[#list config.farms as farm]
+<container version="${container.version}">
+[#list container.farms as farm]
   <farm name="${farm.name}" >
 [#if farm.jvmopts??]
     <jvm opts="${farm.jvmopts}"/>
@@ -29,8 +29,8 @@
   </farm>
 [/#list]
 
-  <webapp base="${config.webapp.base}">
-    [#list config.webapp.contexts as context]
+  <webapp base="${container.webapp.base}">
+    [#list container.webapp.contexts as context]
     <context path="${context.path}"  reloadable="${context.reloadable?c}" runAt="${context.runAt}">
       [#list context.dataSources as resource]
       <datasource name="${resource.name}" url="${resource.url}" driver="${resource.driver}" username="${resource.username}"   [#list resource.properties?keys as p] ${p}="${resource.properties[p]}"[/#list]/>
@@ -38,4 +38,4 @@
     </context>
     [/#list]
   </webapp>
-</tomcat>
+</container>

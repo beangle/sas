@@ -20,9 +20,9 @@ package org.beangle.tomcat.config.model
 
 import org.beangle.commons.lang.Numbers.toInt
 
-object TomcatConfig {
-  def apply(xml: scala.xml.Elem): TomcatConfig = {
-    val conf = new TomcatConfig
+object Container {
+  def apply(xml: scala.xml.Elem): Container = {
+    val conf = new Container
     conf.version = (xml \ "@version").text
 
     (xml \ "farm").foreach { farmElem =>
@@ -94,7 +94,7 @@ object TomcatConfig {
     if (!(xml \ "@minSpareThreads").isEmpty) connector.minSpareThreads = toInt((xml \ "@minSpareThreads").text)
   }
 }
-class TomcatConfig {
+class Container {
 
   var version = "7.0.50"
 
@@ -103,5 +103,15 @@ class TomcatConfig {
   val webapp = new Webapp
 
   def farmNames: Set[String] = farms.map(f => f.name).toSet
+
+  def dataSources: Map[String, DataSource] = {
+    val datasources = new collection.mutable.HashMap[String, DataSource]
+    for (context <- webapp.contexts) {
+      farms.find(f => f.name == context.runAt).foreach { farm =>
+        for (ds <- context.dataSources) datasources += (ds.name -> ds)
+      }
+    }
+    datasources.toMap
+  }
 
 }

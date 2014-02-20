@@ -19,18 +19,17 @@
 package org.beangle.tomcat.config.util
 
 import java.beans.PropertyDescriptor
-import java.io.StringWriter
-import java.lang.reflect.{ Method, Modifier }
+import java.io.{File, StringWriter}
+import java.lang.reflect.{Method, Modifier}
+
 import scala.collection.JavaConversions
-import org.beangle.tomcat.config.model.TomcatConfig
+
+import org.beangle.commons.io.Files
+import org.beangle.tomcat.config.model.{Container, Context, Farm, Server}
+
 import freemarker.cache.ClassTemplateLoader
 import freemarker.ext.beans.BeansWrapper.MethodAppearanceDecision
-import freemarker.template.{ Configuration, DefaultObjectWrapper, TemplateModel }
-import org.beangle.tomcat.config.model.Context
-import org.beangle.tomcat.config.model.Server
-import org.beangle.tomcat.config.model.Farm
-import org.beangle.commons.io.Files
-import java.io.File
+import freemarker.template.{Configuration, DefaultObjectWrapper, TemplateModel}
 
 class ScalaObjectWrapper extends DefaultObjectWrapper {
 
@@ -74,9 +73,9 @@ object Serializer {
   cfg.setObjectWrapper(new ScalaObjectWrapper())
   cfg.setNumberFormat("0.##")
 
-  def toXml(conf: TomcatConfig): String = {
+  def toXml(container: Container): String = {
     val data = new collection.mutable.HashMap[String, Any]()
-    data.put("config", conf)
+    data.put("container", container)
     val sw = new StringWriter()
     val freemarkerTemplate = cfg.getTemplate("tomcat/config.xml.ftl")
     freemarkerTemplate.process(data, sw)
@@ -91,9 +90,9 @@ object Template {
   cfg.setObjectWrapper(new ScalaObjectWrapper())
   cfg.setNumberFormat("0.##")
 
-  def generate(config: TomcatConfig, farm: Farm, server: Server, targetDir: String) {
+  def generate(container: Container, farm: Farm, server: Server, targetDir: String) {
     val data = new collection.mutable.HashMap[String, Any]()
-    data.put("config", config)
+    data.put("container", container)
     data.put("farm", farm)
     data.put("server", server)
     val sw = new StringWriter()
@@ -102,9 +101,9 @@ object Template {
     Files.writeString(new File(targetDir + "/" + farm.name + "/conf/" + server.name + ".xml"), sw.toString)
   }
 
-  def generate(config: TomcatConfig, farm: Farm, context: Context, targetDir: String) {
+  def generate(container: Container, farm: Farm, context: Context, targetDir: String) {
     val data = new collection.mutable.HashMap[String, Any]()
-    data.put("config", config)
+    data.put("container", container)
     data.put("farm", farm)
     data.put("context", context)
     val sw = new StringWriter()
@@ -114,9 +113,9 @@ object Template {
     Files.writeString(new File(targetDir + "/" + farm.name + path + "/" + context.name + ".xml"), sw.toString)
   }
 
-  def generateEnv(config: TomcatConfig, farm: Farm, targetDir: String) {
+  def generateEnv(container: Container, farm: Farm, targetDir: String) {
     val data = new collection.mutable.HashMap[String, Any]()
-    data.put("config", config)
+    data.put("container", container)
     data.put("farm", farm)
     val sw = new StringWriter()
     val path = "/bin"

@@ -26,12 +26,13 @@ import org.beangle.commons.lang.Consoles
 import org.beangle.commons.lang.Numbers.{ isDigits, toInt }
 import org.beangle.commons.lang.Range.range
 import org.beangle.data.jdbc.vendor.{ UrlFormat, Vendors }
-import org.beangle.tomcat.config.model.{ Context, DataSource, Farm, TomcatConfig }
+import org.beangle.tomcat.config.model.{ Context, DataSource, Farm, Container }
 import org.beangle.tomcat.config.util.Serializer.toXml
 import org.beangle.tomcat.config.util.Template
 import org.beangle.tomcat.jdbc.Encryptor
 import org.beangle.commons.io.IOs
 import org.beangle.commons.lang.ClassLoaders
+import org.beangle.tomcat.config.util.DataSourceConfig
 
 class Config
 
@@ -40,68 +41,68 @@ object Config {
   var currentFarm: Option[Farm] = None
   var currentContext: Option[Context] = None
 
-  def read(target: File): Option[TomcatConfig] = {
+  def read(target: File): Option[Container] = {
     if (target.exists()) {
-      Some(TomcatConfig(scala.xml.XML.load(new FileInputStream(target))))
+      Some(Container(scala.xml.XML.load(new FileInputStream(target))))
     } else
       None
   }
 
-  def createFarm(conf: TomcatConfig): Farm = {
-    val farmName = prompt("farm name?", "tomcat7", name => !conf.farmNames.contains(name))
+  def createFarm(container: Container): Farm = {
+    val farmName = prompt("farm name?", "tomcat7", name => !container.farmNames.contains(name))
     val farm = prompt("create tomcat farm(single or cluster)?", "single", c => c == "cluster" || c == "single") match {
       case "cluster" => Farm.build(farmName, toInt(prompt("enter server count(<10):", "3", cnt => isDigits(cnt) && toInt(cnt) <= 10)))
       case "single" => Farm.build(farmName, 1)
     }
-    conf.farms += farm
+    container.farms += farm
     farm
   }
 
-  def removeFarm(conf: TomcatConfig) {
-    if (conf.farmNames.isEmpty) {
+  def removeFarm(container: Container) {
+    if (container.farmNames.isEmpty) {
       println("farms is empty!")
     } else {
-      val farmName = prompt("remove farm name?", null, name => conf.farmNames.contains(name))
-      conf.farms.find(f => f.name == farmName).foreach { f => conf.farms -= f }
+      val farmName = prompt("remove farm name?", null, name => container.farmNames.contains(name))
+      container.farms.find(f => f.name == farmName).foreach { f => container.farms -= f }
     }
   }
 
-  def createContext(conf: TomcatConfig): Context = {
-    if (conf.farmNames.isEmpty) {
+  def createContext(container: Container): Context = {
+    if (container.farmNames.isEmpty) {
       println("create farm first!")
       null
     } else {
-      var path: String = prompt("context path:", "/", p => !conf.webapp.contextPaths.contains(p))
+      var path: String = prompt("context path:", "/", p => !container.webapp.contextPaths.contains(p))
       if (!path.startsWith("/")) path = "/" + path
       if (path.length > 1 && path.endsWith("/")) path = path.substring(0, path.length - 1)
       val context = new Context(path)
-      conf.webapp.contexts += context
-      if (conf.farmNames.size == 1) context.runAt = conf.farmNames.head
-      else context.runAt = prompt("choose farm " + conf.farmNames + ":", conf.farmNames.head, name => conf.farmNames.contains(name))
+      container.webapp.contexts += context
+      if (container.farmNames.size == 1) context.runAt = container.farmNames.head
+      else context.runAt = prompt("choose farm " + container.farmNames + ":", container.farmNames.head, name => container.farmNames.contains(name))
       context
     }
   }
 
-  def removeContext(conf: TomcatConfig) {
-    if (conf.webapp.contextPaths.isEmpty) {
+  def removeContext(container: Container) {
+    if (container.webapp.contextPaths.isEmpty) {
       println("context is empty!")
     } else {
-      val path = prompt("remove context path " + conf.webapp.contextPaths + ":", null, p => conf.webapp.contextPaths.contains(p))
-      conf.webapp.contexts.find(c => c.path == path).foreach { c =>
-        if (confirm("remove context path [" + path + "](Y/n)?")) conf.webapp.contexts -= c
+      val path = prompt("remove context path " + container.webapp.contextPaths + ":", null, p => container.webapp.contextPaths.contains(p))
+      container.webapp.contexts.find(c => c.path == path).foreach { c =>
+        if (confirm("remove context path [" + path + "](Y/n)?")) container.webapp.contexts -= c
       }
     }
   }
 
-  def removeDataSource(conf: TomcatConfig) {
-    if (conf.webapp.contexts.isEmpty) {
+  def removeDataSource(container: Container) {
+    if (container.webapp.contexts.isEmpty) {
       println("context is empty!")
     } else {
       var context: Context = null
-      if (conf.webapp.contexts.size == 1) context = conf.webapp.contexts.head
+      if (container.webapp.contexts.size == 1) context = container.webapp.contexts.head
       else {
-        val path = prompt("choose context " + conf.webapp.contextPaths + ":", null, p => conf.webapp.contextPaths.contains(p))
-        context = conf.webapp.contexts.find(c => c.path == path).get
+        val path = prompt("choose context " + container.webapp.contextPaths + ":", null, p => container.webapp.contextPaths.contains(p))
+        context = container.webapp.contexts.find(c => c.path == path).get
       }
       val name = prompt("choose datasource " + context.dataSourceNames + ":", null, p => context.dataSourceNames.contains(p))
       context.dataSources.find(c => c.name == name).foreach { d =>
@@ -110,16 +111,16 @@ object Config {
     }
   }
 
-  def createDataSource(conf: TomcatConfig): DataSource = {
-    if (conf.webapp.contexts.isEmpty) {
+  def createDataSource(container: Container): DataSource = {
+    if (container.webapp.contexts.isEmpty) {
       println("create context first!")
       null
     } else {
       var context: Context = null
-      if (conf.webapp.contexts.size == 1) context = conf.webapp.contexts.head
+      if (container.webapp.contexts.size == 1) context = container.webapp.contexts.head
       else {
-        val path = prompt("choose context " + conf.webapp.contextPaths + ":", null, p => conf.webapp.contextPaths.contains(p))
-        context = conf.webapp.contexts.find(c => c.path == path).get
+        val path = prompt("choose context " + container.webapp.contextPaths + ":", null, p => container.webapp.contextPaths.contains(p))
+        context = container.webapp.contexts.find(c => c.path == path).get
       }
       println("create datasource for " + context.path + ":")
       var name: String = null
@@ -154,22 +155,22 @@ object Config {
   def createConfig(target: File) {
     println("Create a new tomcat config file :" + target)
     target.createNewFile()
-    val conf = new TomcatConfig
+    val conf = new Container
     val farm = createFarm(conf)
     val context = createContext(conf)
     createDataSource(conf)
     Files.writeString(target, toXml(conf))
   }
 
-  def setJvmOpts(conf: TomcatConfig) {
-    if (conf.farmNames.isEmpty) {
+  def setJvmOpts(container: Container) {
+    if (container.farmNames.isEmpty) {
       println("farm is empty,create first.")
     } else {
       currentFarm match {
         case Some(farm) => farm.jvmopts = prompt("jvm opts:")
         case None => {
-          val farmName = prompt("choose farm name?", null, name => conf.farmNames.contains(name))
-          conf.farms.find(f => f.name == farmName).foreach { f =>
+          val farmName = prompt("choose farm name?", null, name => container.farmNames.contains(name))
+          container.farms.find(f => f.name == farmName).foreach { f =>
             f.jvmopts = prompt("jvm opts:")
           }
         }
@@ -177,53 +178,44 @@ object Config {
     }
   }
 
-  def useFarm(conf: TomcatConfig) {
-    if (conf.farmNames.isEmpty) {
+  def useFarm(container: Container) {
+    if (container.farmNames.isEmpty) {
       println("farm is empty,create first.")
     } else {
-      val farmName = prompt("choose farm name?", null, name => conf.farmNames.contains(name))
-      conf.farms.find(f => f.name == farmName).foreach { f => currentFarm = Some(f)
+      val farmName = prompt("choose farm name?", null, name => container.farmNames.contains(name))
+      container.farms.find(f => f.name == farmName).foreach { f => currentFarm = Some(f)
       }
     }
   }
 
-  def applyConfig(conf: TomcatConfig, workdir: String) {
-    for (farm <- conf.farms; server <- farm.servers) {
-      Template.generate(conf, farm, server, workdir)
-      Template.generateEnv(conf, farm, workdir)
+  def applyConfig(container: Container, workdir: String) {
+    for (farm <- container.farms; server <- farm.servers) {
+      Template.generate(container, farm, server, workdir)
+      Template.generateEnv(container, farm, workdir)
       copyResources(Array("/bin/startServer.sh", "/bin/stopServer.sh", "/conf/logging.properties"), workdir + "/" + farm.name)
     }
-    for (context <- conf.webapp.contexts) {
-      conf.farms.find(f => f.name == context.runAt).foreach { farm =>
+    for (context <- container.webapp.contexts) {
+      container.farms.find(f => f.name == context.runAt).foreach { farm =>
         for (ds <- context.dataSources) {
-          if (null == ds.driverClassName) {
-            ds.driverClassName = Vendors.drivers.get(ds.driver) match {
-              case Some(di) => di.className
-              case None => println("cannot find driver " + ds.driver + "className"); "unknown"
-            }
-          }
-          val format = new UrlFormat(ds.url)
-          if (!format.params.isEmpty) {
-            val params = format.params
-            val values = new collection.mutable.HashMap[String, String]
-            params.foreach { param => values.put(param, prompt("enter " + param + ":")) }
-            ds.url = format.fill(values.toMap)
-          }
+          DataSourceConfig.config(ds)
           if (null == ds.password) ds.password = new Encryptor(null).encrypt(Consoles.readPassword("enter datasource [%1$s] %2$s password:", ds.name, ds.username))
         }
-        Template.generate(conf, farm, context, workdir)
+        Template.generate(container, farm, context, workdir)
       }
     }
     println("Apply configuration success,check it in " + workdir)
   }
 
   private def copyResources(paths: Array[String], target: String) {
-    for (path <- paths)
-      IOs.copy(ClassLoaders.getResourceAsStream("tomcat" + path, getClass), Files.writeOpen(new File(target + path)))
+    for (path <- paths) {
+      val file = new File(target + path)
+      IOs.copy(ClassLoaders.getResourceAsStream("tomcat" + path, getClass), Files.writeOpen(file))
+      if (file.getName().endsWith(".sh")) file.setExecutable(true)
+    }
   }
 
-  def setAppBase(conf: TomcatConfig) {
-    conf.webapp.base = prompt("set app base:", "webapps")
+  def setAppBase(container: Container) {
+    container.webapp.base = prompt("set app base:", "webapps")
   }
 
   def printHelp() {
