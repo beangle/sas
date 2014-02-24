@@ -27,28 +27,18 @@ import org.beangle.commons.lang.Numbers.{ isDigits, toInt }
 import org.beangle.commons.lang.Range.range
 import org.beangle.data.jdbc.vendor.{ UrlFormat, Vendors }
 import org.beangle.tomcat.config.model.{ Context, DataSource, Farm, Container }
-import org.beangle.tomcat.config.util.Serializer.toXml
 import org.beangle.tomcat.config.util.Template
 import org.beangle.tomcat.jdbc.Encryptor
 import org.beangle.commons.io.IOs
 import org.beangle.commons.lang.ClassLoaders
 import org.beangle.tomcat.config.util.DataSourceConfig
 
-class Config
-
-object Config {
+object Config extends ShellEnv {
 
   var currentFarm: Option[Farm] = None
   var currentContext: Option[Context] = None
 
-  def read(target: File): Option[Container] = {
-    if (target.exists()) {
-      Some(Container(scala.xml.XML.load(new FileInputStream(target))))
-    } else
-      None
-  }
-
-  def createFarm(container: Container): Farm = {
+  def createFarm(): Farm = {
     val farmName = prompt("farm name?", "tomcat7", name => !container.farmNames.contains(name))
     val farm = prompt("create tomcat farm(single or cluster)?", "single", c => c == "cluster" || c == "single") match {
       case "cluster" => Farm.build(farmName, toInt(prompt("enter server count(<10):", "3", cnt => isDigits(cnt) && toInt(cnt) <= 10)))
@@ -58,7 +48,7 @@ object Config {
     farm
   }
 
-  def removeFarm(container: Container) {
+  def removeFarm() {
     if (container.farmNames.isEmpty) {
       println("farms is empty!")
     } else {
@@ -67,7 +57,7 @@ object Config {
     }
   }
 
-  def createContext(container: Container): Context = {
+  def createContext(): Context = {
     if (container.farmNames.isEmpty) {
       println("create farm first!")
       null
@@ -83,7 +73,7 @@ object Config {
     }
   }
 
-  def removeContext(container: Container) {
+  def removeContext() {
     if (container.webapp.contextPaths.isEmpty) {
       println("context is empty!")
     } else {
@@ -94,7 +84,7 @@ object Config {
     }
   }
 
-  def removeDataSource(container: Container) {
+  def removeDataSource() {
     if (container.webapp.contexts.isEmpty) {
       println("context is empty!")
     } else {
@@ -111,7 +101,7 @@ object Config {
     }
   }
 
-  def createDataSource(container: Container): DataSource = {
+  def createDataSource(): DataSource = {
     if (container.webapp.contexts.isEmpty) {
       println("create context first!")
       null
@@ -155,14 +145,14 @@ object Config {
   def createConfig(target: File) {
     println("Create a new tomcat config file :" + target)
     target.createNewFile()
-    val conf = new Container
-    val farm = createFarm(conf)
-    val context = createContext(conf)
-    createDataSource(conf)
-    Files.writeString(target, toXml(conf))
+    container = new Container
+    val farm = createFarm()
+    val context = createContext()
+    createDataSource()
+    Files.writeString(target, toXml)
   }
 
-  def setJvmOpts(container: Container) {
+  def setJvmOpts() {
     if (container.farmNames.isEmpty) {
       println("farm is empty,create first.")
     } else {
@@ -178,7 +168,7 @@ object Config {
     }
   }
 
-  def useFarm(container: Container) {
+  def useFarm() {
     if (container.farmNames.isEmpty) {
       println("farm is empty,create first.")
     } else {
@@ -188,7 +178,7 @@ object Config {
     }
   }
 
-  def applyConfig(container: Container, workdir: String) {
+  def applyConfig() {
     for (farm <- container.farms; server <- farm.servers) {
       Template.generate(container, farm, server, workdir)
       Template.generateEnv(container, farm, workdir)
@@ -214,12 +204,12 @@ object Config {
     }
   }
 
-  def setAppBase(container: Container) {
+  def setAppBase() {
     container.webapp.base = prompt("set app base:", "webapps")
   }
 
   def printHelp() {
-    println("""  info              print config xml content"
+    println("""  info              print config xml content
   save              save tomcat config 
   apply             apply the tomcat config to tomcat server
   create farm       create a tomcat farm profile
@@ -234,15 +224,11 @@ object Config {
   }
 
   def main(args: Array[String]) {
-    val workdir = if (args.length == 0) SystemInfo.user.dir else args(0)
-    val target = new File(workdir + "/config.xml")
-
-    val confOpt = read(target)
-    if (confOpt.isEmpty) {
-      createConfig(target)
+    workdir = if (args.length == 0) SystemInfo.user.dir else args(0)
+    read()
+    if (null == container) {
+      createConfig(new File(workdir + "/config.xml"))
     } else {
-      println("Read tomcat config file :" + target)
-      val conf = confOpt.get
       println("command:help info save apply exit(quit/q)")
 
       shell({
@@ -252,22 +238,21 @@ object Config {
           else "tomcat"
         prefix + " >"
       }, Set("exit", "quit", "q"), command => command match {
-        case "info" => println(toXml(conf))
-        case "create farm" => createFarm(conf)
-        case "remove farm" => removeFarm(conf)
-        case "use farm" => useFarm(conf)
-        case "create context" => createContext(conf)
-        case "remove context" => removeContext(conf)
-        case "create datasource" => createDataSource(conf)
-        case "remove datasource" => removeDataSource(conf)
-        case "jvmopts" => setJvmOpts(conf)
-        case "appbase" => setAppBase(conf)
-        case "save" => Files.writeString(target, toXml(conf))
-        case "apply" => applyConfig(conf, workdir)
+        case "info" => println(toXml)
+        case "create farm" => createFarm()
+        case "remove farm" => removeFarm()
+        case "use farm" => useFarm()
+        case "create context" => createContext()
+        case "remove context" => removeContext()
+        case "create datasource" => createDataSource()
+        case "remove datasource" => removeDataSource()
+        case "jvmopts" => setJvmOpts()
+        case "appbase" => setAppBase()
+        case "save" => Files.writeString(new File(workdir + "/config.xml"), toXml)
+        case "apply" => applyConfig()
         case "help" => printHelp()
         case t => if (Strings.isNotEmpty(t)) println(t + ": command not found...")
       })
-
     }
   }
 

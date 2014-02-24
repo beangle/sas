@@ -67,23 +67,6 @@ class ScalaObjectWrapper extends DefaultObjectWrapper {
   }
 }
 
-object Serializer {
-  val cfg = new Configuration()
-  cfg.setTemplateLoader(new ClassTemplateLoader(getClass, "/"))
-  cfg.setObjectWrapper(new ScalaObjectWrapper())
-  cfg.setNumberFormat("0.##")
-
-  def toXml(container: Container): String = {
-    val data = new collection.mutable.HashMap[String, Any]()
-    data.put("container", container)
-    val sw = new StringWriter()
-    val freemarkerTemplate = cfg.getTemplate("tomcat/config.xml.ftl")
-    freemarkerTemplate.process(data, sw)
-    sw.close()
-    sw.toString()
-  }
-}
-
 object Template {
   val cfg = new Configuration()
   cfg.setTemplateLoader(new ClassTemplateLoader(getClass, "/"))

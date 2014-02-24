@@ -114,4 +114,36 @@ class Container {
     datasources.toMap
   }
 
+  def ports: List[Int] = {
+    val ports = new collection.mutable.HashSet[Int]
+    for (farm <- farms; server <- farm.servers) {
+      if (server.httpPort > 0) ports += server.httpPort
+      if (server.httpsPort > 0) ports += server.httpsPort
+      if (server.ajpPort > 0) ports += server.ajpPort
+    }
+    ports.toList.sorted
+  }
+
+  def httpPorts: Set[Int] = {
+    val httpPorts = new collection.mutable.HashSet[Int]
+    for (farm <- farms; server <- farm.servers) {
+      if (server.httpPort > 0) httpPorts += server.httpPort
+    }
+    httpPorts.toSet
+  }
+  def httpsPorts: Set[Int] = {
+    val httpsPorts = new collection.mutable.HashSet[Int]
+    for (farm <- farms; server <- farm.servers) {
+      if (server.httpsPort > 0) httpsPorts += server.httpsPort
+    }
+    httpsPorts.toSet
+  }
+
+  def ajpPorts: Set[Int] = {
+    val ajpPorts = new collection.mutable.HashSet[Int]
+    for (farm <- farms; server <- farm.servers) {
+      if (server.ajpPort > 0) ajpPorts += server.ajpPort
+    }
+    ajpPorts.toSet
+  }
 }

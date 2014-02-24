@@ -18,38 +18,35 @@
  */
 package org.beangle.tomcat.config.shell
 
-import java.io.{ File, FileInputStream }
+import java.io.File
 import java.net.URL
+
 import scala.Array.canBuildFrom
+
 import org.beangle.commons.io.Files.{ / => / }
 import org.beangle.commons.lang.Consoles.{ prompt, readPassword, shell }
 import org.beangle.commons.lang.Strings.{ isBlank, isNotEmpty, split, substringAfter, trim }
 import org.beangle.commons.lang.SystemInfo
-import org.beangle.commons.logging.Logging
 import org.beangle.data.jdbc.script.{ OracleParser, Runner }
 import org.beangle.data.jdbc.util.PoolingDataSourceFactory
-import org.beangle.data.jdbc.vendor.{ UrlFormat, Vendors }
 import org.beangle.tomcat.config.model.{ Container, DataSource }
 import org.beangle.tomcat.config.util.DataSourceConfig
 
-object Sql extends Logging {
+object Sql extends ShellEnv {
 
   var dataSource: DataSource = _
-
-  var workdir: String = _
 
   var sqlDir: String = _
 
   def main(args: Array[String]) {
     workdir = if (args.length == 0) SystemInfo.user.dir else args(0)
+    read()
     sqlDir = workdir + / + "sql" + /
     if (sqlFiles.isEmpty) {
       println("Cannot find sql files in " + sqlDir)
       return
     }
-    val target = new File(workdir + / + "config.xml")
-    if (target.exists) {
-      val container = Container(scala.xml.XML.load(new FileInputStream(target)))
+    if (null != container) {
       val datasources = container.dataSources
       if (datasources.isEmpty) {
         logger.info("Cannot find datasource")
@@ -64,11 +61,11 @@ object Sql extends Logging {
           else "sql"
         prefix + " >"
       }, Set("exit", "quit", "q"), command => command match {
-        case "ls" => info(container)
+        case "ls" => info()
         case "help" => printHelp()
         case t => {
-          if (t.startsWith("use")) use(container, trim(substringAfter(t, "use")))
-          else if (t.startsWith("exec")) exec(container, trim(substringAfter(t, "exec")))
+          if (t.startsWith("use")) use(trim(substringAfter(t, "use")))
+          else if (t.startsWith("exec")) exec(trim(substringAfter(t, "exec")))
           else if (isNotEmpty(t)) println(t + ": command not found...")
         }
       })
@@ -85,7 +82,7 @@ object Sql extends Logging {
     } else Array.empty
   }
 
-  def exec(container: Container, file: String = null) {
+  def exec(file: String = null) {
     if (isBlank(file)) {
       println("Usage exec all or exec file1 file2")
     } else {
@@ -102,7 +99,7 @@ object Sql extends Logging {
       }
 
       val runner = new Runner(OracleParser, urls: _*)
-      if (null == dataSource) use(container, null)
+      if (null == dataSource) use(null)
       if (null == dataSource || urls.isEmpty) {
         println("Execute sql aborted.")
       } else {
@@ -120,16 +117,16 @@ object Sql extends Logging {
 
   def printHelp() {
     println("""Avaliable command:
-  ls                        print datasource and sql file"
-  exec [sqlfile1,sqlfile2]  execute simple file 
+  ls                        print datasource and sql file
+  exec [sqlfile1,sqlfile2]  execute simple file
   exec all                  execute all sql file
   help              print this help conent""")
   }
 
-  def use(conf: Container, datasourceName: String = null) {
+  def use(datasourceName: String = null) {
     val datasources = new collection.mutable.HashMap[String, DataSource]
-    for (context <- conf.webapp.contexts) {
-      conf.farms.find(f => f.name == context.runAt).foreach { farm =>
+    for (context <- container.webapp.contexts) {
+      container.farms.find(f => f.name == context.runAt).foreach { farm =>
         for (ds <- context.dataSources) datasources += (ds.name -> ds)
       }
     }
@@ -145,11 +142,11 @@ object Sql extends Logging {
     }
   }
 
-  def info(conf: Container) {
+  def info() {
     val infos = new collection.mutable.ListBuffer[String]
     var index = 0
-    for (context <- conf.webapp.contexts) {
-      conf.farms.find(f => f.name == context.runAt).foreach { farm =>
+    for (context <- container.webapp.contexts) {
+      container.farms.find(f => f.name == context.runAt).foreach { farm =>
         for (ds <- context.dataSources) {
           var prefix = if (ds == dataSource) "[*] " else "[" + index + "] "
           infos += prefix + ds.toString
