@@ -28,15 +28,16 @@ import org.beangle.tomcat.config.util.ScalaObjectWrapper
 import freemarker.cache.ClassTemplateLoader
 import freemarker.template.Configuration
 import org.beangle.commons.lang.ClassLoaders
+import org.beangle.commons.io.Files
 
 object Firewall extends ShellEnv {
-  val firewalldExists: Boolean = false
+  val firewalldEnabled: Boolean = isFirewallDeamonEnabled
+  val isRoot = isRootUser
+
   def main(args: Array[String]) {
     workdir = if (args.length == 0) SystemInfo.user.dir else args(0)
     read()
 
-    Runtime.getRuntime().exec("which")
-    
     if (null != container) {
       info()
       shell("firewall> ", Set("exit", "quit", "q"), command => command match {
@@ -51,6 +52,16 @@ object Firewall extends ShellEnv {
     }
   }
 
+  def isFirewallDeamonEnabled(): Boolean = {
+    val p = new ProcessBuilder("which", "firewalld").start()
+    IOs.readString(p.getInputStream()).contains("/usr/sbin/firewalld")
+  }
+
+  def isRootUser(): Boolean = {
+    val p = new ProcessBuilder("id").start()
+    IOs.readString(p.getInputStream()).contains("uid=0(root)")
+  }
+
   def info() {
     println("http ports:" + container.httpPorts.mkString(" "))
     println("https ports:" + container.httpsPorts.mkString(" "))
@@ -58,6 +69,10 @@ object Firewall extends ShellEnv {
   }
 
   def apply() {
+    if (!firewalldEnabled && !isRoot) {
+      println("Please run the program by root")
+      return
+    }
     val ports = new collection.mutable.ListBuffer[Int]
     if (!container.httpPorts.isEmpty) {
       val answer = prompt("apply http ports:" + container.httpPorts.mkString(" ") + "(y/n)?")
@@ -72,17 +87,19 @@ object Firewall extends ShellEnv {
       if ("y" == answer.toLowerCase) ports ++= container.ajpPorts
     }
 
-    if (firewalldExists) {
-      val sb = new StringBuilder()
-      for (port <- ports)
-        sb ++= (" --add-port=" + port + "/tcp")
-      Runtime.getRuntime().exec("firewall-cmd --permanent --zone=public" + sb.mkString)
-      println("firewalld changed successfully.")
-    } else {
-      for (port <- ports)
-        Runtime.getRuntime().exec("iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport " + port + " -j ACCEPT")
-      Runtime.getRuntime().exec("service iptables save")
-      println("change /etc/sysconfig/iptables success.")
+    if (!ports.isEmpty) {
+      if (firewalldEnabled) {
+        val sb = new StringBuilder()
+        for (port <- ports)
+          sb ++= (" --add-port=" + port + "/tcp")
+        Runtime.getRuntime().exec("firewall-cmd --permanent --zone=public" + sb.mkString)
+        println("firewalld changed successfully.")
+      } else {
+        for (port <- ports)
+          Runtime.getRuntime().exec("iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport " + port + " -j ACCEPT")
+        Runtime.getRuntime().exec("service iptables save")
+        println("change /etc/sysconfig/iptables success.")
+      }
     }
   }
 
@@ -94,18 +111,18 @@ object Firewall extends ShellEnv {
     val data = new collection.mutable.HashMap[String, Any]()
     data.put("ports", container.ports)
     val sw = new StringWriter()
-    val template = cfg.getTemplate(if (firewalldExists) "firewall.ftl" else "iptables_rule.ftl")
+    val template = cfg.getTemplate(if (firewalldEnabled) "firewall.ftl" else "iptables_rule.ftl")
     template.process(data, sw)
     sw.close()
     return sw.toString()
   }
 
   def printHelp() {
-    println("""Avaliable command:
+    val name = if (firewalldEnabled) "firewall" else "iptables"
+    println(s"""Avaliable command:
   info        print server port
-  conf        generate iptables configuration 
-  apply       apply server port config to iptables
-  help        print this help conent
-""")
+  conf        generate $name configuration
+  apply       apply server port config to $name
+  help        print this help conent""")
   }
 }

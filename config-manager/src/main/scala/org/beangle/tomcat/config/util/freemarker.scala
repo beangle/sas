@@ -19,17 +19,17 @@
 package org.beangle.tomcat.config.util
 
 import java.beans.PropertyDescriptor
-import java.io.{File, StringWriter}
-import java.lang.reflect.{Method, Modifier}
+import java.io.{ File, StringWriter }
+import java.lang.reflect.{ Method, Modifier }
 
 import scala.collection.JavaConversions
 
 import org.beangle.commons.io.Files
-import org.beangle.tomcat.config.model.{Container, Context, Farm, Server}
+import org.beangle.tomcat.config.model.{ Container, Context, Farm, Server }
 
 import freemarker.cache.ClassTemplateLoader
 import freemarker.ext.beans.BeansWrapper.MethodAppearanceDecision
-import freemarker.template.{Configuration, DefaultObjectWrapper, TemplateModel}
+import freemarker.template.{ Configuration, DefaultObjectWrapper, TemplateModel }
 
 class ScalaObjectWrapper extends DefaultObjectWrapper {
 

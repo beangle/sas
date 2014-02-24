@@ -14,15 +14,15 @@
     <bundle.symbolicName>org.beangle.tomcat.config</bundle.symbolicName>
     <bundle.namespace>org.beangle.tomcat.config</bundle.namespace>
     <tomcat.jdbc.version>7.0.50</tomcat.jdbc.version>
-    <library.version>4.0.2-SNAPSHOT</library.version>
-    <data.version>4.0.2-SNAPSHOT</data.version>
+    <commons.version>4.0.3-SNAPSHOT</commons.version>
+    <data.version>4.0.3-SNAPSHOT</data.version>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>org.beangle.commons</groupId>
       <artifactId>beangle-commons-core</artifactId>
-      <version>${library.version}</version>
+      <version>${commons.version}</version>
     </dependency>
     <dependency>
       <groupId>org.beangle.data</groupId>

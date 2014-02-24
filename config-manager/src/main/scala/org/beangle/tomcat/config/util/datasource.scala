@@ -19,7 +19,7 @@
 package org.beangle.tomcat.config.util
 
 import org.beangle.commons.lang.Consoles.prompt
-import org.beangle.data.jdbc.vendor.{UrlFormat, Vendors}
+import org.beangle.data.jdbc.vendor.{ UrlFormat, Vendors }
 import org.beangle.tomcat.config.model.DataSource
 
 object DataSourceConfig {
