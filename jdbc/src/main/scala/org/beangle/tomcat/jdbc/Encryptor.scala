@@ -45,20 +45,14 @@ class Encryptor(initkey: String) {
     var key = secretKey.getBytes("UTF-8")
     val sha = MessageDigest.getInstance("SHA-1")
     key = sha.digest(key)
-    key = Arrays.copyOf(key, 16); // use only the first 128 bit
-
-    val kgen = KeyGenerator.getInstance("AES")
-    kgen.init(128); // 192 and 256 bits may not be available
-
+    key = Arrays.copyOf(key, 16) // use only the first 128 bit
     new SecretKeySpec(key, ALGORITHM)
   }
 
   private def asHexString(buf: Array[Byte]): String = {
     val strbuf = new StringBuffer(buf.length * 2)
     (0 until buf.length) foreach { i =>
-      if ((buf(i).asInstanceOf[Int] & 0xff) < 0x10) {
-        strbuf.append("0")
-      }
+      if ((buf(i).asInstanceOf[Int] & 0xff) < 0x10) strbuf.append("0")
       strbuf.append(java.lang.Long.toString(buf(i).asInstanceOf[Int] & 0xff, 16))
     }
     strbuf.toString

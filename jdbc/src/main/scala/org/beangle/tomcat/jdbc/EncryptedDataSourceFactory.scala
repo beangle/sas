@@ -3,14 +3,16 @@ package org.beangle.tomcat.jdbc
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.{ util => ju }
+import java.net.{ HttpURLConnection, URL }
 
+import javax.script.ScriptEngineManager
 import javax.naming.Context
 import javax.sql.DataSource
 
 import org.apache.tomcat.jdbc.pool.DataSourceFactory
 import org.apache.tomcat.jdbc.pool.PoolConfiguration
 import org.apache.tomcat.jdbc.pool.XADataSource
-
+import scala.language.existentials
 /**
  * Encrypted DataSourceFactory
  *
@@ -20,10 +22,12 @@ import org.apache.tomcat.jdbc.pool.XADataSource
 class EncryptedDataSourceFactory extends DataSourceFactory {
 
   override def createDataSource(properties: ju.Properties, context: Context, XA: Boolean): DataSource = {
+    val url = properties.get("url").asInstanceOf[String]
+    if (null != url && url.startsWith("http")) properties.putAll(parse(getResponseText(new URL(url))))
     val poolProperties = DataSourceFactory.parsePoolProperties(properties)
-    val encodedPassword = poolProperties.getPassword()
+    val encodedPassword = poolProperties.getPassword
     val name = poolProperties.getName
-    val secretKey: String = System.getenv(name.replace("/", "_") + "_secret")
+    val secretKey = System.getenv(name.replace("/", "_") + "_secret")
     val password =
       if (encodedPassword.startsWith("?")) {
         if (null == secretKey) decryptByPrompt(encodedPassword.substring(1))
@@ -65,5 +69,46 @@ class EncryptedDataSourceFactory extends DataSourceFactory {
     }
     if (null == decoded) throw new RuntimeException("Cannot decoded " + password)
     decoded
+  }
+
+  private def parse(string: String): ju.Properties = {
+    val sem = new ScriptEngineManager
+    val engine = sem.getEngineByName("javascript")
+    val result = new ju.Properties
+    val iter = engine.eval("result =" + string).asInstanceOf[ju.Map[_, _]].entrySet().iterator()
+    while (iter.hasNext) {
+      val one = iter.next.asInstanceOf[ju.Map.Entry[_, AnyRef]]
+      val value = one.getValue match {
+        case d: java.lang.Double =>
+          if (java.lang.Double.compare(d, d.intValue) > 0) d.toString
+          else String.valueOf(d.intValue)
+        case a: Any => a.toString
+      }
+      result.put(one.getKey.toString, value)
+    }
+    result
+  }
+
+  private def getResponseText(constructedUrl: URL): String = {
+    var conn: HttpURLConnection = null
+    try {
+      conn = constructedUrl.openConnection().asInstanceOf[HttpURLConnection]
+      var in: BufferedReader = null
+      in = new BufferedReader(new InputStreamReader(conn.getInputStream, "UTF-8"))
+      var line: String = in.readLine()
+      val stringBuffer = new StringBuffer(255)
+      stringBuffer.synchronized {
+        while (line != null) {
+          stringBuffer.append(line)
+          stringBuffer.append("\n")
+          line = in.readLine()
+        }
+        stringBuffer.toString
+      }
+    } catch {
+      case e: Exception => throw new RuntimeException(e)
+    } finally {
+      if (conn != null) conn.disconnect()
+    }
   }
 }
