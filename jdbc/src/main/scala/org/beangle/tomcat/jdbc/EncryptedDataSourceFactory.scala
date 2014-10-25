@@ -87,6 +87,7 @@ class EncryptedDataSourceFactory extends DataSourceFactory {
       }
       result.put(one.getKey.toString, value)
     }
+    println(result)
     result
   }
 
