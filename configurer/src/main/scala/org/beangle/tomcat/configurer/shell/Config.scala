@@ -181,7 +181,7 @@ object Config extends ShellEnv {
     for (farm <- container.farms; server <- farm.servers) {
       Template.generate(container, farm, server, workdir)
       Template.generateEnv(container, farm, workdir)
-      copyResources(Array("/bin/start.sh", "/bin/stop.sh", "/conf/logging.properties"), workdir + "/" + farm.name)
+      copyResources(Array("/bin/start.sh", "/bin/stop.sh", "/conf/catalina.properties", "/conf/logging.properties"), workdir + "/" + farm.name)
     }
     for (context <- container.webapp.contexts) {
       container.farms.find(f => f.name == context.runAt).foreach { farm =>
