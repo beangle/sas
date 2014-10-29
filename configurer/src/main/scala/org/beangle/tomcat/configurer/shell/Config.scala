@@ -181,7 +181,7 @@ object Config extends ShellEnv {
     for (farm <- container.farms; server <- farm.servers) {
       Template.generate(container, farm, server, workdir)
       Template.generateEnv(container, farm, workdir)
-      copyResources(Array("/bin/start.sh", "/bin/stop.sh", "/conf/catalina.properties", "/conf/logging.properties"), workdir + "/" + farm.name)
+      copyResources(Array("/bin/start", "/bin/stop", "/conf/catalina.properties", "/conf/logging.properties"), workdir + "/" + farm.name)
     }
     for (context <- container.webapp.contexts) {
       container.farms.find(f => f.name == context.runAt).foreach { farm =>
@@ -199,7 +199,7 @@ object Config extends ShellEnv {
     for (path <- paths) {
       val file = new File(target + path)
       IOs.copy(ClassLoaders.getResourceAsStream("tomcat" + path, getClass), Files.writeOpen(file))
-      if (file.getName().endsWith(".sh")) file.setExecutable(true)
+      if (file.getName.endsWith(".sh") || !file.getName.contains(".")) file.setExecutable(true)
     }
   }
 

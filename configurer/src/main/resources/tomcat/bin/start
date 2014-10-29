@@ -1,0 +1,19 @@
+#!/bin/sh
+PRGDIR=`dirname "$0"`
+export TOMCAT_HOME=`cd "$PRGDIR/.." >/dev/null; pwd`
+export CATALINA_SERVER="$1"
+export CATALINA_BASE="$TOMCAT_HOME"/servers/"$CATALINA_SERVER"
+
+echo "Using CONFIG:          conf/$CATALINA_SERVER.xml"
+
+mkdir -p "$CATALINA_BASE"/webapps
+mkdir -p "$CATALINA_BASE"/temp
+mkdir -p "$CATALINA_BASE"/work
+mkdir -p "$CATALINA_BASE"/logs
+touch "$CATALINA_BASE"/logs/catalina.out
+ln -sf  "$TOMCAT_HOME"/lib "$CATALINA_BASE"
+ln -sf  "$TOMCAT_HOME"/conf "$CATALINA_BASE"
+#remove unzipped context
+rm -rf "$CATALINA_BASE"/webapps/*
+
+exec "$PRGDIR"/catalina.sh start -config "$TOMCAT_HOME"/conf/"$CATALINA_SERVER".xml
