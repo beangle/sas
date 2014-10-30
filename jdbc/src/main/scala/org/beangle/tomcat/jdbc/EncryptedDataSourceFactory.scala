@@ -85,9 +85,9 @@ class EncryptedDataSourceFactory extends DataSourceFactory {
           else String.valueOf(d.intValue)
         case a: Any => a.toString
       }
-      result.put(one.getKey.toString, value)
+      val key = if (one.getKey.toString == "maxActive") "maxTotal" else one.getKey.toString
+      result.put(key, value)
     }
-    println(result)
     result
   }
 
