@@ -13,12 +13,13 @@ import java.io.FileOutputStream
 import java.io.InputStream
 import scala.xml.Null
 import java.io.OutputStream
+import java.io.InputStreamReader
+import java.io.Reader
 
 class MavenLoader(parent: ClassLoader) extends WebappLoader(parent) {
 
-  var webClassPathFile = "WEB-INF/webclasspath"
-  var tomcatPluginFile = ".tomcatplugin"
-  var repositoryPath = System.getProperties().getProperty("user.home") + "/.m2/repository/"
+  var webClassPathFile = "META-INF/webclasspath"
+  var repositoryPath = System.getProperties().getProperty("user.home") + "/.mavenLoader"
   if (!new File(repositoryPath).exists()) {
     new File(repositoryPath).mkdirs()
   }
@@ -30,16 +31,13 @@ class MavenLoader(parent: ClassLoader) extends WebappLoader(parent) {
   override def startInternal() {
     log("Starting DevLoader")
     super.startInternal()
-    val cl = super.getClassLoader()
-    if (!(cl.isInstanceOf[WebappClassLoader])) {
-      logError("Unable to install WebappClassLoader !")
-    } else {
-      val devCl = cl.asInstanceOf[WebappClassLoader]
-      val classpath = new StringBuffer()
-      readWebClassPathEntries() foreach { url =>
-        log(url)
-        devCl.addURL(new File(url).toURL())
-      }
+    val cl = super.getClassLoader() match {
+      case devCl: WebappClassLoader =>
+        readWebClassPathEntries() foreach { url =>
+          log(url)
+          devCl.addURL(new File(url).toURI().toURL())
+        }
+      case _ => logError("Unable to install WebappClassLoader !")
     }
   }
 
@@ -48,53 +46,54 @@ class MavenLoader(parent: ClassLoader) extends WebappLoader(parent) {
   }
 
   protected def logError(msg: String) {
-    System.err.println((new StringBuilder("[MavenLoader] Error: ")).append(msg).toString())
+    Console.err.println((new StringBuilder("[MavenLoader] Error: ")).append(msg).toString())
   }
 
   protected def readWebClassPathEntries(): List[String] = {
-    val prjDir = new File(servletContext.getRealPath("/"))
-    val urls = loadWebClassPathFile(prjDir)
-    downloadJars(urls)
-    urls
-  }
-
-  protected def loadWebClassPathFile(prjDir: File): List[String] = {
-    val cpFile = new File(prjDir, this.webClassPathFile)
-    if (cpFile.exists()) {
-      var reader: FileReader = null
+    val cpFile = super.getClassLoader().getResource(webClassPathFile)
+    val rc = new ListBuffer[String]
+    if (null != cpFile) {
+      var reader: Reader = null
       try {
-        val rc = new ListBuffer[String]()
-        reader = new FileReader(cpFile)
+        reader = new InputStreamReader(cpFile.openStream())
         val lr = new LineNumberReader(reader)
         var line: String = null
         do {
           line = lr.readLine()
           if (line != null) {
-            line = line.replace('\\', '/')
-            rc += repositoryPath + line
+            val infos = line.split(":")
+            rc += s"${repositoryPath}/${infos(0)}/${infos(1)}-${infos(2)}.jar"
           }
         } while (line != null)
+        downloadJars(rc.toList)
         rc.toList
       } catch {
-        case ioEx: IOException =>
-          ioEx.printStackTrace()
-          null
+        case ioEx: IOException => ioEx.printStackTrace()
       }
-    } else null
+    } else {
+      logError(s"Cannot find $webClassPathFile")
+    }
+    rc.toList
   }
 
   private def downloadJars(urls: List[String]) {
     val downloadList = new ListBuffer[Tuple2[String, String]]()
     urls.foreach(url => {
-      if (!new File(url).exists()) {
-        val pair = ("http://central.maven.org/maven2/" + url.toString().substring(repositoryPath.length()), url.toString())
+      val file = new File(url)
+      if (!file.exists()) {
+        val name = file.getName()
+        val version = name.substring(name.lastIndexOf("-") + 1).replace(".jar", "")
+        val artifact = name.substring(0, name.lastIndexOf("-"))
+        //http://central.maven.org/maven2/junit/junit/4.11/junit-4.11.jar
+        val pair = (s"http://central.maven.org/maven2/${file.getParentFile().getName.replace(".", "/")}/$artifact/$version/$name", url.toString())
         downloadList += pair
       }
     })
-
+    val splash = Array('\\', '|', '/', '-')
     val threads = new ListBuffer[Downloader]()
+    var i = 0
     while (downloadList.size > 0 || threads.size > 0) {
-      print("\b" * 1000)
+      print("\b" * 100)
       if (threads.size < 4 && downloadList.size > 0) {
         val pair = downloadList.remove(0)
         println("download:" + pair._1)
@@ -104,8 +103,13 @@ class MavenLoader(parent: ClassLoader) extends WebappLoader(parent) {
       } else {
         Thread.sleep(1000)
       }
-      threads.foreach(t => print(t.count / 1024 + "KB/" + (t.fileSize / 1024) + "KB    "))
-      print(" " * 100)
+      val sb = new StringBuilder()
+      sb += splash(i % 4)
+      sb ++= "  "
+      threads.foreach(t => sb ++= (t.count / 1024 + "KB/" + (t.fileSize / 1024) + "KB    "))
+      sb ++= (" " * (100 - sb.length))
+      i += 1
+      print(sb.toString)
     }
   }
 
@@ -117,7 +121,7 @@ class MavenLoader(parent: ClassLoader) extends WebappLoader(parent) {
       var output: OutputStream = null
       try {
         val url = new URL(pair._1)
-        val file = new File(pair._2 + ".tmp")
+        val file = new File(pair._2 + ".part")
         val buffer = new Array[Byte](1024 * 4)
         val conn = url.openConnection()
         fileSize = conn.getContentLength()
@@ -134,19 +138,12 @@ class MavenLoader(parent: ClassLoader) extends WebappLoader(parent) {
         }
         file.renameTo(new File(pair._2))
       } catch {
-        case t =>
+        case t: Throwable =>
           t.printStackTrace()
           if (input != null) input.close()
           if (output != null) output.close()
       }
       threads -= this
     }
-  }
-
-  protected def servletContext: ServletContext = {
-    //tomcat 8.0
-    this.getContext.getServletContext
-    //tomcat 7.0
-    //    getContainer().asInstanceOf[Context].getServletContext()
   }
 }
