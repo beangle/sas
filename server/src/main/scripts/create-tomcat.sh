@@ -1,7 +1,9 @@
 #!/bin/sh
 
+source $(dirname $0)/setrepo.sh
+
 TOMCAT_V=`echo $TOMCAT_VERSION| cut -c 1-1`
-TOMCAT_URL="http://archive.apache.org/dist/tomcat/tomcat-$TOMCAT_V/v$TOMCAT_VERSION/bin/apache-tomcat-$TOMCAT_VERSION.zip"
+TOMCAT_URL="$TOMCAT_REPO/tomcat-$TOMCAT_V/v$TOMCAT_VERSION/bin/apache-tomcat-$TOMCAT_VERSION.zip"
 
 if [ ! -f apache-tomcat-$TOMCAT_VERSION.zip ]; then
     if command -v aria2c >/dev/null 2; then
@@ -10,11 +12,16 @@ if [ ! -f apache-tomcat-$TOMCAT_VERSION.zip ]; then
         wget $TOMCAT_URL -O apache-tomcat-$TOMCAT_VERSION.zip.part
         mv apache-tomcat-$TOMCAT_VERSION.zip.part  apache-tomcat-$TOMCAT_VERSION.zip
     fi
+
+    unzip -q apache-tomcat-$TOMCAT_VERSION.zip
+    rm -rf apache-tomcat-$TOMCAT_VERSION.zip 
+    mv apache-tomcat-$TOMCAT_VERSION tomcat
+    
+else
+    unzip -q apache-tomcat-$TOMCAT_VERSION.zip
+    mv apache-tomcat-$TOMCAT_VERSION tomcat
 fi
 
-unzip -q apache-tomcat-$TOMCAT_VERSION.zip
-#rm -rf apache-tomcat-$TOMCAT_VERSION.zip 
-mv apache-tomcat-$TOMCAT_VERSION tomcat
 
 mkdir -p servers
 mkdir -p webapps

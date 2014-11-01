@@ -20,7 +20,7 @@ class RepositoryLoader(parent: ClassLoader) extends WebappLoader(parent) {
 
   val dependenciesFile = "META-INF/container.dependencies"
   var url = "http://central.maven.org/maven2"
-  var layout = "maven2"
+  var cacheLayout = "maven2"
   var cacheBase: String = _
   var remote: RemoteRepository = _
   var local: LocalRepository = _
@@ -30,7 +30,7 @@ class RepositoryLoader(parent: ClassLoader) extends WebappLoader(parent) {
 
   override def startInternal() {
     if (null == cacheBase) {
-      cacheBase = layout match {
+      cacheBase = cacheLayout match {
         case "maven2" => System.getProperties().getProperty("user.home") + "/.m2/repository"
         case "ivy2" => System.getProperties().getProperty("user.home") + "/.ivy2/cache"
         case _ => throw new RuntimeException("Do not support layout $layout,Using maven2 or ivy2")
@@ -38,7 +38,7 @@ class RepositoryLoader(parent: ClassLoader) extends WebappLoader(parent) {
     }
     log("Loading jars from:" + cacheBase)
     remote = new RemoteRepository(url)
-    local = new LocalRepository(cacheBase, layout)
+    local = new LocalRepository(cacheBase, cacheLayout)
 
     super.startInternal()
     val cl = super.getClassLoader() match {
@@ -155,8 +155,8 @@ class RepositoryLoader(parent: ClassLoader) extends WebappLoader(parent) {
     this.url = url
   }
 
-  def setLayout(layout: String): Unit = {
-    this.layout = layout
+  def setCacheLayout(cacheLayout: String): Unit = {
+    this.cacheLayout = cacheLayout
   }
 
   def setCacheBase(cacheBase: String): Unit = {

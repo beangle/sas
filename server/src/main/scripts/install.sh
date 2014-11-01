@@ -18,5 +18,5 @@ export TOMCAT_VERSION="$1"
 
 cd $PRGDIR/..
 
-source $(dirname $0)/create_server.sh
+source $(dirname $0)/create-tomcat.sh
 
