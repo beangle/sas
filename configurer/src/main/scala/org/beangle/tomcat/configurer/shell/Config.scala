@@ -178,11 +178,6 @@ object Config extends ShellEnv {
   }
 
   def applyConfig() {
-    for (farm <- container.farms; server <- farm.servers) {
-      Template.generate(container, farm, server, workdir)
-      Template.generateEnv(container, farm, workdir)
-      copyResources(Array("/bin/start", "/bin/stop", "/conf/catalina.properties", "/conf/logging.properties"), workdir + "/" + farm.name)
-    }
     for (context <- container.webapp.contexts) {
       container.farms.find(f => f.name == context.runAt).foreach { farm =>
         for (ds <- context.dataSources) {
@@ -193,14 +188,6 @@ object Config extends ShellEnv {
       }
     }
     println("Apply configuration success,check it in " + workdir)
-  }
-
-  private def copyResources(paths: Array[String], target: String) {
-    for (path <- paths) {
-      val file = new File(target + path)
-      IOs.copy(ClassLoaders.getResourceAsStream("tomcat" + path, getClass), Files.writeOpen(file))
-      if (file.getName.endsWith(".sh") || !file.getName.contains(".")) file.setExecutable(true)
-    }
   }
 
   def setAppBase() {

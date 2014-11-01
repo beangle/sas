@@ -33,6 +33,7 @@
     <module>jdbc</module>
     <module>configurer</module>
     <module>loader</module>
+    <module>server</module>
   </modules>
 
 </project>
