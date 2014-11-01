@@ -16,92 +16,92 @@ import java.io.OutputStream
 import java.io.InputStreamReader
 import java.io.Reader
 
-class MavenLoader(parent: ClassLoader) extends WebappLoader(parent) {
+class RepositoryLoader(parent: ClassLoader) extends WebappLoader(parent) {
 
-  var webClassPathFile = "META-INF/webclasspath"
-  var repositoryPath = System.getProperties().getProperty("user.home") + "/.mavenLoader"
-  if (!new File(repositoryPath).exists()) {
-    new File(repositoryPath).mkdirs()
-  }
-
+  val dependenciesFile = "META-INF/container.dependencies"
+  var url = "http://central.maven.org/maven2"
+  var layout = "maven2"
+  var cacheBase = System.getProperties().getProperty("user.home") + "/.m2/repository"
+  var remote: RemoteRepository = _
+  var local: LocalRepository = _
   def this() {
     this(null)
   }
 
   override def startInternal() {
-    log("Starting DevLoader")
+    log("Starting RepositoryLoader,Load jar cache from :" + cacheBase)
+    remote = new RemoteRepository(url)
+    local = new LocalRepository(cacheBase, layout)
+
     super.startInternal()
     val cl = super.getClassLoader() match {
       case devCl: WebappClassLoader =>
+        val sb = new StringBuilder("Append Classpath:")
         readWebClassPathEntries() foreach { url =>
-          log(url)
-          devCl.addURL(new File(url).toURI().toURL())
+          val file = new File(url)
+          sb ++= file.getName
+          sb ++= "  "
+          devCl.addURL(file.toURI.toURL)
         }
+        log(sb.toString)
       case _ => logError("Unable to install WebappClassLoader !")
     }
   }
 
-  protected def log(msg: String) {
-    println((new StringBuilder("[MavenLoader] ")).append(msg).toString())
+  private def log(msg: String) {
+    println((new StringBuilder("[RepositoryLoader] ")).append(msg).toString())
   }
 
-  protected def logError(msg: String) {
-    Console.err.println((new StringBuilder("[MavenLoader] Error: ")).append(msg).toString())
+  private def logError(msg: String) {
+    Console.err.println((new StringBuilder("[RepositoryLoader] Error: ")).append(msg).toString())
   }
 
-  protected def readWebClassPathEntries(): List[String] = {
-    val cpFile = super.getClassLoader().getResource(webClassPathFile)
+  private def readWebClassPathEntries(): List[String] = {
+    val cpFile = super.getClassLoader().getResource(dependenciesFile)
     val rc = new ListBuffer[String]
     if (null != cpFile) {
-      var reader: Reader = null
       try {
-        reader = new InputStreamReader(cpFile.openStream())
+        val reader = new InputStreamReader(cpFile.openStream())
         val lr = new LineNumberReader(reader)
+        val artifacts = new ListBuffer[Artifact]
         var line: String = null
         do {
           line = lr.readLine()
-          if (line != null) {
+          if (line != null && !line.isEmpty) {
             val infos = line.split(":")
-            rc += s"${repositoryPath}/${infos(0)}/${infos(1)}-${infos(2)}.jar"
+            artifacts += new Artifact(infos(0), infos(1), infos(2))
           }
         } while (line != null)
-        downloadJars(rc.toList)
-        rc.toList
+        lr.close()
+
+        rc ++= artifacts.map(a => local.path(a))
+        downloadJars(artifacts.filter(a => !new File(local.path(a)).exists))
       } catch {
         case ioEx: IOException => ioEx.printStackTrace()
       }
     } else {
-      logError(s"Cannot find $webClassPathFile")
+      logError(s"Cannot find $dependenciesFile")
     }
     rc.toList
   }
 
-  private def downloadJars(urls: List[String]) {
-    val downloadList = new ListBuffer[Tuple2[String, String]]()
-    urls.foreach(url => {
-      val file = new File(url)
-      if (!file.exists()) {
-        val name = file.getName()
-        val version = name.substring(name.lastIndexOf("-") + 1).replace(".jar", "")
-        val artifact = name.substring(0, name.lastIndexOf("-"))
-        //http://central.maven.org/maven2/junit/junit/4.11/junit-4.11.jar
-        val pair = (s"http://central.maven.org/maven2/${file.getParentFile().getName.replace(".", "/")}/$artifact/$version/$name", url.toString())
-        downloadList += pair
-      }
-    })
+  private def downloadJars(artifacts: ListBuffer[Artifact]): Unit = {
+    if (artifacts.isEmpty) return
     val splash = Array('\\', '|', '/', '-')
     val threads = new ListBuffer[Downloader]()
     var i = 0
-    while (downloadList.size > 0 || threads.size > 0) {
+    while (artifacts.size > 0 || threads.size > 0) {
       print("\b" * 100)
-      if (threads.size < 4 && downloadList.size > 0) {
-        val pair = downloadList.remove(0)
+      if (threads.size < 4 && artifacts.size > 0) {
+        val artifact = artifacts.remove(0)
+        val fileName = s"${artifact.artifactId}-${artifact.version}.jar"
+        val pair = (remote.url(artifact), local.path(artifact))
         println("download:" + pair._1)
         val thread = new Downloader(threads, pair)
         thread.start()
         threads += thread
       } else {
-        Thread.sleep(1000)
+        Thread.sleep(500)
       }
       val sb = new StringBuilder()
       sb += splash(i % 4)
@@ -111,6 +111,7 @@ class MavenLoader(parent: ClassLoader) extends WebappLoader(parent) {
       i += 1
       print(sb.toString)
     }
+    print("\n")
   }
 
   class Downloader(threads: ListBuffer[Downloader], pair: Tuple2[String, String]) extends Thread {
@@ -122,13 +123,11 @@ class MavenLoader(parent: ClassLoader) extends WebappLoader(parent) {
       try {
         val url = new URL(pair._1)
         val file = new File(pair._2 + ".part")
+        file.getParentFile().mkdirs()
         val buffer = new Array[Byte](1024 * 4)
         val conn = url.openConnection()
         fileSize = conn.getContentLength()
-        val input = url.openConnection().getInputStream()
-        if (!file.getParentFile().exists()) {
-          file.getParentFile().mkdirs()
-        }
+        val input = url.openConnection().getInputStream
         val output = new FileOutputStream(file)
         var n = input.read(buffer)
         while (eof != n) {
@@ -137,13 +136,23 @@ class MavenLoader(parent: ClassLoader) extends WebappLoader(parent) {
           n = input.read(buffer)
         }
         file.renameTo(new File(pair._2))
-      } catch {
-        case t: Throwable =>
-          t.printStackTrace()
-          if (input != null) input.close()
-          if (output != null) output.close()
+      } finally {
+        if (input != null) input.close()
+        if (output != null) output.close()
+        threads -= this
       }
-      threads -= this
     }
+  }
+
+  def setUrl(url: String): Unit = {
+    this.url = url
+  }
+
+  def setLayout(layout: String): Unit = {
+    this.layout = layout
+  }
+
+  def setCacheBase(cacheBase: String): Unit = {
+    this.cacheBase = cacheBase
   }
 }
