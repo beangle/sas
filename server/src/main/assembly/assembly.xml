@@ -6,23 +6,21 @@
   <dependencySets>
     <dependencySet>
       <useProjectArtifact>false</useProjectArtifact>
-      <outputDirectory>lib</outputDirectory>
+      <outputDirectory>conf/ext</outputDirectory>
+      <excludes>
+        <exclude>org.slf4j:slf4j-api</exclude>
+      </excludes>
     </dependencySet>
   </dependencySets>
   <fileSets>
     <fileSet>
-      <outputDirectory>/</outputDirectory>
-      <includes>
-        <include>README.txt</include>
-      </includes>
+      <directory>src/main/resources/conf</directory>
+      <outputDirectory>/conf</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>src/main/scripts</directory>
       <outputDirectory>/bin</outputDirectory>
-      <includes>
-        <include>start.sh</include>
-        <include>stop.sh</include>
-      </includes>
+      <fileMode>775</fileMode>
     </fileSet>
   </fileSets>
 </assembly>
