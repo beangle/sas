@@ -31,8 +31,6 @@ import org.beangle.commons.lang.ClassLoaders
 import org.beangle.commons.io.Files
 
 object Firewall extends ShellEnv {
-  val firewalldEnabled: Boolean = isFirewallDeamonEnabled
-  val isRoot = isRootUser
 
   def main(args: Array[String]) {
     workdir = if (args.length == 0) SystemInfo.user.dir else args(0)
@@ -52,12 +50,12 @@ object Firewall extends ShellEnv {
     }
   }
 
-  def isFirewallDeamonEnabled(): Boolean = {
+  def firewalldEnabled: Boolean = {
     val p = new ProcessBuilder("which", "firewalld").start()
     IOs.readString(p.getInputStream()).contains("/usr/sbin/firewalld")
   }
 
-  def isRootUser(): Boolean = {
+  def isRoot: Boolean = {
     val p = new ProcessBuilder("id").start()
     IOs.readString(p.getInputStream()).contains("uid=0(root)")
   }
@@ -88,18 +86,11 @@ object Firewall extends ShellEnv {
     }
 
     if (!ports.isEmpty) {
-      if (firewalldEnabled) {
-        val sb = new StringBuilder()
-        for (port <- ports)
-          sb ++= (" --add-port=" + port + "/tcp")
-        Runtime.getRuntime().exec("firewall-cmd --permanent --zone=public" + sb.mkString)
-        println("firewalld changed successfully.")
-      } else {
-        for (port <- ports)
-          Runtime.getRuntime().exec("iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport " + port + " -j ACCEPT")
-        Runtime.getRuntime().exec("service iptables save")
-        println("change /etc/sysconfig/iptables success.")
-      }
+      val sb = new StringBuilder()
+      for (port <- ports)
+        sb ++= (" --add-port=" + port + "/tcp")
+      Runtime.getRuntime().exec("firewall-cmd --permanent --zone=public" + sb.mkString)
+      println("firewalld changed successfully.")
     }
   }
 
@@ -111,18 +102,17 @@ object Firewall extends ShellEnv {
     val data = new collection.mutable.HashMap[String, Any]()
     data.put("ports", container.ports)
     val sw = new StringWriter()
-    val template = cfg.getTemplate(if (firewalldEnabled) "firewall.ftl" else "iptables_rule.ftl")
+    val template = cfg.getTemplate("firewall.ftl")
     template.process(data, sw)
     sw.close()
     return sw.toString()
   }
 
   def printHelp() {
-    val name = if (firewalldEnabled) "firewall" else "iptables"
     println(s"""Avaliable command:
   info        print server port
-  conf        generate $name configuration
-  apply       apply server port config to $name
+  conf        generate firewall configuration
+  apply       apply server port config to firewall
   help        print this help conent""")
   }
 }
