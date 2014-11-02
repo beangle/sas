@@ -1,3 +1,7 @@
+### Install Beangle Tomcat Server
+
+    wget https://raw.githubusercontent.com/beangle/tomcat/master/server/src/main/resources/netinstall.sh;chmod +x ./netinstall.sh;./netinstall.sh 0.1.0
+
 ### Get scala and postgresql libararies
 
   bin/get-pg-driver.sh
