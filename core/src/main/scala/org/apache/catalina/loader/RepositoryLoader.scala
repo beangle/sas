@@ -1,20 +1,11 @@
 package org.apache.catalina.loader
 
-import java.io.LineNumberReader
-import java.io.FileReader
-import java.io.File
-import javax.servlet.ServletContext
-import org.apache.catalina.Context
+import java.io.{File, FileOutputStream, IOException, InputStream, InputStreamReader, LineNumberReader, OutputStream}
 import java.net.URL
-import java.io.IOException
+
 import scala.collection.mutable.ListBuffer
-import java.util.StringTokenizer
-import java.io.FileOutputStream
-import java.io.InputStream
-import scala.xml.Null
-import java.io.OutputStream
-import java.io.InputStreamReader
-import java.io.Reader
+
+import org.beangle.tomcat.loader.{Artifact, LocalRepository, RemoteRepository}
 
 class RepositoryLoader(parent: ClassLoader) extends WebappLoader(parent) {
 

@@ -13,18 +13,7 @@
   <dependencies>
     <dependency>
       <groupId>org.beangle.tomcat</groupId>
-      <artifactId>beangle-tomcat-loader</artifactId>
-      <version>${project.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.tomcat</groupId>
-          <artifactId>tomcat-catalina</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.beangle.tomcat</groupId>
-      <artifactId>beangle-tomcat-jdbc</artifactId>
+      <artifactId>beangle-tomcat-core</artifactId>
       <version>${project.version}</version>
       <exclusions>
         <exclusion>

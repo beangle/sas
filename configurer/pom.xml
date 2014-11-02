@@ -30,7 +30,7 @@
     </dependency>
     <dependency>
       <groupId>org.beangle.tomcat</groupId>
-      <artifactId>beangle-tomcat-jdbc</artifactId>
+      <artifactId>beangle-tomcat-core</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

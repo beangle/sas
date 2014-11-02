@@ -30,9 +30,8 @@
   </properties>
 
   <modules>
-    <module>jdbc</module>
+    <module>core</module>
     <module>configurer</module>
-    <module>loader</module>
     <module>server</module>
   </modules>
 
