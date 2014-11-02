@@ -7,10 +7,9 @@ if [ "$1" != "" ]; then
 fi
 
 PRGDIR=`dirname "$0"`
-export EXT_HOME=`cd "$PRGDIR" >/dev/null; pwd`
-cd $EXT_HOME
+export LIB_HOME=`cd "$PRGDIR" >/dev/null; pwd`
+cd $LIB_HOME
 
-
-if [ ! -f ext/postgresql-$PG_VERSION.jar ]; then
-    ./get-ext.sh org.postgresql postgresql $PG_VERSION
+if [ ! -f lib/postgresql-$PG_VERSION.jar ]; then
+    ./get-lib.sh org.postgresql postgresql $PG_VERSION
 fi

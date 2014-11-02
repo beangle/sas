@@ -7,6 +7,7 @@ TOMCAT_URL="$TOMCAT_REPO/tomcat-$TOMCAT_V/v$TOMCAT_VERSION/bin/apache-tomcat-$TO
 
 if [ ! -f apache-tomcat-$TOMCAT_VERSION.zip ]; then
     if command -v aria2c >/dev/null 2; then
+        echo "Downloading $TOMCAT_URL"
         aria2c -x 16 $TOMCAT_URL
     else
         wget $TOMCAT_URL -O apache-tomcat-$TOMCAT_VERSION.zip.part
@@ -45,6 +46,10 @@ rm -rf tomcat/conf
 cd tomcat
 ln -s ../conf
 cd ..
-cp -r bin/ext/*.jar tomcat/lib
+cp -r bin/lib/*.jar tomcat/lib
+
+rm -rf conf/version.txt
+touch conf/version.txt
+echo $TOMCAT_VERSION >> conf/version.txt
 
 echo "$TOMCAT_VERSION installed successfully."

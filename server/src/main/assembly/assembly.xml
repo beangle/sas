@@ -6,7 +6,7 @@
   <dependencySets>
     <dependencySet>
       <useProjectArtifact>false</useProjectArtifact>
-      <outputDirectory>conf/ext</outputDirectory>
+      <outputDirectory>bin/lib</outputDirectory>
       <excludes>
         <exclude>org.slf4j:slf4j-api</exclude>
       </excludes>
@@ -16,6 +16,15 @@
     <fileSet>
       <directory>src/main/resources/conf</directory>
       <outputDirectory>/conf</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>src/main/resources/conf</directory>
+      <includes>
+        <include>
+          README.md
+        </include>
+      </includes>
+      <outputDirectory>/</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>src/main/scripts</directory>
