@@ -9,7 +9,7 @@ fi
 export BEANGLE_SERVER_VERSION="$1"
 
 wget "http://repo1.maven.org/maven2/org/beangle/tomcat/beangle-tomcat-server/$BEANGLE_SERVER_VERSION/beangle-tomcat-server-$BEANGLE_SERVER_VERSION.zip"
-export BEANGLE_SERVER="beangle-tomcat-server-$BEANGLE_SERVER_VERSION
+export BEANGLE_SERVER="beangle-tomcat-server-$BEANGLE_SERVER_VERSION"
 unzip -q $BEANGLE_SERVER.zip
 
 cd  $BEANGLE_SERVER
