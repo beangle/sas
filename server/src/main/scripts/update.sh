@@ -16,6 +16,5 @@ read -p "Are you update tomcat to $TOMCAT_VERSION(Y/n)? " -n 1 -r
 echo    # (optional) move to a new line
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
-    rm -rf tomcat
     source $(dirname $0)/create-tomcat.sh
 fi

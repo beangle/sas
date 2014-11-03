@@ -15,11 +15,13 @@ if [ ! -f apache-tomcat-$TOMCAT_VERSION.zip ]; then
     fi
 
     unzip -q apache-tomcat-$TOMCAT_VERSION.zip
-    rm -rf apache-tomcat-$TOMCAT_VERSION.zip 
+    rm -rf apache-tomcat-$TOMCAT_VERSION.zip
+    rm -rf tomcat
     mv apache-tomcat-$TOMCAT_VERSION tomcat
     
 else
     unzip -q apache-tomcat-$TOMCAT_VERSION.zip
+    rm -rf tomcat
     mv apache-tomcat-$TOMCAT_VERSION tomcat
 fi
 
