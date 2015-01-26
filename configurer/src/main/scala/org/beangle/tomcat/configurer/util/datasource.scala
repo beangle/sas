@@ -20,27 +20,27 @@ package org.beangle.tomcat.configurer.util
 
 import org.beangle.commons.lang.Consoles.prompt
 import org.beangle.data.jdbc.vendor.{ UrlFormat, Vendors }
-import org.beangle.tomcat.configurer.model.DataSource
+import org.beangle.tomcat.configurer.model.Resource
 
 object DataSourceConfig {
 
-  def config(dataSource: DataSource) {
-    if (null == dataSource.driverClassName) {
-      dataSource.driverClassName = Vendors.drivers.get(dataSource.driver) match {
-        case Some(di) => di.className
-        case None => println("cannot find driver " + dataSource.driver + "className"); "unknown"
-      }
-    }
-    val format = new UrlFormat(dataSource.url)
+  def config(resource: Resource) {
+//    if (null == resource.driverClassName) {
+//      resource.driverClassName = Vendors.drivers.get(resource.driver) match {
+//        case Some(di) => di.className
+//        case None => println("cannot find driver " + resource.driver + "className"); "unknown"
+//      }
+//    }
+    val format = new UrlFormat(resource.url)
     if (!format.params.isEmpty) {
       val params = format.params
       val values = new collection.mutable.HashMap[String, String]
       params.foreach { param => values.put(param, prompt("enter " + param + ":")) }
-      dataSource.url = format.fill(values.toMap)
+      resource.url = format.fill(values.toMap)
     }
 
-    if (null == dataSource.username || dataSource.username == "<username>") {
-      dataSource.username = prompt("enter datasource " + dataSource.name + " username:")
+    if (null == resource.username || resource.username == "<username>") {
+      resource.username = prompt("enter datasource " + resource.name + " username:")
     }
   }
 }

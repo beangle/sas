@@ -29,12 +29,12 @@ import org.beangle.commons.lang.Strings.{ isBlank, isNotEmpty, split, substringA
 import org.beangle.commons.lang.SystemInfo
 import org.beangle.data.jdbc.script.{ OracleParser, Runner }
 import org.beangle.data.jdbc.util.PoolingDataSourceFactory
-import org.beangle.tomcat.configurer.model.{ Container, DataSource }
+import org.beangle.tomcat.configurer.model.{ Container, Resource }
 import org.beangle.tomcat.configurer.util.DataSourceConfig
 
 object Sql extends ShellEnv {
 
-  var dataSource: DataSource = _
+  var resource: Resource = _
 
   var sqlDir: String = _
 
@@ -47,17 +47,17 @@ object Sql extends ShellEnv {
       return
     }
     if (null != container) {
-      val datasources = container.dataSources
+      val datasources = container.resources
       if (datasources.isEmpty) {
         info("Cannot find datasource")
         return
       }
 
-      if (datasources.size == 1) dataSource = datasources.values.head
+      if (datasources.size == 1) resource = datasources.values.head
       println("Sql executor:help ls exec exit(quit/q)")
       shell({
         val prefix =
-          if (null != dataSource) dataSource.name
+          if (null != resource) resource.name
           else "sql"
         prefix + " >"
       }, Set("exit", "quit", "q"), command => command match {
@@ -99,17 +99,21 @@ object Sql extends ShellEnv {
       }
 
       val runner = new Runner(OracleParser, urls: _*)
-      if (null == dataSource) use(null)
-      if (null == dataSource || urls.isEmpty) {
+      if (null == resource) use(null)
+      if (null == resource || urls.isEmpty) {
         println("Execute sql aborted.")
       } else {
-        DataSourceConfig.config(dataSource)
-        if (null == dataSource.password)
-          dataSource.password = readPassword("enter datasource [%1$s] %2$s password:", dataSource.name, dataSource.username)
+        DataSourceConfig.config(resource)
+        if (null == resource.password)
+          resource.password = readPassword("enter datasource [%1$s] %2$s password:", resource.name, resource.username)
 
-        val ds = new PoolingDataSourceFactory(dataSource.driverClassName,
-          dataSource.url, dataSource.username, dataSource.password, dataSource.properties).getObject
-
+        val properties = resource.properties
+        properties.remove("driverClassName")
+        properties.remove("username")
+        properties.remove("url")
+        properties.remove("password")
+        val ds = new PoolingDataSourceFactory(resource.driverClassName,
+          resource.url, resource.username, resource.password, properties).getObject
         runner.execute(ds, true)
       }
     }
@@ -124,20 +128,15 @@ object Sql extends ShellEnv {
   }
 
   def use(datasourceName: String = null) {
-    val datasources = new collection.mutable.HashMap[String, DataSource]
-    for (context <- container.webapp.contexts) {
-      container.farms.find(f => f.name == context.runAt).foreach { farm =>
-        for (ds <- context.dataSources) datasources += (ds.name -> ds)
-      }
-    }
+    val datasources = container.resources
     if (datasources.isEmpty) {
       println("datasource is empty")
     } else {
       if (!isBlank(datasourceName) && datasources.get(datasourceName).isDefined) {
-        dataSource = datasources(datasourceName)
+        resource = datasources(datasourceName)
       } else {
         val selectName = prompt("choose datasource name?", null, name => datasources.contains(name))
-        dataSource = datasources(selectName)
+        resource = datasources(selectName)
       }
     }
   }
@@ -145,13 +144,9 @@ object Sql extends ShellEnv {
   def info() {
     val infos = new collection.mutable.ListBuffer[String]
     var index = 0
-    for (context <- container.webapp.contexts) {
-      container.farms.find(f => f.name == context.runAt).foreach { farm =>
-        for (ds <- context.dataSources) {
-          var prefix = if (ds == dataSource) "[*] " else "[" + index + "] "
-          infos += prefix + ds.toString
-        }
-      }
+    for (ds <- container.resources.values) {
+      var prefix = if (ds == resource) "[*] " else "[" + index + "] "
+      infos += prefix + ds.toString
     }
     println("Data sources:\n" + ("-" * 50))
     println(infos.mkString("\n"))

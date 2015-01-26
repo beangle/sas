@@ -13,8 +13,8 @@
   <properties>
     <bundle.symbolicName>org.beangle.tomcat.configer</bundle.symbolicName>
     <bundle.namespace>org.beangle.tomcat.configer</bundle.namespace>
-    <commons.version>4.1.2</commons.version>
-    <data.version>4.1.0</data.version>
+    <commons.version>4.2.2</commons.version>
+    <data.version>4.1.8</data.version>
   </properties>
 
   <dependencies>

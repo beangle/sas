@@ -24,12 +24,37 @@ object Container {
   def apply(xml: scala.xml.Elem): Container = {
     val conf = new Container
     conf.version = (xml \ "@version").text
+    (xml \ "Listener").foreach { lsnElem =>
+      val listener = new Listener((lsnElem \ "@className").text)
+      for ((k, v) <- (lsnElem.attributes.asAttrMap -- Set("className"))) {
+        listener.properties.put(k, v)
+      }
+      conf.listeners += listener
+    }
 
-    (xml \ "farm").foreach { farmElem =>
+    (xml \ "Context").foreach { ctxElem =>
+      conf.context = new Context
+      (ctxElem \ "Loader").foreach { ldElem =>
+        val loader = new Loader((ldElem \ "@className").text)
+        for ((k, v) <- (ldElem.attributes.asAttrMap -- Set("className"))) {
+          loader.properties.put(k, v)
+        }
+        conf.context.loader = loader
+      }
+      (ctxElem \ "JarScanner").foreach { scanElem =>
+        val jarScanner = new JarScanner()
+        for ((k, v) <- (scanElem.attributes.asAttrMap -- Set("className"))) {
+          jarScanner.properties.put(k, v)
+        }
+        conf.context.jarScanner = jarScanner
+      }
+    }
+
+    (xml \ "Farm").foreach { farmElem =>
       val farm = new Farm((farmElem \ "@name").text)
-      farm.jvmopts = (farmElem \ "jvm" \ "@opts").text
+      farm.jvmopts = (farmElem \ "JvmArgs" \ "@opts").text
 
-      (farmElem \ "http") foreach { httpElem =>
+      (farmElem \ "HttpConnector") foreach { httpElem =>
         val http = new HttpConnector
         readConnector(httpElem, http)
         readHttpAndAjpConnector(httpElem, http)
@@ -41,40 +66,62 @@ object Container {
         farm.http = http
       }
 
-      (farmElem \ "ajp") foreach { httpElem =>
+      (farmElem \ "AjpConnector") foreach { httpElem =>
         val ajp = new AjpConnector
         readConnector(httpElem, ajp)
         readHttpAndAjpConnector(httpElem, ajp)
         farm.ajp = ajp
       }
 
-      (farmElem \ "server") foreach { serverElem =>
-        val server = new Server((serverElem \ "@name").text, toInt((serverElem \ "@shutdownPort").text))
-        server.httpPort = toInt((serverElem \ "@httpPort").text)
-        server.httpsPort = toInt((serverElem \ "@httpsPort").text)
-        server.ajpPort = toInt((serverElem \ "@ajpPort").text)
+      (farmElem \ "HttpsConnector") foreach { httpsElem =>
+        val https = new HttpsConnector
+        readConnector(httpsElem, https)
+        readHttpAndAjpConnector(httpsElem, https)
+        val properties = httpsElem.attributes.asAttrMap -- Set("protocol", "URIEncoding", "redirectPort", "enableLookups",
+          "acceptCount", "maxThreads", "maxConnections", "minSpareThreads")
+        for ((k, v) <- properties) {
+          https.properties.put(k, v)
+        }
+        farm.https = https
+      }
+
+      (farmElem \ "Server") foreach { serverElem =>
+        val server = new Server((serverElem \ "@name").text, toInt((serverElem \ "@shutdown").text))
+        server.httpPort = toInt((serverElem \ "@http").text)
+        server.httpsPort = toInt((serverElem \ "@https").text)
+        server.ajpPort = toInt((serverElem \ "@ajp").text)
         farm.servers += server
       }
       conf.farms += farm
     }
 
-    (xml \ "webapp").foreach { webappElem =>
-      conf.webapp.base = (webappElem \ "@base").text
-      (webappElem \ "context").foreach { contextElem =>
-        val context = new Context((contextElem \ "@path").text)
-        context.reloadable = (contextElem \ "@path").text == "true"
-        context.runAt = (contextElem \ "@runAt").text
-        (contextElem \ "datasource").foreach { dsElem =>
-          val ds = new DataSource((dsElem \ "@name").text)
-          ds.driver = (dsElem \ "@driver").text
-          ds.username = (dsElem \ "@username").text
-          ds.url = (dsElem \ "@url").text
-          for ((k, v) <- (dsElem.attributes.asAttrMap -- Set("name", "driver", "url", "username"))) {
-            ds.properties.put(k, v)
-          }
-          context.dataSources += ds
+    (xml \ "Resources") foreach { resourceElem =>
+      (resourceElem \ "Resource").foreach { dsElem =>
+        val ds = new Resource((dsElem \ "@name").text)
+        for ((k, v) <- (dsElem.attributes.asAttrMap -- Set("name"))) {
+          ds.properties.put(k, v)
         }
-        conf.webapp.contexts += context
+        conf.resources.put(ds.name, ds)
+      }
+    }
+
+    (xml \ "Webapps").foreach { webappElem =>
+      //      conf.webapp.base = (webappElem \ "@base").text
+      (webappElem \ "Webapp").foreach { contextElem =>
+        val context = new Webapp((contextElem \ "@name").text)
+        if (!(contextElem \ "@reloadable").isEmpty) context.reloadable = (contextElem \ "@reloadable").text == "true"
+        if (!(contextElem \ "@docBase").isEmpty) context.docBase = (contextElem \ "@docBase").text
+
+        (contextElem \ "ResourceRef").foreach { dsElem =>
+          context.resources += conf.resources((dsElem \ "@ref").text)
+        }
+        conf.webapps += context
+      }
+    }
+
+    (xml \ "Deployments") foreach { deploymentElem =>
+      (deploymentElem \ "Deployment").foreach { deployElem =>
+        conf.deployments += new Deployment((deployElem \ "@webapp").text, (deployElem \ "@on").text, (deployElem \ "@path").text)
       }
     }
     conf
@@ -98,21 +145,26 @@ class Container {
 
   var version = "7.0.50"
 
+  var context: Context = _
+
+  val listeners = new collection.mutable.ListBuffer[Listener]
+
   val farms = new collection.mutable.ListBuffer[Farm]
 
-  val webapp = new Webapp
+  val webapps = new collection.mutable.ListBuffer[Webapp]
+
+  val resources = new collection.mutable.HashMap[String, Resource]
+
+  val deployments = new collection.mutable.ListBuffer[Deployment]
+
+  def webappNames: Set[String] = {
+    webapps.map(c => c.name).toSet
+  }
+  def resourceNames: Set[String] = {
+    resources.keySet.toSet
+  }
 
   def farmNames: Set[String] = farms.map(f => f.name).toSet
-
-  def dataSources: Map[String, DataSource] = {
-    val datasources = new collection.mutable.HashMap[String, DataSource]
-    for (context <- webapp.contexts) {
-      farms.find(f => f.name == context.runAt).foreach { farm =>
-        for (ds <- context.dataSources) datasources += (ds.name -> ds)
-      }
-    }
-    datasources.toMap
-  }
 
   def ports: List[Int] = {
     val ports = new collection.mutable.HashSet[Int]
@@ -131,6 +183,7 @@ class Container {
     }
     httpPorts.toSet
   }
+
   def httpsPorts: Set[Int] = {
     val httpsPorts = new collection.mutable.HashSet[Int]
     for (farm <- farms; server <- farm.servers) {

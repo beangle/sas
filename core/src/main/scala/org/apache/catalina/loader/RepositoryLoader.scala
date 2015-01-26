@@ -1,22 +1,31 @@
 package org.apache.catalina.loader
 
-import java.io.{File, FileOutputStream, IOException, InputStream, InputStreamReader, LineNumberReader, OutputStream}
+import java.io.{ File, FileOutputStream, IOException, InputStream, InputStreamReader, LineNumberReader, OutputStream }
 import java.net.URL
 
 import scala.collection.mutable.ListBuffer
 
-import org.beangle.tomcat.loader.{Artifact, LocalRepository, RemoteRepository}
+import org.beangle.tomcat.loader.{ Artifact, LocalRepository, RemoteRepository }
 
 class RepositoryLoader(parent: ClassLoader) extends WebappLoader(parent) {
 
   val dependenciesFile = "META-INF/container.dependencies"
-  var url = "http://central.maven.org/maven2"
+
+  var url: String = _
   var cacheLayout = "maven2"
   var cacheBase: String = _
   var remote: RemoteRepository = _
   var local: LocalRepository = _
+
   def this() {
     this(null)
+    var mavenRepo = System.getProperty("mavenRepo")
+    url =
+      if (null == mavenRepo) "http://central.maven.org/maven2/"
+      else {
+        if (mavenRepo.startsWith("http://") || mavenRepo.startsWith("https://")) mavenRepo
+        else "http://" + mavenRepo
+      }
   }
 
   override def startInternal() {

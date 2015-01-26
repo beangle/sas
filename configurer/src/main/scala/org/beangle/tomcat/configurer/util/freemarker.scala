@@ -21,15 +21,13 @@ package org.beangle.tomcat.configurer.util
 import java.beans.PropertyDescriptor
 import java.io.{ File, StringWriter }
 import java.lang.reflect.{ Method, Modifier }
-
 import scala.collection.JavaConversions
-
 import org.beangle.commons.io.Files
 import org.beangle.tomcat.configurer.model.{ Container, Context, Farm, Server }
-
 import freemarker.cache.ClassTemplateLoader
 import freemarker.ext.beans.BeansWrapper.MethodAppearanceDecision
 import freemarker.template.{ Configuration, DefaultObjectWrapper, TemplateModel }
+import org.beangle.tomcat.configurer.model.Webapp
 
 class ScalaObjectWrapper extends DefaultObjectWrapper {
 
@@ -73,6 +71,12 @@ object Template {
   cfg.setObjectWrapper(new ScalaObjectWrapper())
   cfg.setNumberFormat("0.##")
 
+  def generate(container: Container, farm: Farm, targetDir: String) {
+    for (server <- farm.servers) {
+      generate(container, farm, server, targetDir)
+    }
+  }
+
   def generate(container: Container, farm: Farm, server: Server, targetDir: String) {
     val data = new collection.mutable.HashMap[String, Any]()
     data.put("container", container)
@@ -81,19 +85,13 @@ object Template {
     val sw = new StringWriter()
     val freemarkerTemplate = cfg.getTemplate("tomcat/conf/server.xml.ftl")
     freemarkerTemplate.process(data, sw)
-    Files.writeString(new File(targetDir + "/" + farm.name + "/conf/" + server.name + ".xml"), sw.toString)
-  }
+    Files.writeString(new File(targetDir + "/" + farm.name + "." + server.name + "/bin/server.xml"), sw.toString)
 
-  def generate(container: Container, farm: Farm, context: Context, targetDir: String) {
-    val data = new collection.mutable.HashMap[String, Any]()
-    data.put("container", container)
-    data.put("farm", farm)
-    data.put("context", context)
-    val sw = new StringWriter()
-    val path = "/conf/Catalina/localhost"
-    val freemarkerTemplate = cfg.getTemplate("tomcat" + path + "/context.xml.ftl")
+    val envTemplate = cfg.getTemplate("tomcat/bin/setenv.sh.ftl")
     freemarkerTemplate.process(data, sw)
-    Files.writeString(new File(targetDir + "/" + farm.name + path + "/" + context.name + ".xml"), sw.toString)
+    val target = new File(targetDir + "/" + farm.name + "." + server.name + "/bin/setenv.sh")
+    Files.writeString(target, sw.toString)
+    target.setExecutable(true)
   }
 
   def generateEnv(container: Container, farm: Farm, targetDir: String) {
@@ -102,10 +100,6 @@ object Template {
     data.put("farm", farm)
     val sw = new StringWriter()
     val path = "/bin"
-    val freemarkerTemplate = cfg.getTemplate("tomcat" + path + "/setenv.sh.ftl")
-    freemarkerTemplate.process(data, sw)
-    val target = new File(targetDir + "/" + farm.name + path + "/setenv.sh")
-    Files.writeString(target, sw.toString)
-    target.setExecutable(true)
+
   }
 }
