@@ -85,12 +85,15 @@ object Template {
     val sw = new StringWriter()
     val freemarkerTemplate = cfg.getTemplate("tomcat/conf/server.xml.ftl")
     freemarkerTemplate.process(data, sw)
-    Files.writeString(new File(targetDir + "/" + farm.name + "." + server.name + "/bin/server.xml"), sw.toString)
+    new File(targetDir + "/bin").mkdir()
+
+    Files.writeString(new File(targetDir + "/bin/server.xml"), sw.toString)
 
     val envTemplate = cfg.getTemplate("tomcat/bin/setenv.sh.ftl")
-    freemarkerTemplate.process(data, sw)
-    val target = new File(targetDir + "/" + farm.name + "." + server.name + "/bin/setenv.sh")
-    Files.writeString(target, sw.toString)
+    val nsw = new StringWriter()
+    envTemplate.process(data, nsw)
+    val target = new File(targetDir + "/bin/setenv.sh")
+    Files.writeString(target, nsw.toString)
     target.setExecutable(true)
   }
 

@@ -48,7 +48,7 @@
       [#if deployment.on == farm.name]
       [#list container.webapps as webapp]
       [#if webapp.name == deployment.webapp]
-      <Context path="${deployment.path}" reloadable="${webapp.reloadable?c}"[#if webapp.docBase??] docBase="${webapp.docBase}"[/#if] privileged="true"  debug="0">
+      <Context path="${deployment.path}" reloadable="${webapp.reloadable?c}"[#if webapp.docBase??] docBase="${webapp.docBase}"[/#if]>
         [#list webapp.resources as resource]
         <Resource 
           name="${resource.name}"

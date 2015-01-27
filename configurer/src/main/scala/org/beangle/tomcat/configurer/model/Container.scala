@@ -143,7 +143,7 @@ object Container {
 }
 class Container {
 
-  var version = "7.0.50"
+  var version = "8.0.17"
 
   var context: Context = _
 

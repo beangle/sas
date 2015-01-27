@@ -22,6 +22,7 @@ object Gen {
     if (targetDir == null) {
       targetDir = new File(configFile).getParent
     }
+    println(targetDir)
     container.farms foreach { farm =>
       if (farm.name == target) {
         Template.generate(container, farm, targetDir)

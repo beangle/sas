@@ -48,6 +48,7 @@ rm -rf tomcat/conf
 cd tomcat
 ln -s ../conf
 cd ..
+
 cp -r bin/lib/*.jar tomcat/lib
 
 rm -rf conf/version.txt
