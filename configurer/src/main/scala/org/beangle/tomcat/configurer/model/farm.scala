@@ -29,7 +29,7 @@ object Farm {
       farm.servers += server1
     }
     if (1 == serverCount) farm.servers.head.name = "server"
-    farm.jvmopts = "-noverify -Xmx1.5G -Xms1.5G -XX:MaxPermSize=256m"
+    farm.jvmopts = "-noverify -Xmx1G -Xms1G"
     farm
   }
 }
