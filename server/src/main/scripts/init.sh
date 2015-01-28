@@ -12,9 +12,9 @@ SCALA_VER="2.11.2"
     
 ./get-lib.sh org.postgresql postgresql $PG_VER
 
-./get-lib.sh org.beangle.tomcat beangle-tomcat-core 0.2.0
+./get-lib.sh org.beangle.tomcat beangle-tomcat-core 0.2.1
 ./get-lib.sh org.beangle.commons beangle-commons-core 4.2.2 ext
-./get-lib.sh org.beangle.tomcat beangle-tomcat-configer 0.2.0 ext
+./get-lib.sh org.beangle.tomcat beangle-tomcat-configer 0.2.1 ext
 ./get-lib.sh org.freemarker freemarker 2.3.20 ext
 ./get-lib.sh org.slf4j slf4j-api 1.7.7 ext
 ./get-lib.sh org.slf4j slf4j-nop 1.7.7 ext
