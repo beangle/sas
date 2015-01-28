@@ -49,6 +49,9 @@ install_tomcat()
     rm -rf tomcat/bin/*.bat
     rm -rf tomcat/bin/startup.sh
     rm -rf tomcat/bin/shutdown.sh
+    rm -rf tomcat/bin/configtest.sh
+    rm -rf tomcat/bin/digest.sh
+    rm -rf tomcat/bin/tool-wrapper.sh
     chmod a+x tomcat/bin/*.sh
 
     rm -rf tomcat/conf
