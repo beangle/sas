@@ -17,6 +17,6 @@ cd $(dirname $0)/../webapps
 if command -v aria2c >/dev/null 2; then
     aria2c -x 16 $URL
 else
-    wget $URL -O $ARTIFACT.part
-    mv $ARTIFACT.part $ARTIFACT
+    wget $URL -O $ARTIFACT_NAME.part
+    mv $ARTIFACT_NAME.part $ARTIFACT_NAME
 fi

@@ -2,14 +2,14 @@
   <parent>
     <groupId>org.beangle</groupId>
     <artifactId>beangle-scala</artifactId>
-    <version>18</version>
+    <version>19</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.beangle.tomcat</groupId>
   <artifactId>beangle-tomcat-parent</artifactId>
   <packaging>pom</packaging>
   <name>Beangle Tomcat Parent</name>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
 
   <url>https://github.com/beangle/tomcat</url>
 
@@ -30,9 +30,8 @@
   </properties>
 
   <modules>
-    <module>jdbc</module>
+    <module>core</module>
     <module>configurer</module>
-    <module>loader</module>
     <module>server</module>
   </modules>
 

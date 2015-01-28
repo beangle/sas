@@ -2,19 +2,19 @@
   <parent>
     <groupId>org.beangle.tomcat</groupId>
     <artifactId>beangle-tomcat-parent</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.beangle.tomcat</groupId>
   <artifactId>beangle-tomcat-configer</artifactId>
   <packaging>jar</packaging>
-  <name>Beangle Tomcat Configer</name>
+  <name>Beangle Tomcat Configurer</name>
 
   <properties>
-    <bundle.symbolicName>org.beangle.tomcat.configer</bundle.symbolicName>
-    <bundle.namespace>org.beangle.tomcat.configer</bundle.namespace>
-    <commons.version>4.1.2</commons.version>
-    <data.version>4.1.0</data.version>
+    <bundle.symbolicName>org.beangle.tomcat.configurer</bundle.symbolicName>
+    <bundle.namespace>org.beangle.tomcat.configurer</bundle.namespace>
+    <commons.version>4.2.2</commons.version>
+    <data.version>4.1.8</data.version>
   </properties>
 
   <dependencies>
@@ -27,11 +27,6 @@
       <groupId>org.beangle.data</groupId>
       <artifactId>beangle-data-jdbc</artifactId>
       <version>${data.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.beangle.tomcat</groupId>
-      <artifactId>beangle-tomcat-jdbc</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.freemarker</groupId>

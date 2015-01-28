@@ -29,7 +29,7 @@ object Farm {
       farm.servers += server1
     }
     if (1 == serverCount) farm.servers.head.name = "server"
-    farm.jvmopts = "-noverify -Xmx1.5G -Xms1.5G -XX:MaxPermSize=256m"
+    farm.jvmopts = "-noverify -Xmx1G -Xms1G"
     farm
   }
 }
@@ -40,6 +40,8 @@ class Farm(var name: String) {
 
   var ajp: AjpConnector = _
 
+  var https: HttpsConnector = _
+
   var servers = new collection.mutable.ListBuffer[Server]
 
   var jvmopts: String = _
@@ -47,11 +49,17 @@ class Farm(var name: String) {
 
 class Server(var name: String, var shutdownPort: Int) {
 
+  var jvmopts: String = _
+
   var httpPort: Int = _
 
   var httpsPort: Int = _
 
   var ajpPort: Int = _
+
+  var http = new HttpConnector
+
+  var ajp: AjpConnector = _
 
   def port(http: Int, https: Int = 0, ajp: Int = 0): this.type = {
     require(http >= 80, "http port should >= 80")
@@ -67,3 +75,5 @@ class Server(var name: String, var shutdownPort: Int) {
     this
   }
 }
+
+class Deployment(var webapp: String, var on: String, var path: String)

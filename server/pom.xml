@@ -2,7 +2,7 @@
   <parent>
     <groupId>org.beangle.tomcat</groupId>
     <artifactId>beangle-tomcat-parent</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.beangle.tomcat</groupId>
@@ -13,18 +13,7 @@
   <dependencies>
     <dependency>
       <groupId>org.beangle.tomcat</groupId>
-      <artifactId>beangle-tomcat-loader</artifactId>
-      <version>${project.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.tomcat</groupId>
-          <artifactId>tomcat-catalina</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.beangle.tomcat</groupId>
-      <artifactId>beangle-tomcat-jdbc</artifactId>
+      <artifactId>beangle-tomcat-core</artifactId>
       <version>${project.version}</version>
       <exclusions>
         <exclusion>

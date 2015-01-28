@@ -2,7 +2,7 @@
 
 if [ "$1" == "" ]; then
     echo "Usage: netinstall.sh version"
-    echo "Example: netinstall.sh 0.1.0"
+    echo "Example: netinstall.sh 0.1.1"
     exit
 fi
 

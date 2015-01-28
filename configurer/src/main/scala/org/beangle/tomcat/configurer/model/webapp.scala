@@ -20,45 +20,55 @@ package org.beangle.tomcat.configurer.model
 
 import org.beangle.commons.lang.Objects
 
-class Webapp {
+class Webapp(var name: String) {
 
-  var base: String = "webapps"
+  val resources = new collection.mutable.ListBuffer[Resource]
 
-  var contexts = new collection.mutable.ListBuffer[Context]
-
-  def contextPaths: Set[String] = contexts.map(c => c.path).toSet
-}
-
-class Context(var path: String) {
-
-  val dataSources = new collection.mutable.ListBuffer[DataSource]
-
-  def dataSourceNames: Set[String] = dataSources.map(d => d.name).toSet
-
-  var runAt: String = _
+  def resourceNames: Set[String] = resources.map(d => d.name).toSet
 
   var reloadable = false
-
-  def name: String = if (path == "/") "ROOT" else path.substring(1)
+  
+  var docBase: String = _
 }
 
-class DataSource(var name: String) {
+class Resource(var name: String) {
 
-  var url: String = _
+  def url: String = {
+    properties.getProperty("url")
+  }
 
-  var driver: String = _
+  def url_=(newUrl: String): Unit = {
+    properties.setProperty("url", newUrl)
+  }
 
-  var username: String = _
+  def username: String = {
+    properties.getProperty("username")
+  }
 
-  var password: String = _
+  def username_=(newName: String): Unit = {
+    properties.setProperty("username", newName)
+  }
 
-  var driverClassName: String = _
+  def driverClassName: String = {
+    properties.getProperty("driverClassName")
+  }
+
+  def driverClassName_=(newName: String): Unit = {
+    properties.setProperty("driverClassName", newName)
+  }
+
+  def password: String = {
+    properties.getProperty("password")
+  }
+
+  def password_=(newer: String): Unit = {
+    properties.setProperty("password", newer)
+  }
 
   import java.{ util => ju }
   val properties = new ju.Properties
 
   override def toString(): String = {
-    Objects.toStringBuilder(this).add("name", name).add("username", username)
-      .add("url", url).add("driver", driver).add("properties", properties).toString
+    Objects.toStringBuilder(this).add("name", name).add("properties", properties).toString
   }
 }

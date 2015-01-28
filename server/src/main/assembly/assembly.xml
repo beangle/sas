@@ -8,7 +8,9 @@
       <useProjectArtifact>false</useProjectArtifact>
       <outputDirectory>bin/lib</outputDirectory>
       <excludes>
-        <exclude>org.slf4j:slf4j-api</exclude>
+        <exclude>org.apache.tomcat:tomcat-juli</exclude>
+        <exclude>org.apache.tomcat:tomcat-jdbc</exclude>
+        <exclude>org.beangle.tomcat:beangle-tomcat-core</exclude>
       </excludes>
     </dependencySet>
   </dependencySets>

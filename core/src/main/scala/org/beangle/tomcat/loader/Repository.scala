@@ -1,8 +1,10 @@
-package org.apache.catalina.loader
+package org.beangle.tomcat.loader
 
 import java.io.File
 
-class RemoteRepository(val base: String) {
+class RemoteRepository(baseUrl: String) {
+
+  val base = if (baseUrl.endsWith("/")) baseUrl.substring(0, baseUrl.length - 1) else baseUrl
 
   def url(artifact: Artifact): String = {
     s"$base/${artifact.groupId.replace('.', '/')}/${artifact.artifactId}/${artifact.version}/${artifact.artifactId}-${artifact.version}.jar"

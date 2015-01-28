@@ -17,7 +17,7 @@ import scala.language.existentials
  * Encrypted DataSourceFactory
  *
  * @author chaostone
- * @see http://www.idesign4all.nl/blog/?p=103
+ * @see http://www.jdev.it/encrypting-passwords-in-tomcat/
  */
 class EncryptedDataSourceFactory extends DataSourceFactory {
 

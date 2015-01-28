@@ -17,6 +17,8 @@
  * along with Beangle.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.beangle.tomcat.configurer.model
+
+import java.{ util => ju }
 /**
  * Tomcat connector
  * @see http://tomcat.apache.org/tomcat-7.0-doc/config/index.html
@@ -132,3 +134,9 @@ class AjpConnector extends Connector with HttpAndAjp {
   this.protocol = "AJP/1.3"
 
 }
+
+class HttpsConnector extends Connector with HttpAndAjp {
+  this.protocol = "org.apache.coyote.http11.Http11NioProtocol"
+  val properties = new ju.Properties
+}
+

@@ -1,11 +1,9 @@
 [#ftl]
 <?xml version='1.0' encoding='utf-8'?>
 <Server port="${server.shutdownPort}" shutdown="SHUTDOWN">
-  <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="off" />
-  <Listener className="org.apache.catalina.core.JasperListener" />
-  <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
-  <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
-  <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
+  [#list container.listeners as listener]
+  <Listener className="${listener.className}" [#list listener.properties?keys as k]${k}="${listener.properties[k]}"[/#list]/>
+  [/#list]
 
   <Service name="Catalina">
     [#if farm.http??]
@@ -37,7 +35,7 @@
       URIEncoding="${http.URIEncoding}"
       enableLookups="${http.enableLookups?c}"
       [#if http.redirectPort??]redirectPort="${http.redirectPort}"[/#if]
-      
+
       acceptCount="${http.acceptCount}"
       maxThreads="${http.maxThreads}"
       minSpareThreads="${http.minSpareThreads}"
@@ -45,7 +43,37 @@
       />
     [/#if]
     <Engine name="Catalina" defaultHost="localhost">
-      <Host name="localhost" appBase="${container.webapp.base}" unpackWARs="true" autoDeploy="false"/>
+      <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="false">
+      [#list container.deployments as deployment]
+      [#if deployment.on == farm.name]
+      [#list container.webapps as webapp]
+      [#if webapp.name == deployment.webapp]
+      <Context path="${deployment.path}" reloadable="${webapp.reloadable?c}"[#if webapp.docBase??] docBase="${webapp.docBase}"[/#if]>
+        [#list webapp.resources as resource]
+        <Resource 
+          name="${resource.name}"
+          [#list resource.properties?keys as p]
+          ${p}="${resource.properties[p]}"
+          [/#list]
+          />
+        [/#list]
+        [#if container.context??]
+        [#assign ctx=container.context/]
+        [#if ctx.jarScanner??]
+        <JarScanner [@spawnProps ctx.jarScanner/]/>
+        [/#if]
+        [#if ctx.loader??]
+        <Loader className="${ctx.loader.className}" [@spawnProps ctx.loader/]/>
+        [/#if]
+        [/#if]
+        </Context>
+       [/#if]
+       [/#list]
+       [/#if]
+       [/#list]
+      </Host>
     </Engine>
   </Service>
 </Server>
+[#-- display object properties--]
+[#macro spawnProps obj][#list obj.properties?keys as k] ${k}="${obj.properties[k]}" [/#list][/#macro]
