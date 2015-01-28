@@ -1,9 +1,15 @@
 #!/bin/sh
 PRGDIR=`dirname "$0"`
-HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
-export TOMCAT_HOME=`cd "$PRGDIR/../tomcat/" >/dev/null; pwd`
-export CATALINA_SERVER="$1"
-export CATALINA_BASE=$HOME/servers/$CATALINA_SERVER
+SERVER_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
+export TARGET="$1"
+cd $SERVER_HOME/servers
 
-echo "Using CONFIG:          $CATALINA_BASE/bin/server.xml"
-exec "$TOMCAT_HOME"/bin/catalina.sh stop -config $CATALINA_BASE/bin/server.xml
+for dir in $(command ls -1d *); do
+    if [ "$dir" = "$TARGET" ]; then
+        echo $dir
+        $SERVER_HOME/bin/stop-server.sh $dir
+    elif [ "${dir%.*}" = "$TARGET" ]; then
+        $SERVER_HOME/bin/stop-server.sh $dir
+    fi
+done
+

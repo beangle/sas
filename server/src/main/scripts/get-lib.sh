@@ -13,15 +13,28 @@ URL="$M2_REMOTE_REPO/$GROUPID/$2/$3/$2-$3.jar"
 ARTIFACT_NAME="$2-$3.jar"
 LOCAL_FILE="$M2_REPO/$GROUPID/$2/$3/$2-$3.jar"
 
-mkdir -p $(dirname $0)/lib
-cd $(dirname $0)/lib
+target="lib"
+
+if [ "$4" != "" ]; then
+    target="$4"
+fi
+
+mkdir -p $(dirname $0)/$target
+cd $(dirname $0)/$target
+
+if [ -f $ARTIFACT_NAME ]; then
+    echo "$ARTIFACT_NAME existed."
+    exit
+fi
 
 if [ ! -f $LOCAL_FILE ]; then
     if command -v aria2c >/dev/null 2; then
+        echo "Using aria2c fetch remote jar..."
         aria2c -x 16 $URL
     else
-        wget $URL -O $ARTIFACT.part
-        mv $ARTIFACT.part $ARTIFACT
+        echo "Using wget fetch remote jar..."
+        wget $URL -O $ARTIFACT_NAME.part
+        mv $ARTIFACT_NAME.part $ARTIFACT_NAME
     fi
     mkdir -p "$M2_REPO/$GROUPID/$2/$3"
     mv $ARTIFACT_NAME $LOCAL_FILE
@@ -32,4 +45,3 @@ else
     echo "Linked $ARTIFACT_NAME"
 fi
 
-cd ..
