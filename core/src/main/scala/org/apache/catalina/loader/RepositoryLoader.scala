@@ -9,7 +9,7 @@ import org.beangle.tomcat.loader.{ Artifact, LocalRepository, RemoteRepository }
 
 class RepositoryLoader(parent: ClassLoader) extends WebappLoader(parent) {
 
-  val dependenciesFile = "META-INF/container.dependencies"
+  val dependenciesFile = "META-INF/beangle/container.dependencies"
 
   var url: String = _
   var cacheLayout = "maven2"
