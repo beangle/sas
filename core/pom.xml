@@ -13,6 +13,9 @@
   <properties>
     <bundle.symbolicName>org.beangle.tomcat.core</bundle.symbolicName>
     <bundle.namespace>org.beangle.tomcat</bundle.namespace>
+    <beangle.maven.version>0.1.6-SNAPSHOT</beangle.maven.version>
+    <commons.version>4.2.2</commons.version>
+    <data.version>4.2.1</data.version>
   </properties>
 
   <dependencies>
@@ -22,9 +25,29 @@
       <version>${tomcat.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.beangle.maven</groupId>
+      <artifactId>beangle-maven-launcher</artifactId>
+      <version>${beangle.maven.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.tomcat</groupId>
       <artifactId>tomcat-jdbc</artifactId>
       <version>${tomcat.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.beangle.commons</groupId>
+      <artifactId>beangle-commons-core</artifactId>
+      <version>${commons.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.beangle.data</groupId>
+      <artifactId>beangle-data-jdbc</artifactId>
+      <version>${data.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.freemarker</groupId>
+      <artifactId>freemarker</artifactId>
+      <version>2.3.20</version>
     </dependency>
   </dependencies>
 </project>
