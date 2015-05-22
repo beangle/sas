@@ -1,21 +1,21 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <groupId>org.beangle.tomcat</groupId>
-    <artifactId>beangle-tomcat-parent</artifactId>
-    <version>0.2.1-SNAPSHOT</version>
+    <groupId>org.beangle</groupId>
+    <artifactId>beangle-java</artifactId>
+    <version>22.1</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.beangle.tomcat</groupId>
   <artifactId>beangle-tomcat-core</artifactId>
   <packaging>jar</packaging>
+  <version>0.2.1-SNAPSHOT</version>
   <name>Beangle Tomcat Core</name>
 
   <properties>
     <bundle.symbolicName>org.beangle.tomcat.core</bundle.symbolicName>
     <bundle.namespace>org.beangle.tomcat</bundle.namespace>
     <beangle.maven.version>0.1.6-SNAPSHOT</beangle.maven.version>
-    <commons.version>4.2.2</commons.version>
-    <data.version>4.2.1</data.version>
+    <tomcat.version>8.0.14</tomcat.version>
   </properties>
 
   <dependencies>
@@ -33,21 +33,6 @@
       <groupId>org.apache.tomcat</groupId>
       <artifactId>tomcat-jdbc</artifactId>
       <version>${tomcat.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.beangle.commons</groupId>
-      <artifactId>beangle-commons-core</artifactId>
-      <version>${commons.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.beangle.data</groupId>
-      <artifactId>beangle-data-jdbc</artifactId>
-      <version>${data.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.freemarker</groupId>
-      <artifactId>freemarker</artifactId>
-      <version>2.3.20</version>
     </dependency>
   </dependencies>
 </project>

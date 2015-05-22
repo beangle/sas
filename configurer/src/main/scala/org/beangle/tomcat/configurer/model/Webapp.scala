@@ -18,8 +18,6 @@
  */
 package org.beangle.tomcat.configurer.model
 
-import org.beangle.commons.lang.Objects
-
 class Webapp(var name: String) {
 
   val resources = new collection.mutable.ListBuffer[Resource]
@@ -29,46 +27,4 @@ class Webapp(var name: String) {
   var reloadable = false
   
   var docBase: String = _
-}
-
-class Resource(var name: String) {
-
-  def url: String = {
-    properties.getProperty("url")
-  }
-
-  def url_=(newUrl: String): Unit = {
-    properties.setProperty("url", newUrl)
-  }
-
-  def username: String = {
-    properties.getProperty("username")
-  }
-
-  def username_=(newName: String): Unit = {
-    properties.setProperty("username", newName)
-  }
-
-  def driverClassName: String = {
-    properties.getProperty("driverClassName")
-  }
-
-  def driverClassName_=(newName: String): Unit = {
-    properties.setProperty("driverClassName", newName)
-  }
-
-  def password: String = {
-    properties.getProperty("password")
-  }
-
-  def password_=(newer: String): Unit = {
-    properties.setProperty("password", newer)
-  }
-
-  import java.{ util => ju }
-  val properties = new ju.Properties
-
-  override def toString(): String = {
-    Objects.toStringBuilder(this).add("name", name).add("properties", properties).toString
-  }
 }

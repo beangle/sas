@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <groupId>org.beangle</groupId>
-    <artifactId>beangle-scala</artifactId>
+    <artifactId>beangle</artifactId>
     <version>22.1</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -24,10 +24,6 @@
     <url>https://github.com/beangle/tomcat</url>
     <tag>HEAD</tag>
   </scm>
- 
-  <properties>
-    <tomcat.version>8.0.14</tomcat.version>
-  </properties>
 
   <modules>
     <module>core</module>

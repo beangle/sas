@@ -9,8 +9,8 @@
     <Loader className="org.apache.catalina.loader.RepositoryLoader" cacheLayout="maven2"/>
     <JarScanner scanBootstrapClassPath="false" scanAllDirectories="false" scanAllFiles="false" scanClassPath="false"/>
   </Context>
-  
-  <Farm name="default" >
+
+  <Farm>
     <JvmArgs opts="-noverify -Xmx500M -Xms500M"/>
     <HttpConnector protocol="HTTP/1.1"
            URIEncoding="UTF-8"

@@ -46,7 +46,7 @@ object Firewall extends ShellEnv {
         case t => if (isNotEmpty(t)) println(t + ": command not found...")
       })
     } else {
-      info("Cannot find config.xml")
+      logger.info("Cannot find config.xml")
     }
   }
 

@@ -19,7 +19,7 @@
 [/#if]
 
 [#list container.farms as farm]
-  <Farm name="${farm.name}" >
+  <Farm[#if farm.name?exists && farm.name?length>0] name="${farm.name}"[/#if]>
 [#if farm.jvmopts??]
     <JvmArgs opts="${farm.jvmopts}"/>
 [/#if]

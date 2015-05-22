@@ -35,8 +35,64 @@ object Config extends ShellEnv {
   var currentFarm: Option[Farm] = None
   var currentWebapp: Option[Webapp] = None
 
+  def printHelp() {
+    println("""  info              print config xml content
+  save              save tomcat config 
+  apply             apply the tomcat config to tomcat server
+  create farm       create a tomcat farm profile
+  remove farm       remove a tomcat farm profile
+  create webapp     create a webapp context
+  remove webapp     remove a webapp context
+  create datasource create a datasource config
+  remove datasource remove a datasource config
+  add ref           add a resource reference
+  remove ref        remove a resource reference
+  deploy            create a deployment
+  undeploy          remove a deployment
+  jvmopts           set jvm options
+  help              print this help conent""")
+  }
+
+  def main(args: Array[String]) {
+    workdir = if (args.length == 0) SystemInfo.user.dir else args(0)
+    read()
+    if (null == container) {
+      createConfig(new File(workdir + "/config.xml"))
+    } else {
+      println("command:help info save apply exit(quit/q)")
+
+      shell({
+        val prefix =
+          if (currentWebapp.isDefined) currentWebapp.get.name
+          else if (currentFarm.isDefined) currentFarm.get.name
+          else "tomcat"
+        prefix + " >"
+      }, Set("exit", "quit", "q"), command => command match {
+        case "info" => println(toXml)
+        case "create farm" => createFarm()
+        case "remove farm" => removeFarm()
+        case "use farm" => useFarm()
+        case "create webapp" => createWebapp()
+        case "remove webapp" => removeWebapp()
+        case "create datasource" => createDataSource()
+        case "remove datasource" => removeResource()
+        case "add ref" => addResourceRef()
+        case "remove ref" => removeResourceRef()
+        case "deploy" => createDeployment()
+        case "undeploy" => removeDeployment()
+        case "jvmopts" => setJvmOpts()
+        case "save" =>
+          println("Writing to " + workdir + "/config.xml")
+          Files.writeString(new File(workdir + "/config.xml"), toXml)
+        case "apply" => applyConfig()
+        case "help" => printHelp()
+        case t => if (Strings.isNotEmpty(t)) println(t + ": command not found...")
+      })
+    }
+  }
+
   def createFarm(): Farm = {
-    val farmName = prompt("farm name?", "tomcat7", name => !container.farmNames.contains(name))
+    val farmName = prompt("farm name?", "tomcat8", name => !container.farmNames.contains(name))
     val farm = prompt("create tomcat farm(single or cluster)?", "single", c => c == "cluster" || c == "single") match {
       case "cluster" => Farm.build(farmName, toInt(prompt("enter server count(<10):", "3", cnt => isDigits(cnt) && toInt(cnt) <= 10)))
       case "single" => Farm.build(farmName, 1)
@@ -51,6 +107,7 @@ object Config extends ShellEnv {
     } else {
       val farmName = prompt("remove farm name?", null, name => container.farmNames.contains(name))
       container.farms.find(f => f.name == farmName).foreach { f => container.farms -= f }
+      container.deployments --= container.deployments.find { d => d.on == farmName }
     }
   }
 
@@ -135,7 +192,7 @@ object Config extends ShellEnv {
       val webappNames = container.webappNames
       val name = prompt("choose webapp" + webappNames + ":", webappNames.head, p => webappNames.contains(p))
       container.webapps.find(c => c.name == name) foreach { webapp =>
-        val candinates = container.farmNames
+        val candinates = container.farmNames ++ container.serverNames
         val farmName = prompt("choose farm " + candinates + ":", candinates.head, p => candinates.contains(p))
         container.deployments.find { d => d.webapp == name } match {
           case Some(deploy) =>
@@ -169,7 +226,7 @@ object Config extends ShellEnv {
     ds.username = prompt("username:")
 
     val drivers = Vendors.drivers
-    val driver = prompt("choose driver " + Vendors.driverPrefixes + ":", "oracle", d => drivers.contains(d))
+    val driver = prompt("choose driver " + Vendors.driverPrefixes + ":", "postgresql", d => drivers.contains(d))
     val driverInfo = drivers(driver)
     ds.driverClassName = driverInfo.className
     val urlformats = new collection.mutable.HashMap[Int, String]
@@ -234,62 +291,6 @@ object Config extends ShellEnv {
       Template.generate(container, farm, workdir)
     }
     println("Apply configuration success,check it in " + workdir)
-  }
-
-  def printHelp() {
-    println("""  info              print config xml content
-  save              save tomcat config 
-  apply             apply the tomcat config to tomcat server
-  create farm       create a tomcat farm profile
-  remove farm       remove a tomcat farm profile
-  create webapp     create a webapp context
-  remove webapp     remove a webapp context
-  create datasource create a datasource config
-  remove datasource remove a datasource config
-  add ref           add a resource reference
-  remove ref        remove a resource reference
-  deploy            create a deployment
-  undeploy          remove a deployment
-  jvmopts           set jvm options
-  help              print this help conent""")
-  }
-
-  def main(args: Array[String]) {
-    workdir = if (args.length == 0) SystemInfo.user.dir else args(0)
-    read()
-    if (null == container) {
-      createConfig(new File(workdir + "/config.xml"))
-    } else {
-      println("command:help info save apply exit(quit/q)")
-
-      shell({
-        val prefix =
-          if (currentWebapp.isDefined) currentWebapp.get.name
-          else if (currentFarm.isDefined) currentFarm.get.name
-          else "tomcat"
-        prefix + " >"
-      }, Set("exit", "quit", "q"), command => command match {
-        case "info" => println(toXml)
-        case "create farm" => createFarm()
-        case "remove farm" => removeFarm()
-        case "use farm" => useFarm()
-        case "create webapp" => createWebapp()
-        case "remove webapp" => removeWebapp()
-        case "create datasource" => createDataSource()
-        case "remove datasource" => removeResource()
-        case "add ref" => addResourceRef()
-        case "remove ref" => removeResourceRef()
-        case "deploy" => createDeployment()
-        case "undeploy" => removeDeployment()
-        case "jvmopts" => setJvmOpts()
-        case "save" =>
-          println("Writing to " + workdir + "/config.xml")
-          Files.writeString(new File(workdir + "/config.xml"), toXml)
-        case "apply" => applyConfig()
-        case "help" => printHelp()
-        case t => if (Strings.isNotEmpty(t)) println(t + ": command not found...")
-      })
-    }
   }
 
   private def processContext(context: String): String = {

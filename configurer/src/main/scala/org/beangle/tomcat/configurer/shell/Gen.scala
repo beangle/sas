@@ -8,26 +8,21 @@ import org.beangle.tomcat.configurer.util.Template
 object Gen {
 
   def main(args: Array[String]): Unit = {
-    if (args.length < 2) {
-      println("Usage: Gen /path/to/config.xml farm or server -DCATALINA_BASE=/path/to/catalina_base")
+    if (args.length < 3) {
+      println("Usage: Gen /path/to/config.xml farm.server target")
       return
     }
     val configFile = args(0)
     val container = Container(scala.xml.XML.load(new FileInputStream(new File(configFile))))
     val target = args(1)
-    var targetDir = System.getProperty("CATALINA_BASE")
-    if (null == targetDir) {
-      targetDir = System.getenv("CATALINA_BASE")
-    }
-    if (targetDir == null) {
-      targetDir = new File(configFile).getParent
-    }
+    val targetDir = args(2)
+
     container.farms foreach { farm =>
       if (farm.name == target) {
         Template.generate(container, farm, targetDir)
       } else {
         farm.servers foreach { server =>
-          if (target == (farm.name + "." + server.name)) {
+          if (target == server.qualifiedName) {
             Template.generate(container, farm, server, targetDir)
           }
         }

@@ -6,8 +6,8 @@
   [/#list]
 
   <Service name="Catalina">
-    [#if farm.http??]
-    [#assign http=farm.http/]
+    [#if server.http??]
+    [#assign http=server.http/]
     <Connector port="${server.httpPort}" protocol="HTTP/1.1"
       URIEncoding="${http.URIEncoding}"
       enableLookups="${http.enableLookups?c}"
@@ -30,16 +30,15 @@
       />
     [/#if]
 
-    [#if farm.ajp??]
+    [#if server.ajp??]
+    [#assign ajp=server.ajp/]
     <Connector port="${server.ajpPort}" protocol="AJP/1.3"
-      URIEncoding="${http.URIEncoding}"
-      enableLookups="${http.enableLookups?c}"
-      [#if http.redirectPort??]redirectPort="${http.redirectPort}"[/#if]
-
-      acceptCount="${http.acceptCount}"
-      maxThreads="${http.maxThreads}"
-      minSpareThreads="${http.minSpareThreads}"
-      [#if http.redirectPort??]redirectPort="${http.redirectPort}"[/#if]
+      URIEncoding="${ajp.URIEncoding}"
+      enableLookups="${ajp.enableLookups?c}"
+      acceptCount="${ajp.acceptCount}"
+      maxThreads="${ajp.maxThreads}"
+      minSpareThreads="${ajp.minSpareThreads}"
+      [#if ajp.redirectPort??]redirectPort="${ajp.redirectPort}"[/#if]
       />
     [/#if]
     <Engine name="Catalina" defaultHost="localhost">

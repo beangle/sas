@@ -19,13 +19,26 @@
  */
 package org.beangle.tomcat.configurer.model
 
+import org.beangle.commons.lang.Strings
+
 object Farm {
   def build(name: String, serverCount: Int): Farm = {
     require(serverCount > 0 && serverCount <= 10, "Cannot create farm contain so much servers.")
     val farm = new Farm(name)
     Range(0, serverCount).foreach { i =>
-      val server1 = new Server("server" + (i + 1), 8005 + i)
-      server1.port(8080 + i, 8443 + i, 9009 + i)
+      val server1 = new Server(farm, "server" + (i + 1), 8005 + i)
+      if (null != farm.http) {
+        server1.http = farm.http
+        server1.httpPort = 8080 + i
+      }
+      if (null != farm.ajp) {
+        server1.ajp = farm.ajp
+        server1.ajpPort = 9009 + i
+      }
+      if (null != farm.https) {
+        server1.https = farm.https
+        server1.httpsPort = 9009 + i
+      }
       farm.servers += server1
     }
     if (1 == serverCount) farm.servers.head.name = "server"
@@ -46,34 +59,3 @@ class Farm(var name: String) {
 
   var jvmopts: String = _
 }
-
-class Server(var name: String, var shutdownPort: Int) {
-
-  var jvmopts: String = _
-
-  var httpPort: Int = _
-
-  var httpsPort: Int = _
-
-  var ajpPort: Int = _
-
-  var http = new HttpConnector
-
-  var ajp: AjpConnector = _
-
-  def port(http: Int, https: Int = 0, ajp: Int = 0): this.type = {
-    require(http >= 80, "http port should >= 80")
-    require(https == 0 || https >= 443, "https port should >=443")
-    require(ajp == 0 || ajp >= 1024, "ajp port should >=1024")
-    if (https > 0)
-      require(http != https, "http port should not equals https port")
-    if (ajp > 0)
-      require(http != ajp && ajp != https, "ajpport should not equals  http and https port")
-    httpPort = http
-    httpsPort = https
-    ajpPort = ajp
-    this
-  }
-}
-
-class Deployment(var webapp: String, var on: String, var path: String)

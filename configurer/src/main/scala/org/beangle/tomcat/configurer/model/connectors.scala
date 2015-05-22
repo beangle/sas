@@ -23,7 +23,7 @@ import java.{ util => ju }
  * Tomcat connector
  * @see http://tomcat.apache.org/tomcat-7.0-doc/config/index.html
  */
-class Connector {
+sealed class Connector {
 
   /**
    * Sets the protocol to handle incoming traffic

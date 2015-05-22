@@ -86,7 +86,7 @@ object Container {
       }
 
       (farmElem \ "Server") foreach { serverElem =>
-        val server = new Server((serverElem \ "@name").text, toInt((serverElem \ "@shutdown").text))
+        val server = new Server(farm, (serverElem \ "@name").text, toInt((serverElem \ "@shutdown").text))
         server.httpPort = toInt((serverElem \ "@http").text)
         server.httpsPort = toInt((serverElem \ "@https").text)
         server.ajpPort = toInt((serverElem \ "@ajp").text)
@@ -165,6 +165,8 @@ class Container {
   }
 
   def farmNames: Set[String] = farms.map(f => f.name).toSet
+
+  def serverNames: Seq[String] = farms.map(f => f.servers).flatten.map(s => s.farm.name + "." + s.name)
 
   def ports: List[Int] = {
     val ports = new collection.mutable.HashSet[Int]

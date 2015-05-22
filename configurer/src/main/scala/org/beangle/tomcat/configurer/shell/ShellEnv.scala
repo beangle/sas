@@ -37,7 +37,7 @@ trait ShellEnv extends Logging {
     assert(null != workdir)
     val target = new File(workdir + / + "config.xml")
     if (target.exists) {
-      info(s"Read config file ${target.getName}")
+      logger.info(s"Read config file ${target.getName}")
       container = Container(scala.xml.XML.load(new FileInputStream(target)))
     }
   }
