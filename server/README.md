@@ -12,6 +12,7 @@
 1. install jar and war
 
     --install postgresql.9.3-1102-jdbc4 into $base/ext
+
     bin/install.sh lib org.postgresql postgresql 9.3-1102-jdbc4
 
 2. install tomcat 8.0.3
