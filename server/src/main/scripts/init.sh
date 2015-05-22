@@ -3,8 +3,6 @@
 PRGDIR=`dirname "$0"`
 cd $PRGDIR
 
-#PG_VER="9.3-1102-jdbc4"
-#./install-lib.sh org.postgresql postgresql $PG_VER
 SCALA_VER="2.11.6"
 
 ./install.sh lib org.scala-lang scala-library $SCALA_VER lib
