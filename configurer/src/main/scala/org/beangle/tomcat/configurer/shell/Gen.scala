@@ -22,9 +22,7 @@ object Gen {
         Template.generate(container, farm, targetDir)
       } else {
         farm.servers foreach { server =>
-          if (target == server.qualifiedName) {
-            Template.generate(container, farm, server, targetDir)
-          }
+          if (target == server.qualifiedName) Template.generate(container, farm, server, targetDir)
         }
       }
     }

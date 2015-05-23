@@ -21,13 +21,16 @@ package org.beangle.tomcat.configurer.util
 import java.beans.PropertyDescriptor
 import java.io.{ File, StringWriter }
 import java.lang.reflect.{ Method, Modifier }
+
 import scala.collection.JavaConversions
+
 import org.beangle.commons.io.Files
-import org.beangle.tomcat.configurer.model.{ Container, Context, Farm, Server }
+import org.beangle.commons.lang.Strings
+import org.beangle.tomcat.configurer.model.{ Container, Farm, Server }
+
 import freemarker.cache.ClassTemplateLoader
 import freemarker.ext.beans.BeansWrapper.MethodAppearanceDecision
 import freemarker.template.{ Configuration, DefaultObjectWrapper, TemplateModel }
-import org.beangle.tomcat.configurer.model.Webapp
 
 class ScalaObjectWrapper extends DefaultObjectWrapper {
 
@@ -36,7 +39,7 @@ class ScalaObjectWrapper extends DefaultObjectWrapper {
   }
 
   protected override def finetuneMethodAppearance(clazz: Class[_], m: Method,
-                                                  decision: MethodAppearanceDecision) {
+    decision: MethodAppearanceDecision) {
     val name = m.getName
     if (name.equals("hashCode") || name.equals("toString")) return
     if (isPropertyMethod(m)) {
@@ -87,6 +90,17 @@ object Template {
     freemarkerTemplate.process(data, sw)
     new File(targetDir + "/servers/" + server.qualifiedName).mkdirs()
     Files.writeString(new File(targetDir + "/servers/" + server.qualifiedName + "/server.xml"), sw.toString)
+
+    if (Strings.isNotBlank(farm.jvmopts)) {
+      val envTemplate = cfg.getTemplate("tomcat/bin/setenv.sh.ftl")
+      val nsw = new StringWriter()
+      envTemplate.process(data, nsw)
+      val binDir = targetDir + "/servers/" + server.qualifiedName + "/bin"
+      new File(binDir).mkdirs()
+      val target = new File(binDir + "/setenv.sh")
+      Files.writeString(target, nsw.toString)
+      target.setExecutable(true)
+    }
   }
 
   def generateEnv(container: Container, farm: Farm, targetDir: String) {
