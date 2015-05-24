@@ -39,7 +39,7 @@ class ScalaObjectWrapper extends DefaultObjectWrapper {
   }
 
   protected override def finetuneMethodAppearance(clazz: Class[_], m: Method,
-    decision: MethodAppearanceDecision) {
+                                                  decision: MethodAppearanceDecision) {
     val name = m.getName
     if (name.equals("hashCode") || name.equals("toString")) return
     if (isPropertyMethod(m)) {
@@ -88,16 +88,16 @@ object Template {
     val sw = new StringWriter()
     val freemarkerTemplate = cfg.getTemplate("tomcat/conf/server.xml.ftl")
     freemarkerTemplate.process(data, sw)
-    new File(targetDir + "/servers/" + server.qualifiedName).mkdirs()
-    Files.writeString(new File(targetDir + "/servers/" + server.qualifiedName + "/server.xml"), sw.toString)
+    val serverDir = targetDir + "/servers/" + server.qualifiedName
+    new File(serverDir).mkdirs()
+    Files.writeString(new File(serverDir + "/conf/server.xml"), sw.toString)
 
     if (Strings.isNotBlank(farm.jvmopts)) {
       val envTemplate = cfg.getTemplate("tomcat/bin/setenv.sh.ftl")
       val nsw = new StringWriter()
       envTemplate.process(data, nsw)
-      val binDir = targetDir + "/servers/" + server.qualifiedName + "/bin"
-      new File(binDir).mkdirs()
-      val target = new File(binDir + "/setenv.sh")
+      new File(serverDir + "/bin").mkdirs()
+      val target = new File(serverDir + "/bin/setenv.sh")
       Files.writeString(target, nsw.toString)
       target.setExecutable(true)
     }

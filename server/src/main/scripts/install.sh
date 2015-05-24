@@ -115,13 +115,6 @@ install_tomcat()
   rm -rf tomcat/bin/tool-wrapper.sh
   chmod a+x tomcat/bin/*.sh
 
-  [ ! -d conf ] && mkdir conf
-
-  rm -rf tomcat/conf
-  cd tomcat
-  ln -s ../conf
-  cd ..
-
   shopt -s nullglob
   if [ -d ext ] ; then
     for jar in ext/*.jar ;do
