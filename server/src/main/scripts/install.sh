@@ -69,7 +69,11 @@ install_tomcat()
 
   source $SERVER_HOME/bin/setrepo.sh
   TOMCAT_V=`echo $TOMCAT_VERSION| cut -c 1-1`
-  TOMCAT_URL="$TOMCAT_REPO/tomcat-$TOMCAT_V/v$TOMCAT_VERSION/bin/apache-tomcat-$TOMCAT_VERSION.zip"
+  TOMCAT_PATH="tomcat-$TOMCAT_V/v$TOMCAT_VERSION/bin/apache-tomcat-$TOMCAT_VERSION.zip"
+  TOMCAT_URL=$TOMCAT_REPO/$TOMCAT_PATH
+  if wget --spider $TOMCAT_MIRROR/$TOMCAT_PATH 2>/dev/null; then
+    TOMCAT_URL=$TOMCAT_MIRROR/$TOMCAT_PATH
+  fi
 
   if [ ! -f apache-tomcat-$TOMCAT_VERSION.zip ]; then
     if command -v aria2c >/dev/null 2; then
@@ -143,11 +147,48 @@ function display_usage(){
   echo "Usage:"
   echo "     install.sh lib groupId artifactId version"
   echo "     install.sh war groupId artifactId version"
+  echo "     install.sh driver [what]"
   echo "     install.sh tomcat version"
   echo ""
   echo "Example: "
   echo "     install.sh lib org.slf4j slf4j-api 1.3.0"
   echo "     install.sh tomcat 8.0.22"
+}
+
+function install_driver(){
+  #local driver="$1"
+  options=("oracle" "postgresql" "mysql" "sqlserver")
+  pgversions=("9.4-1201-jdbc4" "9.4-1201-jdbc41" "9.3-1103-jdbc4")
+  select driver in "${options[@]}"; do
+    break
+  done
+
+  case $driver in
+      "oracle")
+          echo "you chose choice 1"
+          ;;
+      "postgresql")
+          echo $driver
+ 
+          select ver in "${pgverions[@]}"; do
+          case $ver in
+              *) 
+               echo "xxxxx$ver"
+               break
+               ;;
+          esac
+          done
+          echo "you chose choice 2"
+          ;;
+      "mysql")
+          echo "you chose choice 3"
+          ;;
+      "sqlserver")
+          echo "you chose choice 3"
+          ;;
+      *) echo invalid option;;
+  esac
+
 }
 # 1.install tomcat server
 if [ "$1" == "tomcat" ]; then
@@ -184,6 +225,8 @@ elif [ "$1" == "war" ]; then
   else
     install_war $2 $3 $4
   fi
+elif [ "$1" == "driver" ]; then
+  install_driver
 else
   display_usage
 fi
