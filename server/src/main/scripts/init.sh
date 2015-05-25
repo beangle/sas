@@ -16,4 +16,4 @@ SCALA_VER="2.11.6"
 
 ./install.sh lib org.beangle.tomcat beangle-tomcat-core 0.2.1-SNAPSHOT
 ./install.sh lib org.beangle.maven beangle-maven-launcher 0.1.6-SNAPSHOT
-./install.sh tomcat 8.0.22
+./install.sh tomcat 8.0.23

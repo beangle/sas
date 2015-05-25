@@ -7,44 +7,56 @@ install_lib()
 {
   source $(dirname $0)/setrepo.sh
 
-  local GROUPID=`echo "$1" | tr . /`
+  local group_id=`echo "$1" | tr . /`
   if [ "$1" == "oracle" ]; then
     M2_REMOTE_REPO=$M2_REMOTE_REPO_ORACLE
   fi
-  local URL="$M2_REMOTE_REPO/$GROUPID/$2/$3/$2-$3.jar"
-  local ARTIFACT_NAME="$2-$3.jar"
-  local LOCAL_FILE="$M2_REPO/$GROUPID/$2/$3/$2-$3.jar"
+  local URL="$M2_REMOTE_REPO/$group_id/$2/$3/$2-$3.jar"
+  local artifact_name="$2-$3.jar"
+  local local_file="$M2_REPO/$group_id/$2/$3/$2-$3.jar"
 
   local target="../ext"
-
+  local is_extlib=true
   if [ "$4" != "" ]; then
     target="$4"
+    is_extlib=false
   fi
 
   mkdir -p $(dirname $0)/$target
   cd "$(dirname $0)/$target"
 
-  if [ -f $ARTIFACT_NAME ]; then
-    echo "$ARTIFACT_NAME existed."
-    exit
+  if [ -f $artifact_name ]; then
+    echo "$artifact_name existed."
+  else
+    if [ ! -f $local_file ]; then
+      if wget --spider $URL 2>/dev/null; then
+        echo "fetching $URL"
+      else
+        echo "$URL not exists,installation aborted."
+        exit 1
+      fi
+
+      if command -v aria2c >/dev/null 2; then
+        aria2c -x 16 $URL
+      else
+        wget $URL -O $artifact_name.part
+        mv $artifact_name.part $artifact_name
+      fi
+      mkdir -p "$M2_REPO/$group_id/$2/$3"
+      mv $artifact_name $local_file
+      ln -s  $local_file
+      echo "Downloaded $artifact_name"
+    else
+      ln -s  $local_file
+      echo "Linked $artifact_name"
+    fi
   fi
 
-  if [ ! -f $LOCAL_FILE ]; then
-    if command -v aria2c >/dev/null 2; then
-      echo "Using aria2c fetch remote jar..."
-      aria2c -x 16 $URL
-    else
-      echo "Using wget fetch remote jar..."
-      wget $URL -O $ARTIFACT_NAME.part
-      mv $ARTIFACT_NAME.part $ARTIFACT_NAME
+  if [ -d  $SERVER_HOME/tomcat/lib ]; then
+    cd $SERVER_HOME/tomcat/lib/
+    if [ is_extlib ] &&  [ ! -f $artifact_name ]; then
+      ln -sf $local_file
     fi
-    mkdir -p "$M2_REPO/$GROUPID/$2/$3"
-    mv $ARTIFACT_NAME $LOCAL_FILE
-    ln -s  $LOCAL_FILE
-    echo "Downloaded $ARTIFACT_NAME"
-  else
-    ln -s  $LOCAL_FILE
-    echo "Linked $ARTIFACT_NAME"
   fi
 }
 
@@ -52,17 +64,17 @@ install_war(){
 
   source $(dirname $0)/setrepo.sh
 
-  local GROUPID=`echo "$1" | tr . /`
-  local URL="$M2_REMOTE_REPO/$GROUPID/$2/$3/$2-$3.war"
-  local ARTIFACT_NAME="$2-$3.war"
+  local group_id=`echo "$1" | tr . /`
+  local URL="$M2_REMOTE_REPO/$group_id/$2/$3/$2-$3.war"
+  local artifact_name="$2-$3.war"
 
   cd $(dirname $0)/../webapps
 
   if command -v aria2c >/dev/null 2; then
     aria2c -x 16 $URL
   else
-    wget $URL -O $ARTIFACT_NAME.part
-    mv $ARTIFACT_NAME.part $ARTIFACT_NAME
+    wget $URL -O $artifact_name.part
+    mv $artifact_name.part $artifact_name
   fi
 }
 
@@ -71,34 +83,39 @@ install_tomcat()
   cd $SERVER_HOME
 
   source $SERVER_HOME/bin/setrepo.sh
-  TOMCAT_V=`echo $TOMCAT_VERSION| cut -c 1-1`
-  TOMCAT_PATH="tomcat-$TOMCAT_V/v$TOMCAT_VERSION/bin/apache-tomcat-$TOMCAT_VERSION.zip"
-  TOMCAT_URL=$TOMCAT_REPO/$TOMCAT_PATH
-  if wget --spider $TOMCAT_MIRROR/$TOMCAT_PATH 2>/dev/null; then
-    TOMCAT_URL=$TOMCAT_MIRROR/$TOMCAT_PATH
+  local tomcat_version=$1
+  local tomcat_v=`echo $tomcat_version| cut -c 1-1`
+  local tomcat_path="tomcat-$tomcat_v/v$tomcat_version/bin/apache-tomcat-$tomcat_version.zip"
+  local tomcat_url=$TOMCAT_REPO/$tomcat_path
+  if wget --spider $TOMCAT_MIRROR/$tomcat_path 2>/dev/null; then
+    tomcat_url=$TOMCAT_MIRROR/$tomcat_path
   fi
 
-  if [ ! -f apache-tomcat-$TOMCAT_VERSION.zip ]; then
-    if command -v aria2c >/dev/null 2; then
-      echo "Downloading $TOMCAT_URL"
-      aria2c -x 16 $TOMCAT_URL
+  if [ ! -f apache-tomcat-$tomcat_version.zip ]; then
+    if wget --spider $tomcat_url 2>/dev/null; then
+      echo "Downloading $tomcat_url"
     else
-      wget $TOMCAT_URL -O apache-tomcat-$TOMCAT_VERSION.zip.part
-      mv apache-tomcat-$TOMCAT_VERSION.zip.part  apache-tomcat-$TOMCAT_VERSION.zip
+      echo "Cannot find tomcat $tomcat_version, Installation aborted."
+      exit 1
+    fi
+    if command -v aria2c >/dev/null 2; then
+      aria2c -x 16 $tomcat_url
+    else
+      wget $tomcat_url -O apache-tomcat-$tomcat_version.zip.part
+      mv apache-tomcat-$tomcat_version.zip.part  apache-tomcat-$tomcat_version.zip
     fi
 
-    if [ -f apache-tomcat-$TOMCAT_VERSION.zip ]; then
-      unzip -q apache-tomcat-$TOMCAT_VERSION.zip
-      #rm -rf apache-tomcat-$TOMCAT_VERSION.zip
+    if [ -f apache-tomcat-$tomcat_version.zip ]; then
+      unzip -q apache-tomcat-$tomcat_version.zip
+      #rm -rf apache-tomcat-$tomcat_version.zip
       rm -rf tomcat
-      mv apache-tomcat-$TOMCAT_VERSION tomcat
+      mv apache-tomcat-$tomcat_version tomcat
     fi
   else
-    unzip -q apache-tomcat-$TOMCAT_VERSION.zip
+    unzip -q apache-tomcat-$tomcat_version.zip
     rm -rf tomcat
-    mv apache-tomcat-$TOMCAT_VERSION tomcat
+    mv apache-tomcat-$tomcat_version tomcat
   fi
-
 
   mkdir -p servers
   mkdir -p webapps
@@ -129,7 +146,7 @@ install_tomcat()
     done
   fi
 
-  echo "$TOMCAT_VERSION installed successfully."
+  echo "$tomcat_version installed successfully."
 }
 
 function check_tomcat(){
@@ -139,8 +156,7 @@ function check_tomcat(){
 
   if [ -d tomcat ] && [ -a tomcat/bin/version.sh ]; then
     ver=$(tomcat/bin/version.sh |grep version)
-    local slash_idx=$(echo $ver | grep -bo / | sed 's/:.*$//')
-    ver="${ver:($slash_idx+1)}"
+    ver=${ver##*/}
   fi
 
   eval $version="'$ver'"
@@ -160,8 +176,7 @@ function display_usage(){
 
 function install_driver(){
   #local driver="$1"
-  options=("oracle" "postgresql" "mysql" "sqlserver")
-  pgversions=("9.4-1201-jdbc4" "9.4-1201-jdbc41" "9.3-1103-jdbc4")
+  local options=("oracle" "postgresql" "mysql" "sqlserver" "h2")
   select driver in "${options[@]}"; do
     break
   done
@@ -171,9 +186,9 @@ function install_driver(){
     exit 1
   fi
 
-  groupId=""
-  artifactId=""
-  versions=()
+  local groupId=""
+  local artifactId=""
+  local versions=()
   case $driver in
       "oracle")
         groupId="oracle"
@@ -194,6 +209,11 @@ function install_driver(){
         groupId="net.sourceforge.jtds"
         artifactId="jtds"
         versions=("1.3.1" "1.2.8")
+        ;;
+      "h2")
+        groupId="com.h2database"
+        artifactId="h2"
+        versions=("1.4.186")
         ;;
       *)
         echo invalid option
@@ -221,23 +241,23 @@ function install_driver(){
 
 # 1.install tomcat server
 if [ "$1" == "tomcat" ]; then
-  export TOMCAT_VERSION="$2"
-  if [ "${TOMCAT_VERSION:0:1}" \< "8" ]; then
+  tomcat_version="$2"
+  if [ "${tomcat_version:0:1}" \< "8" ]; then
     echo "Beangle Tomcat Server Only supports 8 or higher versions!"
     exit
   fi
 
-  check_tomcat OLD_VER
+  check_tomcat installed_version
   cd $SERVER_HOME
-  if [ "$OLD_VER" = "" ]; then
-    install_tomcat
+  if [ "$installed_version" = "" ]; then
+    install_tomcat $tomcat_version
   else
-    echo "Tomcat ${OLD_VER} had bean installed."
-    if [ "$OLD_VER" != "$TOMCAT_VERSION" ]; then
-      read -p "Are you update tomcat to $TOMCAT_VERSION(Y/n)? " -n 1 -r
+    echo "Tomcat $installed_version had bean installed."
+    if [ "$installed_version" != "$tomcat_version" ]; then
+      read -p "Are you update tomcat to $tomcat_version(Y/n)? " -n 1 -r
       echo    # (optional) move to a new line
       if [[ $REPLY =~ ^[Yy]$ ]]; then
-        install_tomcat
+        install_tomcat $tomcat_version
       fi
     fi
   fi
