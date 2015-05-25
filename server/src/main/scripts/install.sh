@@ -8,6 +8,9 @@ install_lib()
   source $(dirname $0)/setrepo.sh
 
   local GROUPID=`echo "$1" | tr . /`
+  if [ "$1" == "oracle" ]; then
+    M2_REMOTE_REPO=$M2_REMOTE_REPO_ORACLE
+  fi
   local URL="$M2_REMOTE_REPO/$GROUPID/$2/$3/$2-$3.jar"
   local ARTIFACT_NAME="$2-$3.jar"
   local LOCAL_FILE="$M2_REPO/$GROUPID/$2/$3/$2-$3.jar"
@@ -163,33 +166,59 @@ function install_driver(){
     break
   done
 
+  if [ "$driver" == "" ]; then
+    echo invalid driver
+    exit 1
+  fi
+
+  groupId=""
+  artifactId=""
+  versions=()
   case $driver in
       "oracle")
-          echo "you chose choice 1"
-          ;;
+        groupId="oracle"
+        artifactId="ojdbc6"
+        versions=("11.2.0.3")
+        ;;
       "postgresql")
-          echo $driver
- 
-          select ver in "${pgverions[@]}"; do
-          case $ver in
-              *) 
-               echo "xxxxx$ver"
-               break
-               ;;
-          esac
-          done
-          echo "you chose choice 2"
-          ;;
+        groupId="org.postgresql"
+        artifactId="postgresql"
+        versions=("9.4-1201-jdbc41" "9.3-1103-jdbc41")
+        ;;
       "mysql")
-          echo "you chose choice 3"
-          ;;
+        groupId="mysql"
+        artifactId="mysql-connector-java"
+        versions=( "5.1.35" "5.0.8")
+        ;;
       "sqlserver")
-          echo "you chose choice 3"
-          ;;
-      *) echo invalid option;;
+        groupId="net.sourceforge.jtds"
+        artifactId="jtds"
+        versions=("1.3.1" "1.2.8")
+        ;;
+      *)
+        echo invalid option
+        exit 1
+        ;;
   esac
 
+  versionnum=${#versions[@]}
+  if [ ${versionnum} -eq 1 ]; then
+    ver=${versions[0]}
+  else
+    select ver in ${versions[@]}; do
+      case $ver in
+        *)
+          if [ "$ver" == "custom" ] ||  [ "$ver" == "" ] ; then
+            echo -n "Enter Your version:"
+            read ver
+          fi
+          break ;;
+      esac
+    done
+  fi
+  install_lib $groupId $artifactId $ver
 }
+
 # 1.install tomcat server
 if [ "$1" == "tomcat" ]; then
   export TOMCAT_VERSION="$2"
