@@ -1,8 +1,18 @@
 #!/bin/sh
 PRGDIR=`dirname "$0"`
 export SERVER_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
-export TOMCAT_HOME=`cd "$PRGDIR/../tomcat/" >/dev/null; pwd`
+if [ -d $SERVER_HOME/tomcat ]; then
+  export TOMCAT_HOME="$SERVER_HOME/tomcat"
+else
+  echo "Cannot find tomcat,Please install it first."
+  exit 1
+fi
 export TARGET="$1"
+
+if [ ! -d $SERVER_HOME/bin/lib ]; then
+  echo "Please init beangle tomcat server first."
+  exit 1
+fi
 
 java -cp "$SERVER_HOME/ext/*:$SERVER_HOME/bin/lib/*" org.beangle.tomcat.configurer.shell.Gen $SERVER_HOME/conf/config.xml $TARGET $SERVER_HOME
 
