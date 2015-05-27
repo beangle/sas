@@ -27,7 +27,7 @@
 
   <modules>
     <module>core</module>
-    <module>configurer</module>
+    <module>configer</module>
     <module>server</module>
   </modules>
 
