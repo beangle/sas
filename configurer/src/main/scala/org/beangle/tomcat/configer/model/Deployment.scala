@@ -1,3 +1,4 @@
+
 /*
  * Beangle, Agile Development Scaffold and Toolkit
  *
@@ -16,15 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with Beangle.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.beangle.tomcat.configurer.model
+package org.beangle.tomcat.configer.model
 
-class Webapp(var name: String) {
-
-  val resources = new collection.mutable.ListBuffer[Resource]
-
-  def resourceNames: Set[String] = resources.map(d => d.name).toSet
-
-  var reloadable = false
-  
-  var docBase: String = _
-}
+class Deployment(var webapp: String, var on: String, var path: String)

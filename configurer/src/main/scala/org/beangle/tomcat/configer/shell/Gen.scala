@@ -1,15 +1,15 @@
-package org.beangle.tomcat.configurer.shell
+package org.beangle.tomcat.configer.shell
 
 import java.io.{ File, FileInputStream }
 
-import org.beangle.tomcat.configurer.model.Container
-import org.beangle.tomcat.configurer.util.Template
+import org.beangle.tomcat.configer.model.Container
+import org.beangle.tomcat.configer.util.Template
 
 object Gen {
 
   def main(args: Array[String]): Unit = {
     if (args.length < 3) {
-      println("Usage: Gen /path/to/config.xml farm.server target")
+      println("Usage: Gen /path/to/server.xml farm.server target")
       return
     }
     val configFile = args(0)

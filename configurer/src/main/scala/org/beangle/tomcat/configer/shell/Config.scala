@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Beangle.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.beangle.tomcat.configurer.shell
+package org.beangle.tomcat.configer.shell
 
 import java.io.File
 
@@ -27,8 +27,8 @@ import org.beangle.commons.lang.{ Strings, SystemInfo }
 import org.beangle.commons.lang.Consoles.{ confirm, prompt, shell }
 import org.beangle.commons.lang.Numbers.{ isDigits, toInt }
 import org.beangle.data.jdbc.vendor.{ UrlFormat, Vendors }
-import org.beangle.tomcat.configurer.model.{ Container, Deployment, Farm, Resource, Webapp }
-import org.beangle.tomcat.configurer.util.Template
+import org.beangle.tomcat.configer.model.{ Container, Deployment, Farm, Resource, Webapp }
+import org.beangle.tomcat.configer.util.Template
 
 object Config extends ShellEnv {
 
@@ -57,7 +57,7 @@ object Config extends ShellEnv {
     workdir = if (args.length == 0) SystemInfo.user.dir else args(0)
     read()
     if (null == container) {
-      createConfig(new File(workdir + "/config.xml"))
+      createConfig(new File(workdir + configFile))
     } else {
       println("command:help info save apply exit(quit/q)")
 
@@ -68,25 +68,25 @@ object Config extends ShellEnv {
           else "tomcat"
         prefix + " >"
       }, Set("exit", "quit", "q"), command => command match {
-        case "info" => println(toXml)
-        case "create farm" => createFarm()
-        case "remove farm" => removeFarm()
-        case "use farm" => useFarm()
-        case "create webapp" => createWebapp()
-        case "remove webapp" => removeWebapp()
+        case "info"              => println(toXml)
+        case "create farm"       => createFarm()
+        case "remove farm"       => removeFarm()
+        case "use farm"          => useFarm()
+        case "create webapp"     => createWebapp()
+        case "remove webapp"     => removeWebapp()
         case "create datasource" => createDataSource()
         case "remove datasource" => removeResource()
-        case "add ref" => addResourceRef()
-        case "remove ref" => removeResourceRef()
-        case "deploy" => createDeployment()
-        case "undeploy" => removeDeployment()
-        case "jvmopts" => setJvmOpts()
+        case "add ref"           => addResourceRef()
+        case "remove ref"        => removeResourceRef()
+        case "deploy"            => createDeployment()
+        case "undeploy"          => removeDeployment()
+        case "jvmopts"           => setJvmOpts()
         case "save" =>
-          println("Writing to " + workdir + "/config.xml")
-          Files.writeString(new File(workdir + "/config.xml"), toXml)
+          println("Writing to " + workdir + configFile)
+          Files.writeString(new File(workdir + configFile), toXml)
         case "apply" => applyConfig()
-        case "help" => printHelp()
-        case t => if (Strings.isNotEmpty(t)) println(t + ": command not found...")
+        case "help"  => printHelp()
+        case t       => if (Strings.isNotEmpty(t)) println(t + ": command not found...")
       })
     }
   }
@@ -95,7 +95,7 @@ object Config extends ShellEnv {
     val farmName = prompt("farm name?", "tomcat8", name => !container.farmNames.contains(name))
     val farm = prompt("create tomcat farm(single or cluster)?", "single", c => c == "cluster" || c == "single") match {
       case "cluster" => Farm.build(farmName, toInt(prompt("enter server count(<10):", "3", cnt => isDigits(cnt) && toInt(cnt) <= 10)))
-      case "single" => Farm.build(farmName, 1)
+      case "single"  => Farm.build(farmName, 1)
     }
     container.farms += farm
     farm

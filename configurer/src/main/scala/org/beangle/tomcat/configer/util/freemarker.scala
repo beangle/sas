@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Beangle.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.beangle.tomcat.configurer.util
+package org.beangle.tomcat.configer.util
 
 import java.beans.PropertyDescriptor
 import java.io.{ File, StringWriter }
@@ -26,7 +26,7 @@ import scala.collection.JavaConversions
 
 import org.beangle.commons.io.Files
 import org.beangle.commons.lang.Strings
-import org.beangle.tomcat.configurer.model.{ Container, Farm, Server }
+import org.beangle.tomcat.configer.model.{ Container, Farm, Server }
 
 import freemarker.cache.ClassTemplateLoader
 import freemarker.ext.beans.BeansWrapper.MethodAppearanceDecision
@@ -101,14 +101,5 @@ object Template {
       Files.writeString(target, nsw.toString)
       target.setExecutable(true)
     }
-  }
-
-  def generateEnv(container: Container, farm: Farm, targetDir: String) {
-    val data = new collection.mutable.HashMap[String, Any]()
-    data.put("container", container)
-    data.put("farm", farm)
-    val sw = new StringWriter()
-    val path = "/bin"
-
   }
 }

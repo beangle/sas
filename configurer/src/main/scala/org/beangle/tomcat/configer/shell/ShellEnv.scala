@@ -16,16 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with Beangle.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.beangle.tomcat.configurer.shell
+package org.beangle.tomcat.configer.shell
 
 import org.beangle.commons.logging.Logging
-import org.beangle.tomcat.configurer.model.Container
+import org.beangle.tomcat.configer.model.Container
 import java.io.FileInputStream
 import java.io.File
 import java.io.StringWriter
 import freemarker.template.Configuration
 import freemarker.cache.ClassTemplateLoader
-import org.beangle.tomcat.configurer.util.ScalaObjectWrapper
+import org.beangle.tomcat.configer.util.ScalaObjectWrapper
 import org.beangle.commons.io.Files./
 trait ShellEnv extends Logging {
 
@@ -33,9 +33,11 @@ trait ShellEnv extends Logging {
 
   var container: Container = _
 
+  var configFile = "/conf/server.xml"
+
   def read() = {
     assert(null != workdir)
-    val target = new File(workdir + / + "config.xml")
+    val target = new File(workdir + configFile)
     if (target.exists) {
       logger.info(s"Read config file ${target.getName}")
       container = Container(scala.xml.XML.load(new FileInputStream(target)))

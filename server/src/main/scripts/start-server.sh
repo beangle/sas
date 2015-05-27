@@ -19,15 +19,22 @@ start_server()
   touch $CATALINA_BASE/logs/catalina.out
   #remove unzipped context
   rm -rf $CATALINA_BASE/webapps/*
+
   cd $CATALINA_BASE
+
+  # link lib
   ln -sf  ../../tomcat/lib
+
+  # link conf
   cd conf
-  ln -sf ../../../conf/catalina.policy
-  ln -sf ../../../conf/catalina.properties
-  ln -sf ../../../conf/context.xml
-  ln -sf ../../../conf/logging.properties
-  ln -sf ../../../conf/tomcat-users.xml
-  ln -sf ../../../conf/web.xml
+  local config_files=("catalina.policy" "catalina.properties" "context.xml" "logging.properties" "tomcat-users.xml" "web.xml")
+  for cfg_file in "${config_files[@]}" ; do
+    if [ -e "../../../conf/$cfg_file" ]; then
+      ln -sf ../../../conf/$cfg_file
+    else
+      ln -sf ../../../tomcat/conf/$cfg_file
+    fi
+  done
 
   exec "$TOMCAT_HOME"/bin/catalina.sh start
 }

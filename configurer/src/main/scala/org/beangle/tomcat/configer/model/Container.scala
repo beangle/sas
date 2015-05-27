@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Beangle.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.beangle.tomcat.configurer.model
+package org.beangle.tomcat.configer.model
 
 import org.beangle.commons.lang.Numbers.toInt
 
@@ -112,8 +112,15 @@ object Container {
         if (!(contextElem \ "@reloadable").isEmpty) context.reloadable = (contextElem \ "@reloadable").text == "true"
         if (!(contextElem \ "@docBase").isEmpty) context.docBase = (contextElem \ "@docBase").text
 
+        for ((k, v) <- (contextElem.attributes.asAttrMap -- Set("name", "docBase", "reloadable"))) {
+          context.properties.put(k, v)
+        }
+
         (contextElem \ "ResourceRef").foreach { dsElem =>
           context.resources += conf.resources((dsElem \ "@ref").text)
+        }
+        (contextElem \ "Realm").foreach { realmElem =>
+          context.realms = realmElem.toString()
         }
         conf.webapps += context
       }
@@ -162,6 +169,16 @@ class Container {
   }
   def resourceNames: Set[String] = {
     resources.keySet.toSet
+  }
+
+  def farmResourceNames(farm: Farm): Set[String] = {
+    val names = new collection.mutable.HashSet[String]
+    deployments foreach { d =>
+      if (d.on == farm.name || d.on.startsWith(farm.name + ".")) {
+        webapps find (w => w.name == d.webapp) foreach { w => names ++= w.resourceNames }
+      }
+    }
+    names.toSet
   }
 
   def farmNames: Set[String] = farms.map(f => f.name).toSet

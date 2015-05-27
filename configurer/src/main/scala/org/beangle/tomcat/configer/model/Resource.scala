@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Beangle.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.beangle.tomcat.configurer.model
+package org.beangle.tomcat.configer.model
 
 import org.beangle.commons.lang.Objects
 

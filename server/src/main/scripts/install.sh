@@ -1,12 +1,7 @@
 #!/bin/sh
 PRGDIR=`dirname "$0"`
 
-export SERVER_HOME=`cd "$PRGDIR/.." >/dev/null; pwd`
-
-install_lib()
-{
-  source $(dirname $0)/setrepo.sh
-
+install_lib(){
   local group_id=`echo "$1" | tr . /`
   if [ "$1" == "oracle" ]; then
     M2_REMOTE_REPO=$M2_REMOTE_REPO_ORACLE
@@ -22,9 +17,8 @@ install_lib()
     is_extlib=false
   fi
 
-  mkdir -p $(dirname $0)/$target
-  cd "$(dirname $0)/$target"
-
+  mkdir -p $SERVER_HOME/bin/$target
+  cd $SERVER_HOME/bin/$target
   if [ -f $artifact_name ]; then
     echo "$artifact_name existed."
   else
@@ -52,29 +46,49 @@ install_lib()
     fi
   fi
 
-  if [ -d  $SERVER_HOME/tomcat/lib ]; then
+  if $is_extlib && [ -d  $SERVER_HOME/tomcat/lib ]; then
     cd $SERVER_HOME/tomcat/lib/
-    if [ is_extlib ] &&  [ ! -f $artifact_name ]; then
+    if [ ! -f $artifact_name ]; then
       ln -sf $local_file
     fi
   fi
 }
 
 install_war(){
-
-  source $(dirname $0)/setrepo.sh
-
   local group_id=`echo "$1" | tr . /`
   local URL="$M2_REMOTE_REPO/$group_id/$2/$3/$2-$3.war"
+  local local_file="$M2_REPO/$group_id/$2/$3/$2-$3.war"
   local artifact_name="$2-$3.war"
 
-  cd $(dirname $0)/../webapps
+  cd $SERVER_HOME/webapps
 
-  if command -v aria2c >/dev/null 2; then
-    aria2c -x 16 $URL
+  if [ -e $artifact_name ]; then
+    echo "$artifact_name exists."
   else
-    wget $URL -O $artifact_name.part
-    mv $artifact_name.part $artifact_name
+    if [ -e $local_file ]; then
+      ln -sf $local_file
+      echo "Linked $artifact_name"
+    else
+      if wget --spider $URL 2>/dev/null; then
+        echo "fetching $URL"
+      else
+        echo "$URL not exists,Installation aborted."
+        exit 1
+      fi
+
+      # FIXME need test?
+      if command -v aria2c >/dev/null 2; then
+        aria2c -x 16 $URL
+      else
+        wget $URL -O $artifact_name.part
+        mv $artifact_name.part $artifact_name
+      fi
+
+      mkdir -p "$M2_REPO/$group_id/$2/$3"
+      mv $artifact_name $local_file
+      ln -s  $local_file
+      echo "Downloaded $artifact_name"
+    fi
   fi
 }
 
@@ -82,7 +96,6 @@ install_tomcat()
 {
   cd $SERVER_HOME
 
-  source $SERVER_HOME/bin/setrepo.sh
   local tomcat_version=$1
   local tomcat_v=`echo $tomcat_version| cut -c 1-1`
   local tomcat_path="tomcat-$tomcat_v/v$tomcat_version/bin/apache-tomcat-$tomcat_version.zip"
@@ -123,13 +136,13 @@ install_tomcat()
   rm -rf tomcat/work
   rm -rf tomcat/webapps
   rm -rf tomcat/logs
-  rm -rf tomcat/conf
   rm -rf tomcat/temp
   rm -rf tomcat/RUNNING.txt
   rm -rf tomcat/NOTICE
   rm -rf tomcat/LICENSE
   rm -rf tomcat/RELEASE-NOTES
 
+  rm -rf tomcat/conf/server.xml
   rm -rf tomcat/bin/*.xml
   rm -rf tomcat/bin/*.bat
   rm -rf tomcat/bin/startup.sh
@@ -145,7 +158,6 @@ install_tomcat()
       cp $jar tomcat/lib/
     done
   fi
-
   echo "$tomcat_version installed successfully."
 }
 
@@ -239,6 +251,14 @@ function install_driver(){
   install_lib $groupId $artifactId $ver
 }
 
+install_beangle(){
+  install_lib org.beangle.tomcat beangle-tomcat-core $beangle_server_ver
+  install_lib org.beangle.maven beangle-maven-launcher $beangle_maven_ver
+}
+
+SERVER_HOME=`cd "$PRGDIR/.." >/dev/null; pwd`
+source $SERVER_HOME/bin/setenv.sh
+
 # 1.install tomcat server
 if [ "$1" == "tomcat" ]; then
   tomcat_version="$2"
@@ -268,14 +288,20 @@ elif [ "$1" == "lib" ]; then
   else
     install_lib $2 $3 $4 $5
   fi
+
 elif [ "$1" == "war" ]; then
   if [ "$4" == "" ]; then
     display_usage
   else
     install_war $2 $3 $4
   fi
+
 elif [ "$1" == "driver" ]; then
   install_driver
+
+elif [ "$1" == "beangle" ]; then
+  install_beangle
+
 else
   display_usage
 fi

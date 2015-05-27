@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Beangle.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.beangle.tomcat.configurer.shell
+package org.beangle.tomcat.configer.shell
 
 import java.io.{ File, StringWriter }
 import org.beangle.commons.io.Files.{ /, readString, writeString }
@@ -24,7 +24,7 @@ import org.beangle.commons.io.IOs
 import org.beangle.commons.lang.Consoles.{ prompt, shell }
 import org.beangle.commons.lang.Strings.{ isNotEmpty, replace }
 import org.beangle.commons.lang.SystemInfo
-import org.beangle.tomcat.configurer.util.ScalaObjectWrapper
+import org.beangle.tomcat.configer.util.ScalaObjectWrapper
 import freemarker.cache.ClassTemplateLoader
 import freemarker.template.Configuration
 import org.beangle.commons.lang.ClassLoaders
@@ -39,14 +39,14 @@ object Firewall extends ShellEnv {
     if (null != container) {
       info()
       shell("firewall> ", Set("exit", "quit", "q"), command => command match {
-        case "info" => info()
-        case "help" => printHelp()
-        case "conf" => println(generate())
+        case "info"  => info()
+        case "help"  => printHelp()
+        case "conf"  => println(generate())
         case "apply" => apply()
-        case t => if (isNotEmpty(t)) println(t + ": command not found...")
+        case t       => if (isNotEmpty(t)) println(t + ": command not found...")
       })
     } else {
-      logger.info("Cannot find config.xml")
+      logger.info("Cannot find conf/server.xml")
     }
   }
 

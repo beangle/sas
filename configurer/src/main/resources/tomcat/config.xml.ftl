@@ -33,10 +33,12 @@
 
   <Webapps>
     [#list container.webapps as webapp]
-    <Webapp name="${webapp.name}" reloadable="${webapp.reloadable?c}" [#if webapp.docBase??]docBase="${webapp.docBase}"[/#if]>
+    <Webapp name="${webapp.name}" reloadable="${webapp.reloadable?c}" [#if webapp.docBase??]docBase="${webapp.docBase}"[/#if] [#rt/]
+    [#lt/] [#list webapp.properties?keys as p] ${p}="${webapp.properties[p]}"[/#list]>
       [#list webapp.resources as resource]
       <ResourceRef ref="${resource.name}"/>
       [/#list]
+      ${webapp.realms!}
     </Webapp>
     [/#list]
   </Webapps>

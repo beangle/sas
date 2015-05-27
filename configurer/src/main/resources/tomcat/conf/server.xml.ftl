@@ -5,19 +5,34 @@
   <Listener className="${listener.className}" [#list listener.properties?keys as k]${k}="${listener.properties[k]}"[/#list]/>
   [/#list]
 
+  [#if container.resourceNames?size >0 ]
+  <GlobalNamingResources>
+  [#list container.farmResourceNames(farm)?sort as resourceName]
+    [#assign resource=container.resources[resourceName]/]
+    <Resource name="${resource.name}"
+      [#list resource.properties?keys as p]
+      ${p}="${resource.properties[p]}"
+      [/#list]
+    />
+ [/#list]
+  </GlobalNamingResources>
+ [/#if]
+
   <Service name="Catalina">
     [#if server.http??]
     [#assign http=server.http/]
     <Connector port="${server.httpPort}" protocol="HTTP/1.1"
       URIEncoding="${http.URIEncoding}"
       enableLookups="${http.enableLookups?c}"
-      [#if http.redirectPort??]redirectPort="${http.redirectPort}"[/#if]
-      [#t/]
+      [#if http.redirectPort??]
+      redirectPort="${http.redirectPort}"
+      [/#if]
       acceptCount="${http.acceptCount}"
       maxThreads="${http.maxThreads}"
       minSpareThreads="${http.minSpareThreads}"
-      [#if http.redirectPort??]redirectPort="${http.redirectPort}"[/#if]
-      [#t/]
+      [#if http.redirectPort??]
+      redirectPort="${http.redirectPort}"
+      [/#if]
       connectionTimeout="${http.connectionTimeout}"
       disableUploadTimeout="${http.disableUploadTimeout?c}"
       [#if http.compression!="off"]
@@ -44,27 +59,21 @@
     <Engine name="Catalina" defaultHost="localhost">
       <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="false">
       [#list container.deployments as deployment]
-      [#if deployment.on == farm.name]
+      [#if deployment.on == farm.name || deploy.on == server.qualifiedName]
       [#list container.webapps as webapp]
       [#if webapp.name == deployment.webapp]
-      <Context path="${deployment.path}" reloadable="${webapp.reloadable?c}"[#if webapp.docBase??] docBase="${webapp.docBase}"[/#if]>
+      <Context path="${deployment.path}" reloadable="${webapp.reloadable?c}"[#rt/]
+      [#lt/][#if webapp.docBase??] docBase="${webapp.docBase}"[/#if][#rt/]
+      [#lt/][#list webapp.properties?keys as p] ${p}="${webapp.properties[p]}"[/#list]>
         [#list webapp.resources as resource]
-        <Resource 
-          name="${resource.name}"
-          [#list resource.properties?keys as p]
-          ${p}="${resource.properties[p]}"
-          [/#list]
-          />
+        <ResourceLink name="${resource.name}" global="${resource.name}"/>
         [/#list]
         [#if container.context??]
         [#assign ctx=container.context/]
-        [#if ctx.jarScanner??]
-        <JarScanner [@spawnProps ctx.jarScanner/]/>
+        [#if ctx.jarScanner??]<JarScanner [@spawnProps ctx.jarScanner/]/>[/#if]
+        [#if ctx.loader??]<Loader className="${ctx.loader.className}" [@spawnProps ctx.loader/]/>[/#if]
         [/#if]
-        [#if ctx.loader??]
-        <Loader className="${ctx.loader.className}" [@spawnProps ctx.loader/]/>
-        [/#if]
-        [/#if]
+        ${webapp.realms!}
         </Context>
        [/#if]
        [/#list]

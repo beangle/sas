@@ -1,4 +1,4 @@
-package org.beangle.tomcat.configurer.model
+package org.beangle.tomcat.configer.model
 
 class Context {
   var loader: Loader = _
