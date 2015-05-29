@@ -18,7 +18,7 @@ object Gen {
     val targetDir = args(2)
 
     container.farms foreach { farm =>
-      if (farm.name == target) {
+      if (farm.name == target || farm.name == "all") {
         Template.generate(container, farm, targetDir)
       } else {
         farm.servers foreach { server =>
