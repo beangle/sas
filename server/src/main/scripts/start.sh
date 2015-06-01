@@ -1,16 +1,39 @@
 #!/bin/sh
 PRGDIR=`dirname "$0"`
-SERVER_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
+export SERVER_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
+if [ -d $SERVER_HOME/tomcat ]; then
+  export TOMCAT_HOME="$SERVER_HOME/tomcat"
+else
+  echo "Cannot find tomcat,Please install it first."
+  exit 1
+fi
 export TARGET="$1"
 
-java -cp "$SERVER_HOME/bin/ext/*:$SERVER_HOME/bin/lib/*" org.beangle.tomcat.configurer.shell.Gen $SERVER_HOME/conf/config.xml $TARGET $SERVER_HOME
+if [ ! -d $SERVER_HOME/bin/lib ]; then
+  echo "Please init beangle tomcat server first."
+  exit 1
+fi
 
-cd $SERVER_HOME/servers
+java -cp "$SERVER_HOME/ext/*:$SERVER_HOME/bin/lib/*" org.beangle.tomcat.configer.shell.Gen $SERVER_HOME/conf/server.xml $TARGET $SERVER_HOME
 
-for dir in $(command ls -1d *); do
-    if [ "$dir" = "$TARGET" ]; then
-        $SERVER_HOME/bin/start-server.sh $dir
-    elif [ "${dir%.*}" = "$TARGET" ]; then
-        $SERVER_HOME/bin/start-server.sh $dir
+shopt -s nullglob
+if [ -d servers ]; then
+  cd $SERVER_HOME/servers
+  started=0
+  for dir in *; do
+    if [ "$dir" = "$TARGET" ] ||  [ "all" = "$TARGET" ] || [ "${dir%.*}" = "$TARGET" ]; then
+      $SERVER_HOME/bin/start-server.sh $dir
+      started=$((started+1))
     fi
-done
+  done
+  if [ $started == 0 ];then
+    echo "Cannot find server with name $TARGET"
+  elif (( started > 1 )); then
+    echo "$started servers started."
+  else
+    echo "One server started."
+  fi
+else
+  echo "Cannot find any server."
+  exit 1
+fi

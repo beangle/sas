@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Tomcat version="8.0.17">
+  <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
+  <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
+  <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
+  <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
+
+  <Context>
+    <!--
+    <Loader className="org.apache.catalina.loader.RepositoryLoader" cacheLayout="maven2"/>
+    <JarScanner scanBootstrapClassPath="false" scanAllDirectories="false" scanAllFiles="false" scanClassPath="false"/>
+    -->
+  </Context>
+
+  <Resources>
+    <Resource name="UserDatabase" auth="Container"
+              type="org.apache.catalina.UserDatabase"
+              description="User database that can be updated and saved"
+              factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
+              pathname="conf/tomcat-users.xml" />
+  </Resources>
+
+  <Farm name="farm">
+    <JvmArgs opts="-noverify -Xmx500M -Xms500M"/>
+    <HttpConnector acceptCount="100"  maxThreads="200"  minSpareThreads="10"  compression="off" />
+    <Server name="server1" shutdown="8005"  http="8080"  />
+    <Server name="server2" shutdown="8006"  http="8081"  />
+  </Farm>
+
+  <Webapps>
+    <Webapp name="web" reloadable="false" privileged="true" docBase="../../../webapps/probe-2.3.3.war"  >
+      <ResourceRef ref="UserDatabase"/>
+      <Realm className="org.apache.catalina.realm.LockOutRealm">
+        <Realm className="org.apache.catalina.realm.UserDatabaseRealm"
+               resourceName="UserDatabase"/>
+      </Realm>
+    </Webapp>
+  </Webapps>
+
+  <Deployments>
+    <Deployment webapp="web" on="farm" path="/probe"/>
+  </Deployments>
+
+<!--
+  <Webapps>
+    <Webapp name="${your_app_name}" reloadable="false" docBase="../../../webapps/${your_war_name}">
+      <ResourceRef ref="jdbc/${datasource}"/>
+    </Webapp>
+  </Webapps>
+
+  <Resources>
+    <Resource  name="jdbc/${datasource}"   driverClassName="org.postgresql.Driver"
+                      url="jdbc:postgresql://localhost:5432/postgres"   type="javax.sql.DataSource"
+                      username="postgres"  password="postgres" />
+  </Resources>
+
+  <Deployments>
+    <Deployment webapp="${your_app_name}" on="default" path="/${context_path}"  />
+  </Deployments>
+ -->
+</Tomcat>

@@ -2,19 +2,24 @@
 
     wget https://raw.githubusercontent.com/beangle/tomcat/master/server/src/main/resources/netinstall.sh;\
     chmod +x ./netinstall.sh;\
-    netinstall.sh 0.1.0
-
-### Get scala and postgresql libararies
-
-  bin/get-pg-driver.sh
-  bin/get-scala.sh 2.11.2
+    netinstall.sh 0.2.1
 
 ### Install and Update Tomcat
+0. Init
 
-1. install tomcat 8.0.3
+    bin/init.sh
 
-     bin/install 8.0.3
+1. install jar and war
 
-2. update tomcat to version 8.0.14
+    --install postgresql.9.3-1102-jdbc4 into $base/ext
 
-     bin/update 8.0.14
+    bin/install.sh lib org.postgresql postgresql 9.3-1102-jdbc4
+
+2. install tomcat 8.0.3
+
+     bin/install.sh tomcat 8.0.3
+
+3. update tomcat to version 8.0.22
+
+     bin/install.sh tomcat 8.0.22
+
