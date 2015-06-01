@@ -2,7 +2,7 @@
   <parent>
     <groupId>org.beangle</groupId>
     <artifactId>beangle-java</artifactId>
-    <version>22.1</version>
+    <version>22.2</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.beangle.tomcat</groupId>
@@ -13,8 +13,8 @@
 
   <properties>
     <bundle.symbolicName>org.beangle.tomcat.core</bundle.symbolicName>
-    <bundle.namespace>org.beangle.tomcat</bundle.namespace>
-    <beangle.maven.version>0.1.6-SNAPSHOT</beangle.maven.version>
+    <bundle.namespace>org</bundle.namespace>
+    <beangle.maven.version>0.1.6</beangle.maven.version>
     <tomcat.version>8.0.14</tomcat.version>
   </properties>
 

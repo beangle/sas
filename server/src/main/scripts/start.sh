@@ -21,10 +21,7 @@ if [ -d servers ]; then
   cd $SERVER_HOME/servers
   started=0
   for dir in *; do
-    if [ "$dir" = "$TARGET" ]; then
-      $SERVER_HOME/bin/start-server.sh $dir
-      started=$((started+1))
-    elif [ "${dir%.*}" = "$TARGET" ]; then
+    if [ "$dir" = "$TARGET" ] ||  [ "all" = "$TARGET" ] || [ "${dir%.*}" = "$TARGET" ]; then
       $SERVER_HOME/bin/start-server.sh $dir
       started=$((started+1))
     fi

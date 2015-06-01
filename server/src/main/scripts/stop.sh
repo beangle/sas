@@ -14,13 +14,9 @@ if [ -d servers ]; then
   cd $SERVER_HOME/servers
   stopped=0
   for dir in * ; do
-    stopped=$((stopped+1))
-    if [ "$dir" = "$TARGET" ]; then
+    if [ "$dir" = "$TARGET" ] || [ "${dir%.*}" = "$TARGET" ] || [ "all" = "$TARGET" ]; then
+      stopped=$((stopped+1))
       $SERVER_HOME/bin/stop-server.sh $dir
-    elif [ "${dir%.*}" = "$TARGET" ]; then
-      $SERVER_HOME/bin/stop-server.sh $dir
-    else
-      stopped=$((stopped-1))
     fi
   done
 

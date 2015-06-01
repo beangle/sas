@@ -2,7 +2,7 @@
   <parent>
     <groupId>org.beangle</groupId>
     <artifactId>beangle-scala</artifactId>
-    <version>22.1</version>
+    <version>22.2</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.beangle.tomcat</groupId>
@@ -14,8 +14,8 @@
   <properties>
     <bundle.symbolicName>org.beangle.tomcat.configurer</bundle.symbolicName>
     <bundle.namespace>org.beangle.tomcat.configurer</bundle.namespace>
-    <commons.version>4.2.4</commons.version>
-    <data.version>4.2.1</data.version>
+    <commons.version>4.2.5</commons.version>
+    <data.version>4.2.2</data.version>
   </properties>
 
   <dependencies>
