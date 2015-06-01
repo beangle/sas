@@ -8,12 +8,12 @@
   <groupId>org.beangle.tomcat</groupId>
   <artifactId>beangle-tomcat-configer</artifactId>
   <packaging>jar</packaging>
-  <version>0.2.1-SNAPSHOT</version>
+  <version>0.2.1</version>
   <name>Beangle Tomcat Configurer</name>
 
   <properties>
-    <bundle.symbolicName>org.beangle.tomcat.configurer</bundle.symbolicName>
-    <bundle.namespace>org.beangle.tomcat.configurer</bundle.namespace>
+    <bundle.symbolicName>org.beangle.tomcat.configer</bundle.symbolicName>
+    <bundle.namespace>org.beangle.tomcat.configer</bundle.namespace>
     <commons.version>4.2.5</commons.version>
     <data.version>4.2.2</data.version>
   </properties>
