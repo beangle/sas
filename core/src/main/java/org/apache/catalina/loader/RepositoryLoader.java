@@ -28,10 +28,10 @@ public class RepositoryLoader extends WebappLoader {
   }
 
   @Override
-  public void startInternal() throws LifecycleException{
+  public void startInternal() throws LifecycleException {
     log("Loading jars from:" + cacheBase);
     remote = (null == url) ? new RemoteRepository() : new RemoteRepository(url);
-    local = new LocalRepository(cacheBase, cacheLayout);
+    local = new LocalRepository(cacheLayout, cacheBase);
 
     super.startInternal();
     ClassLoader cl = super.getClassLoader();
