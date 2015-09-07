@@ -1,7 +1,7 @@
 #!/bin/sh
 PRGDIR=`dirname "$0"`
 
-install_lib(){
+install_lib_of_versions(){
   name=$3[@]
 
   local versions=("${!name}")
@@ -23,15 +23,16 @@ install_lib(){
 
 cd $PRGDIR
 source ./setenv.sh
-install_lib org.scala-lang scala-library scala_vers
-install_lib org.scala-lang scala-reflect scala_vers
-install_lib org.scala-lang.modules scala-xml_2.11 scalaxml_vers
+install_lib_of_versions org.scala-lang scala-library scala_vers
+install_lib_of_versions org.scala-lang scala-reflect scala_vers
+install_lib_of_versions org.scala-lang.modules scala-xml_2.11 scalaxml_vers
 
-./install.sh lib org.beangle.commons beangle-commons-core 4.2.4 lib
-./install.sh lib org.beangle.data beangle-data-jdbc 4.2.1 lib
+./install.sh lib org.beangle.commons beangle-commons-core_2.11 4.3.0 lib
+./install.sh lib org.beangle.data beangle-data-jdbc_2.11 4.2.3 lib
+./install.sh lib org.beangle.template beangle-template-freemarker_2.11 0.0.5 lib
 ./install.sh lib org.beangle.tomcat beangle-tomcat-configer $beangle_server_ver lib
-./install.sh lib org.freemarker freemarker 2.3.20 lib
+./install.sh lib org.freemarker freemarker 2.3.23 lib
 ./install.sh lib org.slf4j slf4j-api 1.7.7 lib
 ./install.sh lib org.slf4j slf4j-nop 1.7.7 lib
 
-./install.sh tomcat 8.0.23
+./install.sh tomcat 8.0.24

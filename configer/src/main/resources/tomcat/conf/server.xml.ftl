@@ -59,7 +59,7 @@
     <Engine name="Catalina" defaultHost="localhost">
       <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="false">
       [#list container.deployments as deployment]
-      [#if deployment.on == farm.name || deploy.on == server.qualifiedName]
+      [#if deployment.on == farm.name || deployment.on == server.qualifiedName]
       [#list container.webapps as webapp]
       [#if webapp.name == deployment.webapp]
       <Context path="${deployment.path}" reloadable="${webapp.reloadable?c}"[#rt/]

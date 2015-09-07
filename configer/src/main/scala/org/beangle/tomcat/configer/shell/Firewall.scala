@@ -24,11 +24,11 @@ import org.beangle.commons.io.IOs
 import org.beangle.commons.lang.Consoles.{ prompt, shell }
 import org.beangle.commons.lang.Strings.{ isNotEmpty, replace }
 import org.beangle.commons.lang.SystemInfo
-import org.beangle.tomcat.configer.util.ScalaObjectWrapper
 import freemarker.cache.ClassTemplateLoader
 import freemarker.template.Configuration
 import org.beangle.commons.lang.ClassLoaders
 import org.beangle.commons.io.Files
+import org.beangle.template.freemarker.FreemarkerConfigurer
 
 object Firewall extends ShellEnv {
 
@@ -95,10 +95,7 @@ object Firewall extends ShellEnv {
   }
 
   def generate(): String = {
-    val cfg = new Configuration()
-    cfg.setTemplateLoader(new ClassTemplateLoader(getClass, "/"))
-    cfg.setObjectWrapper(new ScalaObjectWrapper())
-    cfg.setNumberFormat("0.##")
+    val cfg = FreemarkerConfigurer.newConfig
     val data = new collection.mutable.HashMap[String, Any]()
     data.put("ports", container.ports)
     val sw = new StringWriter()

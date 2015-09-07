@@ -2,20 +2,20 @@
   <parent>
     <groupId>org.beangle</groupId>
     <artifactId>beangle-java</artifactId>
-    <version>22.2</version>
+    <version>22.3</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.beangle.tomcat</groupId>
   <artifactId>beangle-tomcat-core</artifactId>
   <packaging>jar</packaging>
-  <version>0.2.1</version>
+  <version>0.2.2</version>
   <name>Beangle Tomcat Core</name>
 
   <properties>
     <bundle.symbolicName>org.beangle.tomcat.core</bundle.symbolicName>
     <bundle.namespace>org</bundle.namespace>
-    <beangle.maven.version>0.1.6</beangle.maven.version>
-    <tomcat.version>8.0.14</tomcat.version>
+    <beangle.maven.version>0.1.7</beangle.maven.version>
+    <tomcat.version>8.0.24</tomcat.version>
   </properties>
 
   <dependencies>
