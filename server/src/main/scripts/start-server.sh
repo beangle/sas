@@ -36,13 +36,21 @@ start_server()
     fi
   done
 
-  exec "$TOMCAT_HOME"/bin/catalina.sh start
+  if [ "$2" = "run" ]; then
+    exec "$TOMCAT_HOME"/bin/catalina.sh run
+  else
+    exec "$TOMCAT_HOME"/bin/catalina.sh start
+  fi
 }
-
 
 if [ "$1" = "" ]; then
   echo "Usage:start-server.sh server_name"
   exit
 fi
 
-start_server $1
+if [ "$2" = "" ]; then
+  echo "Usage:start-server.sh server_name start/run"
+  exit
+fi
+
+start_server $1 $2

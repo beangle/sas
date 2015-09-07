@@ -21,58 +21,17 @@ package org.beangle.tomcat.configer.util
 import java.beans.PropertyDescriptor
 import java.io.{ File, StringWriter }
 import java.lang.reflect.{ Method, Modifier }
-
 import scala.collection.JavaConversions
-
 import org.beangle.commons.io.Files
 import org.beangle.commons.lang.Strings
 import org.beangle.tomcat.configer.model.{ Container, Farm, Server }
-
 import freemarker.cache.ClassTemplateLoader
 import freemarker.ext.beans.BeansWrapper.MethodAppearanceDecision
 import freemarker.template.{ Configuration, DefaultObjectWrapper, TemplateModel }
-
-class ScalaObjectWrapper extends DefaultObjectWrapper {
-
-  override def wrap(obj: Object): TemplateModel = {
-    return super.wrap(convert2Java(obj));
-  }
-
-  protected override def finetuneMethodAppearance(clazz: Class[_], m: Method,
-                                                  decision: MethodAppearanceDecision) {
-    val name = m.getName
-    if (name.equals("hashCode") || name.equals("toString")) return
-    if (isPropertyMethod(m)) {
-      val pd = new PropertyDescriptor(name, m, null);
-      decision.setExposeAsProperty(pd)
-      decision.setExposeMethodAs(name)
-      decision.setMethodShadowsProperty(false)
-    }
-  }
-
-  private def convert2Java(obj: Any): Any = {
-    obj match {
-      case Some(inner)               => convert2Java(inner)
-      case None                      => null
-      case seq: collection.Seq[_]    => JavaConversions.seqAsJavaList(seq)
-      case map: collection.Map[_, _] => JavaConversions.mapAsJavaMap(map)
-      case iter: Iterable[_]         => JavaConversions.asJavaIterable(iter)
-      case _                         => obj
-    }
-  }
-
-  private def isPropertyMethod(m: Method): Boolean = {
-    val name = m.getName
-    return (m.getParameterTypes().length == 0 && classOf[Unit] != m.getReturnType() && Modifier.isPublic(m.getModifiers())
-      && !Modifier.isStatic(m.getModifiers()) && !Modifier.isSynchronized(m.getModifiers()) && !name.startsWith("get") && !name.startsWith("is"))
-  }
-}
+import org.beangle.template.freemarker.FreemarkerConfigurer
 
 object Template {
-  val cfg = new Configuration()
-  cfg.setTemplateLoader(new ClassTemplateLoader(getClass, "/"))
-  cfg.setObjectWrapper(new ScalaObjectWrapper())
-  cfg.setNumberFormat("0.##")
+  val cfg =  FreemarkerConfigurer.newConfig
 
   def generate(container: Container, farm: Farm, targetDir: String) {
     for (server <- farm.servers) {

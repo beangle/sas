@@ -18,15 +18,12 @@
  */
 package org.beangle.tomcat.configer.shell
 
+import java.io.{ File, FileInputStream, StringWriter }
+
 import org.beangle.commons.logging.Logging
+import org.beangle.template.freemarker.FreemarkerConfigurer
 import org.beangle.tomcat.configer.model.Container
-import java.io.FileInputStream
-import java.io.File
-import java.io.StringWriter
-import freemarker.template.Configuration
-import freemarker.cache.ClassTemplateLoader
-import org.beangle.tomcat.configer.util.ScalaObjectWrapper
-import org.beangle.commons.io.Files./
+
 trait ShellEnv extends Logging {
 
   var workdir: String = _
@@ -45,10 +42,7 @@ trait ShellEnv extends Logging {
   }
 
   def toXml: String = {
-    val cfg = new Configuration()
-    cfg.setTemplateLoader(new ClassTemplateLoader(getClass, "/"))
-    cfg.setObjectWrapper(new ScalaObjectWrapper())
-    cfg.setNumberFormat("0.##")
+    val cfg = FreemarkerConfigurer.newConfig
     val data = new collection.mutable.HashMap[String, Any]()
     data.put("container", container)
     val sw = new StringWriter()

@@ -22,7 +22,7 @@ if [ -d servers ]; then
   started=0
   for dir in *; do
     if [ "$dir" = "$TARGET" ] ||  [ "all" = "$TARGET" ] || [ "${dir%.*}" = "$TARGET" ]; then
-      $SERVER_HOME/bin/start-server.sh $dir start
+      $SERVER_HOME/bin/start-server.sh $dir "run"
       started=$((started+1))
     fi
   done
