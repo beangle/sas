@@ -14,7 +14,7 @@
   <dependencies>
     <dependency>
       <groupId>org.beangle.tomcat</groupId>
-      <artifactId>beangle-tomcat-core</artifactId>
+      <artifactId>beangle-tomcat-loader</artifactId>
       <version>${project.version}</version>
       <exclusions>
         <exclusion>

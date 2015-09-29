@@ -6,15 +6,14 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.beangle.tomcat</groupId>
-  <artifactId>beangle-tomcat-core</artifactId>
+  <artifactId>beangle-tomcat-loader</artifactId>
   <packaging>jar</packaging>
   <version>0.2.3-SNAPSHOT</version>
-  <name>Beangle Tomcat Core</name>
+  <name>Beangle Tomcat Loader</name>
 
   <properties>
-    <bundle.symbolicName>org.beangle.tomcat.core</bundle.symbolicName>
+    <bundle.symbolicName>org.beangle.tomcat.loader</bundle.symbolicName>
     <bundle.namespace>org</bundle.namespace>
-    <beangle.maven.version>0.1.7</beangle.maven.version>
     <tomcat.version>8.0.24</tomcat.version>
   </properties>
 
@@ -23,11 +22,6 @@
       <groupId>org.apache.tomcat</groupId>
       <artifactId>tomcat-catalina</artifactId>
       <version>${tomcat.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.beangle.maven</groupId>
-      <artifactId>beangle-maven-launcher</artifactId>
-      <version>${beangle.maven.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.tomcat</groupId>

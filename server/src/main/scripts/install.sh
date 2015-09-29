@@ -252,8 +252,7 @@ function install_driver(){
 }
 
 install_beangle(){
-  install_lib org.beangle.tomcat beangle-tomcat-core $beangle_server_ver
-  install_lib org.beangle.maven beangle-maven-launcher $beangle_maven_ver
+  install_lib org.beangle.tomcat beangle-tomcat-loader $beangle_server_ver
 }
 
 SERVER_HOME=`cd "$PRGDIR/.." >/dev/null; pwd`
