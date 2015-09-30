@@ -27,6 +27,7 @@
 
   <modules>
     <module>loader</module>
+    <module>jdbc</module>
     <module>configer</module>
     <module>server</module>
   </modules>
