@@ -2,13 +2,18 @@
   <parent>
     <groupId>org.beangle.tomcat</groupId>
     <artifactId>beangle-tomcat-parent</artifactId>
-    <version>0.2.3-SNAPSHOT</version>
+    <version>0.2.3</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>beangle-tomcat-server</artifactId>
   <packaging>jar</packaging>
   <name>Beangle Tomcat Server</name>
 
+  <properties>
+    <bundle.symbolicName>org.beangle.tomcat.server</bundle.symbolicName>
+    <bundle.namespace>org.beangle.tomcat.server</bundle.namespace>
+  </properties>
+  
   <dependencies>
     <dependency>
       <groupId>org.beangle.tomcat</groupId>
