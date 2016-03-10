@@ -210,7 +210,7 @@ function install_driver(){
       "postgresql")
         groupId="org.postgresql"
         artifactId="postgresql"
-        versions=("9.4-1201-jdbc41" "9.3-1103-jdbc41")
+        versions=("9.4.1208" "9.3-1103-jdbc41")
         ;;
       "mysql")
         groupId="mysql"
@@ -252,7 +252,7 @@ function install_driver(){
 }
 
 install_beangle(){
-  install_lib org.beangle.tomcat beangle-tomcat-loader $beangle_server_ver
+  install_lib org.beangle.tomcat beangle-tomcat-core $beangle_server_ver
 }
 
 SERVER_HOME=`cd "$PRGDIR/.." >/dev/null; pwd`

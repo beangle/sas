@@ -1,20 +1,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <groupId>org.beangle</groupId>
-    <artifactId>beangle</artifactId>
-    <version>22.3</version>
+    <groupId>org.beangle.tomcat</groupId>
+    <artifactId>beangle-tomcat-parent</artifactId>
+    <version>0.2.3-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.beangle.tomcat</groupId>
   <artifactId>beangle-tomcat-server</artifactId>
   <packaging>jar</packaging>
-  <version>0.2.3-SNAPSHOT</version>
   <name>Beangle Tomcat Server</name>
 
   <dependencies>
     <dependency>
       <groupId>org.beangle.tomcat</groupId>
-      <artifactId>beangle-tomcat-loader</artifactId>
+      <artifactId>beangle-tomcat-core</artifactId>
       <version>${project.version}</version>
       <exclusions>
         <exclusion>

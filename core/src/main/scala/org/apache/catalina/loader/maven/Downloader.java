@@ -58,7 +58,6 @@ public class Downloader {
   public void start() throws IOException {
     File file = new File(location);
     if (file.exists()) { return; }
-
     URL resourceURL = new URL(url);
     String urlStatus = touchUrl(resourceURL);
     if (null != urlStatus) {
@@ -113,16 +112,18 @@ public class Downloader {
       System.out.print("\r" + getId() + " " + this.getUrl() + " " + (status.total / 1024) + "KB");
     else System.out.print("\r" + getId() + " " + this.getUrl() + " " + (status.total / 1024) + "KB("
         + ((int) (status.total / 1024.0 / elaps * 100000.0) / 100.0) + "KB/s)");
+    System.out.println();
   }
 
   protected void downloading() throws IOException {
+    System.out.println("Downloading " + url);
     final URL resourceURL = new URL(url);
     URLConnection conn = resourceURL.openConnection();
     long startAt = System.currentTimeMillis();
-    this.status = new DownloadStatus(conn.getContentLengthLong());
-    if (this.status.total > Integer.MAX_VALUE)
-      throw new RuntimeException("Too large file.Using DefaultURLDownloader");
+    this.status = new DownloadStatus(conn.getContentLength());
     int total = (int) this.status.total;
+    if (total > Integer.MAX_VALUE || total <= 0)
+      throw new RuntimeException("File size :[" + total + "] not suitable for using DefaultURLDownloader");
 
     final byte[] totalbuffer = new byte[total];
     int begin = 0;
@@ -169,9 +170,10 @@ public class Downloader {
   }
 
   class DownloadStatus {
-    public final long total;
+    public final int total;
     public final AtomicLong count = new AtomicLong(0);
-    public DownloadStatus(long total) {
+
+    public DownloadStatus(int total) {
       super();
       this.total = total;
     }

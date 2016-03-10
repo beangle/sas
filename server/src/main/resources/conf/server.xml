@@ -21,7 +21,7 @@
   </Resources>
 
   <Farm name="farm">
-    <JvmArgs opts="-noverify -Xmx500M -Xms500M"/>
+    <JvmArgs opts="-noverify -Xmx500M -Xms500M -Djava.security.egd=file:/dev/./urandom"/>
     <HttpConnector acceptCount="100"  maxThreads="200"  minSpareThreads="10"  compression="off" />
     <Server name="server1" shutdown="8005"  http="8080"  />
     <Server name="server2" shutdown="8006"  http="8081"  />

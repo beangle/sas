@@ -16,8 +16,7 @@ public class RepositoryLoader extends WebappLoader {
 
   DependencyResolver resolver = new DependencyResolver();
   String url;
-  String cacheLayout = "maven2";
-  String cacheBase;
+  String base;
   Repository.Remote remote;
   Repository.Local local;
 
@@ -32,7 +31,7 @@ public class RepositoryLoader extends WebappLoader {
   @Override
   public void startInternal() throws LifecycleException {
     remote = (null == url) ? new Repository.Remote() : new Repository.Remote(url);
-    local = new Repository.Local(cacheLayout, cacheBase);
+    local = new Repository.Local(base);
     log("Loading jars from:" + local.base);
 
     super.startInternal();
@@ -40,7 +39,7 @@ public class RepositoryLoader extends WebappLoader {
     if (cl instanceof WebappClassLoader) {
       @SuppressWarnings("resource")
       WebappClassLoader devCl = (WebappClassLoader) cl;
-      StringBuilder sb = new StringBuilder("Add Class Path:");
+      StringBuilder sb = new StringBuilder("Append classpath:");
       URL resource = cl.getResource(DependencyResolver.DependenciesFile);
       if (null == resource) {
         log("Cannot find " + DependencyResolver.DependenciesFile + ",Repository loading aborted.");
@@ -76,12 +75,8 @@ public class RepositoryLoader extends WebappLoader {
     this.url = url;
   }
 
-  public void setCacheLayout(String cacheLayout) {
-    this.cacheLayout = cacheLayout;
-  }
-
-  public void setCacheBase(String cacheBase) {
-    this.cacheBase = cacheBase;
+  public void setBase(String base) {
+    this.base = base;
   }
 
   class DependencyResolver {

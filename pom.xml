@@ -1,8 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <groupId>org.beangle</groupId>
-    <artifactId>beangle</artifactId>
-    <version>22.2</version>
+    <artifactId>beangle-scala</artifactId>
+    <version>23.1</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.beangle.tomcat</groupId>
@@ -26,21 +26,16 @@
   </scm>
 
   <modules>
-    <module>loader</module>
-    <module>jdbc</module>
+    <module>core</module>
     <module>configer</module>
     <module>server</module>
   </modules>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+  <properties>
+    <tomcat.version>8.0.24</tomcat.version
+    <commons.version>4.4.8</commons.version>
+    <data.version>4.3.4</data.version>
+    <template.version>0.0.10</template.version>
+  </properties>
+
 </project>
