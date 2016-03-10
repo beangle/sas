@@ -35,4 +35,4 @@ install_lib_of_versions org.scala-lang.modules scala-xml_2.12 scalaxml_vers
 ./install.sh lib org.slf4j slf4j-api 1.7.7 lib
 ./install.sh lib org.slf4j slf4j-nop 1.7.7 lib
 
-./install.sh tomcat 8.0.24
+./install.sh tomcat 8.0.32
