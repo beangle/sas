@@ -13,7 +13,7 @@
     <bundle.symbolicName>org.beangle.tomcat.server</bundle.symbolicName>
     <bundle.namespace>org.beangle.tomcat.server</bundle.namespace>
   </properties>
-  
+
   <dependencies>
     <dependency>
       <groupId>org.beangle.tomcat</groupId>

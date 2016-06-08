@@ -21,7 +21,7 @@ package org.beangle.tomcat.configer.shell
 import java.io.{ File, FileInputStream, StringWriter }
 
 import org.beangle.commons.logging.Logging
-import org.beangle.template.freemarker.FreemarkerConfigurer
+import org.beangle.template.freemarker.Configurer
 import org.beangle.tomcat.configer.model.Container
 
 trait ShellEnv extends Logging {
@@ -42,7 +42,7 @@ trait ShellEnv extends Logging {
   }
 
   def toXml: String = {
-    val cfg = FreemarkerConfigurer.newConfig
+    val cfg = Configurer.newConfig
     val data = new collection.mutable.HashMap[String, Any]()
     data.put("container", container)
     val sw = new StringWriter()

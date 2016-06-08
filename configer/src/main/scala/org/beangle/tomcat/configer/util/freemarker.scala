@@ -28,10 +28,10 @@ import org.beangle.tomcat.configer.model.{ Container, Farm, Server }
 import freemarker.cache.ClassTemplateLoader
 import freemarker.ext.beans.BeansWrapper.MethodAppearanceDecision
 import freemarker.template.{ Configuration, DefaultObjectWrapper, TemplateModel }
-import org.beangle.template.freemarker.FreemarkerConfigurer
+import org.beangle.template.freemarker.Configurer
 
 object Template {
-  val cfg =  FreemarkerConfigurer.newConfig
+  val cfg = Configurer.newConfig
 
   def generate(container: Container, farm: Farm, targetDir: String) {
     for (server <- farm.servers) {

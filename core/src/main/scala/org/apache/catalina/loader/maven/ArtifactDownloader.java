@@ -10,10 +10,10 @@ import java.util.concurrent.Executors;
  * ArtifactDownloader
  * <p>
  * Support Features
- * <li>Display download processes
- * <li>Multiple thread downloading
- * <li>Detect resource status before downloading
- * 
+ * 1. Display download processes
+ * 2. Multiple thread downloading
+ * 3. Detect resource status before downloading
+ * </p>
  * @author chaostone
  */
 public class ArtifactDownloader {

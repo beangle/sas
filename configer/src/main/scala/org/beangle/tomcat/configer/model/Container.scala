@@ -137,7 +137,7 @@ object Container {
   private def readConnector(xml: scala.xml.Node, connector: Connector) {
     if (!(xml \ "@protocol").isEmpty) connector.protocol = (xml \ "@protocol").text
     if (!(xml \ "@URIEncoding").isEmpty) connector.URIEncoding = (xml \ "@URIEncoding").text
-    if (!(xml \ "@redirectPort").isEmpty) connector.redirectPort = Some(toInt((xml \ "@redirectPort").text))
+    //if (!(xml \ "@redirectPort").isEmpty) connector.redirectPort = Some(toInt((xml \ "@redirectPort").text))
     if (!(xml \ "@enableLookups").isEmpty) connector.enableLookups = (xml \ "@enableLookups").text == "true"
   }
 
