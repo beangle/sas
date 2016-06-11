@@ -9,12 +9,22 @@ public class Repository {
     public final String groupId;
     public final String artifactId;
     public final String version;
+    public final String packaging;
 
-    public Artifact(String groupId, String artifactId, String version) {
+    public Artifact(String gav) {
+      String[] infos = gav.split(":");
+      this.groupId = infos[0];
+      this.artifactId = infos[1];
+      this.version = infos[2];
+      this.packaging = (infos.length > 3) ? infos[3] : "jar";
+    }
+
+    public Artifact(String groupId, String artifactId, String version, String packaging) {
       super();
       this.groupId = groupId;
       this.artifactId = artifactId;
       this.version = version;
+      this.packaging = packaging;
     }
   }
 
@@ -34,7 +44,7 @@ public class Repository {
 
     public String path(Artifact artifact) {
       return base + "/" + artifact.groupId.replace('.', '/') + "/" + artifact.artifactId + "/"
-          + artifact.version + "/" + artifact.artifactId + "-" + artifact.version + ".jar";
+          + artifact.version + "/" + artifact.artifactId + "-" + artifact.version + "." + artifact.packaging;
     }
   }
 
@@ -57,7 +67,7 @@ public class Repository {
 
     public String url(Artifact artifact) {
       return base + "/" + artifact.groupId.replace('.', '/') + "/" + artifact.artifactId + "/"
-          + artifact.version + "/" + artifact.artifactId + "-" + artifact.version + ".jar";
+          + artifact.version + "/" + artifact.artifactId + "-" + artifact.version + "." + artifact.packaging;
     }
   }
 }

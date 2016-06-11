@@ -9,7 +9,7 @@
   <artifactId>beangle-tomcat-parent</artifactId>
   <packaging>pom</packaging>
   <name>Beangle Tomcat Parent</name>
-  <version>0.2.4-SNAPSHOT</version>
+  <version>0.2.4</version>
 
   <url>https://github.com/beangle/tomcat</url>
 
@@ -33,7 +33,7 @@
 
   <properties>
     <tomcat.version>8.0.35</tomcat.version>
-    <commons.version>4.5.0</commons.version>
+    <commons.version>4.5.1</commons.version>
     <data.version>4.4.0</data.version>
     <template.version>0.0.11</template.version>
   </properties>
