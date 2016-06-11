@@ -37,19 +37,18 @@ sealed class Connector {
   var URIEncoding: String = "UTF-8"
 
   /**
-   * If this Connector is supporting non-SSL requests,
-   * and a request is received for which a matching <security-constraint> requires SSL transport,
-   * Catalina will automatically redirect the request to the port number specified here.
-   */
-  var redirectPort: Option[Int] = _
-
-  /**
    * Set to true if you want calls to request.getRemoteHost() to perform DNS lookups
    * in order to return the actual host name of the remote client.
    * Set to false to skip the DNS lookup and return the IP address in String form instead (thereby improving performance).
    * By default, DNS lookups are disabled.
    */
   var enableLookups: Boolean = false
+  /**
+   * If this Connector is supporting non-SSL requests,
+   * and a request is received for which a matching <security-constraint> requires SSL transport,
+   * Catalina will automatically redirect the request to the port number specified here.
+   */
+  //  var redirectPort: Option[Int] = _
 }
 
 trait HttpAndAjp {
@@ -139,4 +138,3 @@ class HttpsConnector extends Connector with HttpAndAjp {
   this.protocol = "org.apache.coyote.http11.Http11NioProtocol"
   val properties = new ju.Properties
 }
-

@@ -12,10 +12,13 @@ object Gen {
       println("Usage: Gen /path/to/server.xml target targetDir")
       return
     }
-    val configFile = args(0)
-    val container = Container(scala.xml.XML.load(new FileInputStream(new File(configFile))))
+    val configFile = new File(args(0))
+    val container = Container(scala.xml.XML.load(new FileInputStream(configFile)))
     val target = args(1)
     val targetDir = args(2)
+    val beangleTomcatHome = configFile.getParentFile.getParentFile.getCanonicalPath
+
+    Resolve.resolve(container, beangleTomcatHome)
 
     container.farms foreach { farm =>
       if (farm.name == target || target == "all") {
@@ -27,4 +30,5 @@ object Gen {
       }
     }
   }
+
 }

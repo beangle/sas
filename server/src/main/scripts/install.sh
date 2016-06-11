@@ -183,7 +183,7 @@ function display_usage(){
   echo ""
   echo "Example: "
   echo "     install.sh lib org.slf4j slf4j-api 1.3.0"
-  echo "     install.sh tomcat 8.0.22"
+  echo "     install.sh tomcat 8.0.35"
 }
 
 function install_driver(){
@@ -215,7 +215,7 @@ function install_driver(){
       "mysql")
         groupId="mysql"
         artifactId="mysql-connector-java"
-        versions=( "5.1.35" "5.0.8")
+        versions=("6.0.2" "5.1.39")
         ;;
       "sqlserver")
         groupId="net.sourceforge.jtds"
@@ -225,7 +225,7 @@ function install_driver(){
       "h2")
         groupId="com.h2database"
         artifactId="h2"
-        versions=("1.4.186")
+        versions=("1.4.192")
         ;;
       *)
         echo invalid option
@@ -251,9 +251,6 @@ function install_driver(){
   install_lib $groupId $artifactId $ver
 }
 
-install_beangle(){
-  install_lib org.beangle.tomcat beangle-tomcat-core $beangle_server_ver
-}
 
 SERVER_HOME=`cd "$PRGDIR/.." >/dev/null; pwd`
 source $SERVER_HOME/bin/setenv.sh
@@ -297,9 +294,6 @@ elif [ "$1" == "war" ]; then
 
 elif [ "$1" == "driver" ]; then
   install_driver
-
-elif [ "$1" == "beangle" ]; then
-  install_beangle
 
 else
   display_usage

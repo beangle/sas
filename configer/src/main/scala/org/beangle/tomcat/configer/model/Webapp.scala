@@ -28,8 +28,11 @@ class Webapp(var name: String) {
 
   var docBase: String = _
 
-  import java.{ util => ju }
-  val properties = new ju.Properties
+  var url: String = _
+
+  var gav: String = _
+
+  val properties = new java.util.Properties
 
   var realms: String = _
 

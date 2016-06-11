@@ -2,7 +2,7 @@
   <parent>
     <groupId>org.beangle.tomcat</groupId>
     <artifactId>beangle-tomcat-parent</artifactId>
-    <version>0.2.3</version>
+    <version>0.2.4</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>beangle-tomcat-configer</artifactId>
@@ -29,6 +29,11 @@
       <groupId>org.beangle.template</groupId>
       <artifactId>beangle-template-freemarker_2.12</artifactId>
       <version>${template.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.beangle.tomcat</groupId>
+      <artifactId>beangle-tomcat-core</artifactId>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 </project>

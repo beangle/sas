@@ -111,8 +111,10 @@ object Container {
         val context = new Webapp((contextElem \ "@name").text)
         if (!(contextElem \ "@reloadable").isEmpty) context.reloadable = (contextElem \ "@reloadable").text == "true"
         if (!(contextElem \ "@docBase").isEmpty) context.docBase = (contextElem \ "@docBase").text
+        if (!(contextElem \ "@url").isEmpty) context.url = (contextElem \ "@url").text
+        if (!(contextElem \ "@gav").isEmpty) context.gav = (contextElem \ "@gav").text
 
-        for ((k, v) <- (contextElem.attributes.asAttrMap -- Set("name", "docBase", "reloadable"))) {
+        for ((k, v) <- (contextElem.attributes.asAttrMap -- Set("name", "docBase", "reloadable", "url", "gav"))) {
           context.properties.put(k, v)
         }
 
@@ -137,7 +139,7 @@ object Container {
   private def readConnector(xml: scala.xml.Node, connector: Connector) {
     if (!(xml \ "@protocol").isEmpty) connector.protocol = (xml \ "@protocol").text
     if (!(xml \ "@URIEncoding").isEmpty) connector.URIEncoding = (xml \ "@URIEncoding").text
-    if (!(xml \ "@redirectPort").isEmpty) connector.redirectPort = Some(toInt((xml \ "@redirectPort").text))
+    //if (!(xml \ "@redirectPort").isEmpty) connector.redirectPort = Some(toInt((xml \ "@redirectPort").text))
     if (!(xml \ "@enableLookups").isEmpty) connector.enableLookups = (xml \ "@enableLookups").text == "true"
   }
 

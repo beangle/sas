@@ -2,14 +2,14 @@
   <parent>
     <groupId>org.beangle</groupId>
     <artifactId>beangle-scala</artifactId>
-    <version>23.1</version>
+    <version>23.3</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.beangle.tomcat</groupId>
   <artifactId>beangle-tomcat-parent</artifactId>
   <packaging>pom</packaging>
   <name>Beangle Tomcat Parent</name>
-  <version>0.2.3</version>
+  <version>0.2.4</version>
 
   <url>https://github.com/beangle/tomcat</url>
 
@@ -32,10 +32,10 @@
   </modules>
 
   <properties>
-    <tomcat.version>8.0.24</tomcat.version>
-    <commons.version>4.4.8</commons.version>
-    <data.version>4.3.4</data.version>
-    <template.version>0.0.10</template.version>
+    <tomcat.version>8.0.35</tomcat.version>
+    <commons.version>4.5.1</commons.version>
+    <data.version>4.4.0</data.version>
+    <template.version>0.0.11</template.version>
   </properties>
 
 </project>
