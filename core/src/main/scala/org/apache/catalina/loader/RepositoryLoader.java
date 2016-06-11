@@ -6,6 +6,7 @@ import java.io.LineNumberReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.catalina.LifecycleException;
@@ -33,19 +34,19 @@ public class RepositoryLoader extends WebappLoader {
     remote = (null == url) ? new Repository.Remote() : new Repository.Remote(url);
     local = new Repository.Local(base);
     log("Loading jars from:" + local.base);
-
     super.startInternal();
     ClassLoader cl = super.getClassLoader();
     if (cl instanceof WebappClassLoader) {
       @SuppressWarnings("resource")
       WebappClassLoader devCl = (WebappClassLoader) cl;
-      StringBuilder sb = new StringBuilder("Append classpath:");
       URL resource = cl.getResource(DependencyResolver.DependenciesFile);
       if (null == resource) {
         log("Cannot find " + DependencyResolver.DependenciesFile + ",Repository loading aborted.");
         return;
       }
-      Repository.Artifact[] artifacts = resolver.resolve(resource);
+      List<Repository.Artifact> artifacts = resolver.resolve(resource);
+      StringBuilder sb = new StringBuilder("Append ");
+      sb.append(artifacts.size()).append(" jars:");
       new ArtifactDownloader(remote, local).download(artifacts);
       for (Repository.Artifact artifact : artifacts) {
         File file = new File(local.path(artifact));
@@ -82,9 +83,9 @@ public class RepositoryLoader extends WebappLoader {
   class DependencyResolver {
     public static final String DependenciesFile = "META-INF/beangle/container.dependencies";
 
-    public Repository.Artifact[] resolve(URL resource) {
+    public List<Repository.Artifact> resolve(URL resource) {
       List<Repository.Artifact> artifacts = new ArrayList<Repository.Artifact>();
-      if (null == resource) return new Repository.Artifact[0];
+      if (null == resource) return Collections.emptyList();
       try {
         InputStreamReader reader = new InputStreamReader(resource.openStream());
         LineNumberReader lr = new LineNumberReader(reader);
@@ -92,8 +93,7 @@ public class RepositoryLoader extends WebappLoader {
         do {
           line = lr.readLine();
           if (line != null && !line.isEmpty()) {
-            String[] infos = line.split(":");
-            artifacts.add(new Repository.Artifact(infos[0], infos[1], infos[2]));
+            artifacts.add(new Repository.Artifact(line));
           }
         } while (line != null);
 
@@ -101,7 +101,7 @@ public class RepositoryLoader extends WebappLoader {
       } catch (Exception e) {
         e.printStackTrace();
       }
-      return artifacts.toArray(new Repository.Artifact[0]);
+      return artifacts;
     }
   }
 

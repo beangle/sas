@@ -111,8 +111,10 @@ object Container {
         val context = new Webapp((contextElem \ "@name").text)
         if (!(contextElem \ "@reloadable").isEmpty) context.reloadable = (contextElem \ "@reloadable").text == "true"
         if (!(contextElem \ "@docBase").isEmpty) context.docBase = (contextElem \ "@docBase").text
+        if (!(contextElem \ "@url").isEmpty) context.url = (contextElem \ "@url").text
+        if (!(contextElem \ "@gav").isEmpty) context.gav = (contextElem \ "@gav").text
 
-        for ((k, v) <- (contextElem.attributes.asAttrMap -- Set("name", "docBase", "reloadable"))) {
+        for ((k, v) <- (contextElem.attributes.asAttrMap -- Set("name", "docBase", "reloadable", "url", "gav"))) {
           context.properties.put(k, v)
         }
 

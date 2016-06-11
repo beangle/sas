@@ -1,6 +1,7 @@
 package org.apache.catalina.loader.maven;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -9,11 +10,10 @@ import java.util.concurrent.Executors;
 /**
  * ArtifactDownloader
  * <p>
- * Support Features
- * 1. Display download processes
- * 2. Multiple thread downloading
- * 3. Detect resource status before downloading
+ * Support Features 1. Display download processes 2. Multiple thread downloading 3. Detect resource
+ * status before downloading
  * </p>
+ * 
  * @author chaostone
  */
 public class ArtifactDownloader {
@@ -32,15 +32,15 @@ public class ArtifactDownloader {
     this.executor = Executors.newFixedThreadPool(5);
   }
 
-  public void download(final Repository.Artifact[] artifacts) {
-    if (artifacts.length <= 0) return;
+  public void download(final List<Repository.Artifact> artifacts) {
+    if (artifacts.size() <= 0) return;
     int idx = 1;
     for (final Repository.Artifact artifact : artifacts) {
       final int id = idx;
       executor.execute(new Runnable() {
         public void run() {
-          Downloader downloader = new Downloader(id + "/" + artifacts.length, remote.url(artifact),
-              local.path(artifact));
+          Downloader downloader = new Downloader(id + "/" + artifacts.size(), remote.url(artifact), local
+              .path(artifact));
           statuses.put(downloader.getUrl(), downloader);
           try {
             downloader.start();
@@ -56,8 +56,10 @@ public class ArtifactDownloader {
 
     sleep(500);
     int i = 0;
+    boolean displayProcess = false;
     while (!statuses.isEmpty() && !executor.isTerminated()) {
       sleep(500);
+      displayProcess = true;
       char[] splash = new char[] { '\\', '|', '/', '-' };
       // print(multiple("\b", 100));
       print("\r");
@@ -65,15 +67,14 @@ public class ArtifactDownloader {
       sb.append(splash[i % 4]).append("  ");
       for (Map.Entry<String, Downloader> thread : statuses.entrySet()) {
         Downloader downloader = thread.getValue();
-        sb.append(
-            (downloader.getDownloaded() / 1024 + "KB/" + (downloader.getContentLength() / 1024) + "KB    "));
+        sb.append((downloader.getDownloaded() / 1024 + "KB/" + (downloader.getContentLength() / 1024) + "KB    "));
       }
       sb.append((multiple(" ", (100 - sb.length()))));
       i += 1;
       print(sb.toString());
     }
     executor.shutdown();
-    print("\n");
+    if (displayProcess) print("\n");
   }
 
   public static String multiple(String msg, int count) {
