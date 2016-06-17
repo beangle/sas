@@ -1,6 +1,6 @@
 #!/bin/sh
 
-BEANGLE_SERVER_VERSION="0.2.3"
+BEANGLE_SERVER_VERSION="0.2.5"
 if [ "$1" != "" ]; then
     BEANGLE_SERVER_VERSION="$1"
 fi
@@ -12,3 +12,4 @@ unzip -q $BEANGLE_SERVER.zip
 cd  $BEANGLE_SERVER
 chmod a+x bin/*.sh
 bin/init.sh
+bin/install.sh tomcat 8.0.36

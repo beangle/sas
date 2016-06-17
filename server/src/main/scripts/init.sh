@@ -18,24 +18,42 @@ install_lib_of_versions(){
   if [ "$finded" == "" ]; then
     finded=${versions[0]}
   fi
-  ./install.sh lib $1 $2 $finded lib
+  ./install.sh libx $1 $2 $finded
 }
 
 cd $PRGDIR
 source ./setenv.sh
-install_lib_of_versions org.scala-lang scala-library scala_vers
-install_lib_of_versions org.scala-lang scala-reflect scala_vers
-install_lib_of_versions org.scala-lang.modules scala-xml_2.12.0-M4 scalaxml_vers
 
-./install.sh lib org.beangle.commons beangle-commons-core_2.12 4.5.1 lib
-./install.sh lib org.beangle.data beangle-data-jdbc_2.12 4.4.0 lib
-./install.sh lib org.beangle.template beangle-template-freemarker_2.12 0.0.11 lib
-./install.sh lib org.beangle.tomcat beangle-tomcat-configer $beangle_server_ver lib
-./install.sh_lib org.beangle.tomcat beangle-tomcat-core     $beangle_server_ver lib
-./install.sh lib org.freemarker freemarker 2.3.24-incubating lib
-./install.sh lib org.slf4j slf4j-api 1.7.21 lib
-./install.sh lib org.slf4j slf4j-nop 1.7.21 lib
+wget_avaliable=false
+unzip_avaliable=false
 
-./install.sh_lib org.beangle.tomcat beangle-tomcat-core $beangle_server_ver
+if command -v wget >/dev/null 2; then
+  wget_avaliable=true
+fi
 
-./install.sh tomcat 8.0.35
+if command -v unzip >/dev/null 2; then
+  unzip_avaliable=true
+fi
+
+if $wget_avaliable && $unzip_avaliable ;then
+  install_lib_of_versions org.scala-lang scala-library scala_vers
+  install_lib_of_versions org.scala-lang scala-reflect scala_vers
+  install_lib_of_versions org.scala-lang.modules scala-xml_2.12.0-M4 scalaxml_vers
+
+  ./install.sh libx org.beangle.commons beangle-commons-core_2.12 4.5.1
+  ./install.sh libx org.beangle.data beangle-data-jdbc_2.12 4.4.0
+  ./install.sh libx org.beangle.template beangle-template-freemarker_2.12 0.0.11
+  ./install.sh libx org.beangle.tomcat beangle-tomcat-configer $beangle_server_ver
+  ./install.sh libx org.beangle.tomcat beangle-tomcat-core     $beangle_server_ver
+  ./install.sh libx org.freemarker freemarker 2.3.24-incubating
+  ./install.sh libx org.slf4j slf4j-api 1.7.21
+  ./install.sh libx org.slf4j slf4j-nop 1.7.21
+  ./install.sh lib org.beangle.tomcat beangle-tomcat-core     $beangle_server_ver
+elif $wget_avaliable; then
+  echo "unzip needed,install it first."
+elif $unzip_avaliable; then
+  echo "wget needed,install it first."
+else
+  echo "wget and unzip needed,install them first."
+fi
+

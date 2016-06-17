@@ -1,24 +1,16 @@
 #!/bin/sh
 PRGDIR=`dirname "$0"`
 
-install_lib(){
+# download_lib groupId artifactId version target_dir
+download_lib(){
   local group_id=`echo "$1" | tr . /`
-  if [ "$1" == "oracle" ]; then
-    M2_REMOTE_REPO=$M2_REMOTE_REPO_ORACLE
-  fi
   local URL="$M2_REMOTE_REPO/$group_id/$2/$3/$2-$3.jar"
   local artifact_name="$2-$3.jar"
   local local_file="$M2_REPO/$group_id/$2/$3/$2-$3.jar"
+  local target="$4"
 
-  local target="../ext"
-  local is_extlib=true
-  if [ "$4" != "" ]; then
-    target="$4"
-    is_extlib=false
-  fi
-
-  mkdir -p $SERVER_HOME/bin/$target
-  cd $SERVER_HOME/bin/$target
+  mkdir -p $target
+  cd $target
   if [ -f $artifact_name ]; then
     echo "$artifact_name existed."
   else
@@ -45,51 +37,6 @@ install_lib(){
       echo "Linked $artifact_name"
     fi
   fi
-
-  if $is_extlib && [ -d  $SERVER_HOME/tomcat/lib ]; then
-    cd $SERVER_HOME/tomcat/lib/
-    if [ ! -f $artifact_name ]; then
-      ln -sf $local_file
-    fi
-  fi
-}
-
-install_war(){
-  local group_id=`echo "$1" | tr . /`
-  local URL="$M2_REMOTE_REPO/$group_id/$2/$3/$2-$3.war"
-  local local_file="$M2_REPO/$group_id/$2/$3/$2-$3.war"
-  local artifact_name="$2-$3.war"
-
-  cd $SERVER_HOME/webapps
-
-  if [ -e $artifact_name ]; then
-    echo "$artifact_name exists."
-  else
-    if [ -e $local_file ]; then
-      ln -sf $local_file
-      echo "Linked $artifact_name"
-    else
-      if wget --spider $URL 2>/dev/null; then
-        echo "fetching $URL"
-      else
-        echo "$URL not exists,Installation aborted."
-        exit 1
-      fi
-
-      # FIXME need test?
-      if command -v aria2c >/dev/null 2; then
-        aria2c -x 16 $URL
-      else
-        wget $URL -O $artifact_name.part
-        mv $artifact_name.part $artifact_name
-      fi
-
-      mkdir -p "$M2_REPO/$group_id/$2/$3"
-      mv $artifact_name $local_file
-      ln -s  $local_file
-      echo "Downloaded $artifact_name"
-    fi
-  fi
 }
 
 install_tomcat()
@@ -99,12 +46,13 @@ install_tomcat()
   local tomcat_version=$1
   local tomcat_v=`echo $tomcat_version| cut -c 1-1`
   local tomcat_path="tomcat-$tomcat_v/v$tomcat_version/bin/apache-tomcat-$tomcat_version.zip"
-  local tomcat_url=$TOMCAT_REPO/$tomcat_path
-  if wget --spider $TOMCAT_MIRROR/$tomcat_path 2>/dev/null; then
-    tomcat_url=$TOMCAT_MIRROR/$tomcat_path
-  fi
 
   if [ ! -f apache-tomcat-$tomcat_version.zip ]; then
+    local tomcat_url=$TOMCAT_REPO/$tomcat_path
+    if wget --spider $TOMCAT_MIRROR/$tomcat_path 2>/dev/null; then
+      tomcat_url=$TOMCAT_MIRROR/$tomcat_path
+    fi
+
     if wget --spider $tomcat_url 2>/dev/null; then
       echo "Downloading $tomcat_url"
     else
@@ -145,19 +93,16 @@ install_tomcat()
   rm -rf tomcat/conf/server.xml
   rm -rf tomcat/bin/*.xml
   rm -rf tomcat/bin/*.bat
+  rm -rf tomcat/bin/*native.tar.gz
+  rm -rf tomcat/bin/*daemon*
   rm -rf tomcat/bin/startup.sh
   rm -rf tomcat/bin/shutdown.sh
   rm -rf tomcat/bin/configtest.sh
+  rm -rf tomcat/bin/version.sh
   rm -rf tomcat/bin/digest.sh
   rm -rf tomcat/bin/tool-wrapper.sh
   chmod a+x tomcat/bin/*.sh
 
-  shopt -s nullglob
-  if [ -d ext ] ; then
-    for jar in ext/*.jar ;do
-      cp $jar tomcat/lib/
-    done
-  fi
   echo "$tomcat_version installed successfully."
 }
 
@@ -166,8 +111,8 @@ function check_tomcat(){
   local ver=""
   local version=$1
 
-  if [ -d tomcat ] && [ -a tomcat/bin/version.sh ]; then
-    ver=$(tomcat/bin/version.sh |grep version)
+  if [ -d tomcat ] && [ -a tomcat/bin/catalina.sh ]; then
+    ver=$(tomcat/bin/catalina.sh version |grep version)
     ver=${ver##*/}
   fi
 
@@ -176,14 +121,12 @@ function check_tomcat(){
 
 function display_usage(){
   echo "Usage:"
-  echo "     install.sh lib groupId artifactId version"
-  echo "     install.sh war groupId artifactId version"
   echo "     install.sh driver [what]"
   echo "     install.sh tomcat version"
+  echo "     install.sh lib groupId artifactId version"
   echo ""
   echo "Example: "
-  echo "     install.sh lib org.slf4j slf4j-api 1.3.0"
-  echo "     install.sh tomcat 8.0.35"
+  echo "     install.sh tomcat 8.0.36"
 }
 
 function install_driver(){
@@ -248,7 +191,11 @@ function install_driver(){
       esac
     done
   fi
-  install_lib $groupId $artifactId $ver
+
+  if [ "$1" == "oracle" ]; then
+    M2_REMOTE_REPO=$M2_REMOTE_REPO_ORACLE
+  fi
+  download_lib $groupId $artifactId $ver $SERVER_HOME/lib
 }
 
 
@@ -282,15 +229,11 @@ elif [ "$1" == "lib" ]; then
   if [ "$4" == "" ]; then
     display_usage
   else
-    install_lib $2 $3 $4 $5
+    download_lib $2 $3 $4 $SERVER_HOME/lib
   fi
 
-elif [ "$1" == "war" ]; then
-  if [ "$4" == "" ]; then
-    display_usage
-  else
-    install_war $2 $3 $4
-  fi
+elif [ "$1" == "libx" ]; then
+  download_lib $2 $3 $4 $SERVER_HOME/bin/lib
 
 elif [ "$1" == "driver" ]; then
   install_driver
