@@ -43,12 +43,12 @@ if $wget_avaliable && $unzip_avaliable ;then
   ./install.sh libx org.beangle.commons beangle-commons-core_2.12 $beangle_commons_ver
   ./install.sh libx org.beangle.data beangle-data-jdbc_2.12 $beangle_data_ver
   ./install.sh libx org.beangle.template beangle-template-freemarker_2.12 $beangle_freemarker_ver
-  ./install.sh libx org.beangle.tomcat beangle-tomcat-configer $beangle_server_ver
-  ./install.sh libx org.beangle.tomcat beangle-tomcat-core     $beangle_server_ver
+  ./install.sh libx org.beangle.tomcat beangle-tomcat-configer $beangle_tomcat_ver
+  ./install.sh libx org.beangle.tomcat beangle-tomcat-core     $beangle_tomcat_ver
   ./install.sh libx org.freemarker freemarker $freemarker_ver
   ./install.sh libx org.slf4j slf4j-api $slf4j_ver
   ./install.sh libx org.slf4j slf4j-nop $slf4j_ver
-  ./install.sh lib org.beangle.tomcat beangle-tomcat-core     $beangle_server_ver
+  ./install.sh lib org.beangle.tomcat beangle-tomcat-core     $beangle_tomcat_ver
 elif $wget_avaliable; then
   echo "unzip needed,install it first."
 elif $unzip_avaliable; then
