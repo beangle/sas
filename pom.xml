@@ -9,7 +9,7 @@
   <artifactId>beangle-tomcat-parent</artifactId>
   <packaging>pom</packaging>
   <name>Beangle Tomcat Parent</name>
-  <version>0.2.5</version>
+  <version>0.2.6-SNAPSHOT</version>
 
   <url>https://github.com/beangle/tomcat</url>
 
