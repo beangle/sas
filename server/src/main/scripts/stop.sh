@@ -9,6 +9,8 @@ if [ "$TARGET" = "" ]; then
   exit
 fi
 
+cd $SERVER_HOME
+
 shopt -s nullglob
 if [ -d servers ]; then
   cd $SERVER_HOME/servers

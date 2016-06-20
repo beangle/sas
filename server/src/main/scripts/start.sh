@@ -14,6 +14,8 @@ if [ ! -d $SERVER_HOME/bin/lib ]; then
   exit 1
 fi
 
+cd $SERVER_HOME
+
 java -cp "$SERVER_HOME/lib/*:$SERVER_HOME/bin/lib/*" org.beangle.tomcat.configer.shell.Gen $SERVER_HOME/conf/server.xml $TARGET $SERVER_HOME
 
 shopt -s nullglob
