@@ -47,6 +47,9 @@ install_tomcat()
   local tomcat_v=`echo $tomcat_version| cut -c 1-1`
   local tomcat_path="tomcat-$tomcat_v/v$tomcat_version/bin/apache-tomcat-$tomcat_version.zip"
 
+  mkdir -p tmp
+  cd tmp
+
   if [ ! -f apache-tomcat-$tomcat_version.zip ]; then
     local tomcat_url=$TOMCAT_REPO/$tomcat_path
     if wget --spider $TOMCAT_MIRROR/$tomcat_path 2>/dev/null; then
@@ -65,17 +68,17 @@ install_tomcat()
       wget $tomcat_url -O apache-tomcat-$tomcat_version.zip.part
       mv apache-tomcat-$tomcat_version.zip.part  apache-tomcat-$tomcat_version.zip
     fi
+  fi
 
-    if [ -f apache-tomcat-$tomcat_version.zip ]; then
-      unzip -q apache-tomcat-$tomcat_version.zip
-      #rm -rf apache-tomcat-$tomcat_version.zip
-      rm -rf tomcat
-      mv apache-tomcat-$tomcat_version tomcat
-    fi
-  else
-    unzip -q apache-tomcat-$tomcat_version.zip
+  cd $SERVER_HOME
+
+  if [ -f tmp/apache-tomcat-$tomcat_version.zip ]; then
+    unzip -q tmp/apache-tomcat-$tomcat_version.zip
     rm -rf tomcat
     mv apache-tomcat-$tomcat_version tomcat
+  else
+    echo "Cannot find tmp/apache-tomcat-$tomcat_version.zip"
+    return 0
   fi
 
   mkdir -p servers
