@@ -1,17 +1,20 @@
 #!/bin/sh
 
-BEANGLE_SERVER_VERSION="0.2.5"
+BEANGLE_SERVER_VERSION="0.2.6-SNAPSHOT"
 if [ "$1" != "" ]; then
-    BEANGLE_SERVER_VERSION="$1"
+  BEANGLE_SERVER_VERSION="$1"
 fi
 
 if [ ! -f beangle-tomcat-server-$BEANGLE_SERVER_VERSION.zip ]; then
   wget "http://repo1.maven.org/maven2/org/beangle/tomcat/beangle-tomcat-server/$BEANGLE_SERVER_VERSION/beangle-tomcat-server-$BEANGLE_SERVER_VERSION.zip"
 fi
-export BEANGLE_SERVER="beangle-tomcat-server-$BEANGLE_SERVER_VERSION"
-unzip -q $BEANGLE_SERVER.zip
 
-cd  $BEANGLE_SERVER
-chmod a+x bin/*.sh
-bin/init.sh
-bin/install.sh tomcat 8.0.36
+if [ -f beangle-tomcat-server-$BEANGLE_SERVER_VERSION.zip ]; then
+  export BEANGLE_SERVER="beangle-tomcat-server-$BEANGLE_SERVER_VERSION"
+  unzip -q $BEANGLE_SERVER.zip
+
+  cd $BEANGLE_SERVER
+  chmod a+x bin/*.sh
+  bin/init.sh
+  bin/install.sh tomcat 8.0.36
+fi

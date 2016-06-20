@@ -40,14 +40,14 @@ if $wget_avaliable && $unzip_avaliable ;then
   install_lib_of_versions org.scala-lang scala-reflect scala_vers
   install_lib_of_versions org.scala-lang.modules scala-xml_2.12.0-M4 scalaxml_vers
 
-  ./install.sh libx org.beangle.commons beangle-commons-core_2.12 4.5.1
-  ./install.sh libx org.beangle.data beangle-data-jdbc_2.12 4.4.0
-  ./install.sh libx org.beangle.template beangle-template-freemarker_2.12 0.0.11
+  ./install.sh libx org.beangle.commons beangle-commons-core_2.12 $beangle_commons_ver
+  ./install.sh libx org.beangle.data beangle-data-jdbc_2.12 $beangle_data_ver
+  ./install.sh libx org.beangle.template beangle-template-freemarker_2.12 $beangle_freemarker_ver
   ./install.sh libx org.beangle.tomcat beangle-tomcat-configer $beangle_server_ver
   ./install.sh libx org.beangle.tomcat beangle-tomcat-core     $beangle_server_ver
-  ./install.sh libx org.freemarker freemarker 2.3.24-incubating
-  ./install.sh libx org.slf4j slf4j-api 1.7.21
-  ./install.sh libx org.slf4j slf4j-nop 1.7.21
+  ./install.sh libx org.freemarker freemarker $freemarker_ver
+  ./install.sh libx org.slf4j slf4j-api $slf4j_ver
+  ./install.sh libx org.slf4j slf4j-nop $slf4j_ver
   ./install.sh lib org.beangle.tomcat beangle-tomcat-core     $beangle_server_ver
 elif $wget_avaliable; then
   echo "unzip needed,install it first."
