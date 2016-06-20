@@ -1,6 +1,6 @@
 #!/bin/sh
 
-beangle_tomcat_version="0.2.6"
+beangle_tomcat_version="0.2.7-SNAPSHOT"
 if [ "$1" != "" ]; then
   beangle_tomcat_version="$1"
 fi
