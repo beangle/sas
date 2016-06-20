@@ -5,7 +5,9 @@ if [ "$1" != "" ]; then
     BEANGLE_SERVER_VERSION="$1"
 fi
 
-wget "http://repo1.maven.org/maven2/org/beangle/tomcat/beangle-tomcat-server/$BEANGLE_SERVER_VERSION/beangle-tomcat-server-$BEANGLE_SERVER_VERSION.zip"
+if [ ! -f beangle-tomcat-server-$BEANGLE_SERVER_VERSION.zip ]; then
+  wget "http://repo1.maven.org/maven2/org/beangle/tomcat/beangle-tomcat-server/$BEANGLE_SERVER_VERSION/beangle-tomcat-server-$BEANGLE_SERVER_VERSION.zip"
+fi
 export BEANGLE_SERVER="beangle-tomcat-server-$BEANGLE_SERVER_VERSION"
 unzip -q $BEANGLE_SERVER.zip
 
