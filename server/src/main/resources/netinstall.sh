@@ -1,6 +1,6 @@
 #!/bin/sh
 
-BEANGLE_SERVER_VERSION="0.2.6-SNAPSHOT"
+BEANGLE_SERVER_VERSION="0.2.6"
 if [ "$1" != "" ]; then
   BEANGLE_SERVER_VERSION="$1"
 fi
