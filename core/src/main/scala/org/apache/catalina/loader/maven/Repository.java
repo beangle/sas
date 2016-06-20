@@ -53,7 +53,7 @@ public class Repository {
     public final String base;
 
     public Remote() {
-      this("http://central.maven.org/maven2");
+      this("http://repo1.maven.org/maven2");
     }
 
     public Remote(String baseUrl) {
