@@ -2,40 +2,42 @@
   <parent>
     <groupId>org.beangle</groupId>
     <artifactId>beangle-scala</artifactId>
-    <version>23.3</version>
+    <version>24.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.beangle.tomcat</groupId>
-  <artifactId>beangle-tomcat-parent</artifactId>
+  <groupId>org.beangle.as</groupId>
+  <artifactId>beangle-as-parent</artifactId>
   <packaging>pom</packaging>
-  <name>Beangle Tomcat Parent</name>
-  <version>0.2.7-SNAPSHOT</version>
+  <name>Beangle Application Server Parent</name>
+  <version>0.2.7</version>
 
-  <url>https://github.com/beangle/tomcat</url>
+  <url>https://github.com/beangle/as</url>
 
   <issueManagement>
     <system>github</system>
-    <url>https://github.com/beangle/tomcat/issues</url>
+    <url>https://github.com/beangle/as/issues</url>
   </issueManagement>
 
   <scm>
-    <connection>scm:git:git://github.com/beangle/tomcat.git</connection>
-    <developerConnection>scm:git:git@github.com:beangle/tomcat.git</developerConnection>
-    <url>https://github.com/beangle/tomcat</url>
+    <connection>scm:git:git://github.com/beangle/as.git</connection>
+    <developerConnection>scm:git:git@github.com:beangle/as.git</developerConnection>
+    <url>https://github.com/beangle/as</url>
     <tag>HEAD</tag>
   </scm>
 
   <modules>
+    <module>http</module>
     <module>core</module>
-    <module>configer</module>
-    <module>server</module>
+    <module>config</module>
+    <module>tomcat</module>
   </modules>
 
   <properties>
     <tomcat.version>8.0.35</tomcat.version>
-    <commons.version>4.5.1</commons.version>
-    <data.version>4.4.0</data.version>
-    <template.version>0.0.11</template.version>
+    <commons.version>4.6.0</commons.version>
+    <data.version>4.4.2</data.version>
+    <beangle.maven.version>0.2.7</beangle.maven.version>
+    <beangle.mvc.version>0.3.10</beangle.mvc.version>
   </properties>
 
 </project>

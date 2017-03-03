@@ -10,8 +10,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.catalina.LifecycleException;
-import org.apache.catalina.loader.maven.ArtifactDownloader;
-import org.apache.catalina.loader.maven.Repository;
+import org.beangle.as.maven.ArtifactDownloader;
+import org.beangle.as.maven.Repository;
 
 public class RepositoryLoader extends WebappLoader {
 
