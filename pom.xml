@@ -33,11 +33,9 @@
   </modules>
 
   <properties>
-    <tomcat.version>8.0.35</tomcat.version>
+    <tomcat.version>9.0.0.M17</tomcat.version>
     <commons.version>4.6.0</commons.version>
     <data.version>4.4.2</data.version>
-    <beangle.maven.version>0.2.7</beangle.maven.version>
-    <beangle.mvc.version>0.3.10</beangle.mvc.version>
   </properties>
 
 </project>

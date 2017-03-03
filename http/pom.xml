@@ -14,6 +14,8 @@
     <bundle.symbolicName>org.beangle.as.http</bundle.symbolicName>
     <bundle.namespace>org.beangle.as.http</bundle.namespace>
     <spring.version>4.0.4.RELEASE</spring.version>
+    <beangle.maven.version>0.2.7</beangle.maven.version>
+    <beangle.mvc.version>0.3.10</beangle.mvc.version>
   </properties>
 
   <description>
