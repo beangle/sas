@@ -156,12 +156,12 @@ function install_driver(){
       "postgresql")
         groupId="org.postgresql"
         artifactId="postgresql"
-        versions=("9.4.1208" "9.3-1103-jdbc41")
+        versions=("42.1.1")
         ;;
       "mysql")
         groupId="mysql"
         artifactId="mysql-connector-java"
-        versions=("6.0.2" "5.1.39")
+        versions=("6.0.6" "5.1.41")
         ;;
       "sqlserver")
         groupId="net.sourceforge.jtds"
@@ -171,7 +171,7 @@ function install_driver(){
       "h2")
         groupId="com.h2database"
         artifactId="h2"
-        versions=("1.4.192")
+        versions=("1.4.195")
         ;;
       *)
         echo invalid option
