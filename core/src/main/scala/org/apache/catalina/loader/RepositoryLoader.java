@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.catalina.LifecycleException;
+import org.beangle.as.maven.Artifact;
 import org.beangle.as.maven.ArtifactDownloader;
 import org.beangle.as.maven.Repository;
 
@@ -44,11 +45,11 @@ public class RepositoryLoader extends WebappLoader {
         log("Cannot find " + DependencyResolver.DependenciesFile + ",Repository loading aborted.");
         return;
       }
-      List<Repository.Artifact> artifacts = resolver.resolve(resource);
+      List<Artifact> artifacts = resolver.resolve(resource);
       StringBuilder sb = new StringBuilder("Append ");
       sb.append(artifacts.size()).append(" jars:");
       new ArtifactDownloader(remote, local).download(artifacts);
-      for (Repository.Artifact artifact : artifacts) {
+      for (Artifact artifact : artifacts) {
         File file = new File(local.path(artifact));
         sb.append(file.getName());
         sb.append("  ");
@@ -83,8 +84,8 @@ public class RepositoryLoader extends WebappLoader {
   class DependencyResolver {
     public static final String DependenciesFile = "META-INF/beangle/container.dependencies";
 
-    public List<Repository.Artifact> resolve(URL resource) {
-      List<Repository.Artifact> artifacts = new ArrayList<Repository.Artifact>();
+    public List<Artifact> resolve(URL resource) {
+      List<Artifact> artifacts = new ArrayList<Artifact>();
       if (null == resource) return Collections.emptyList();
       try {
         InputStreamReader reader = new InputStreamReader(resource.openStream());
@@ -93,7 +94,7 @@ public class RepositoryLoader extends WebappLoader {
         do {
           line = lr.readLine();
           if (line != null && !line.isEmpty()) {
-            artifacts.add(new Repository.Artifact(line));
+            artifacts.add(new Artifact(line));
           }
         } while (line != null);
 

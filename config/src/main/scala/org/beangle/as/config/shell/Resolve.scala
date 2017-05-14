@@ -7,6 +7,7 @@ import org.beangle.as.maven.{ ArtifactDownloader, Repository }
 import org.beangle.commons.io.IOs
 import org.beangle.commons.lang.Strings.{ isEmpty, isNotEmpty, split, substringAfterLast }
 import org.beangle.as.config.model.Container
+import org.beangle.as.maven.Artifact
 
 object Resolve {
 
@@ -37,7 +38,7 @@ object Resolve {
         } else if (isNotEmpty(webapp.gav)) {
           val gavinfo = split(webapp.gav, ":")
           if (gavinfo.length < 3) throw new RuntimeException(s"Invalid gav ${webapp.gav},Using groupId:artifactId:version format.")
-          val artifact = new Repository.Artifact(webapp.gav + ":war")
+          val artifact = new Artifact(webapp.gav + ":war")
           new ArtifactDownloader(remote, local).download(java.util.Collections.singletonList(artifact))
           webapp.docBase = local.path(artifact)
         } else {

@@ -21,6 +21,7 @@ public class Downloader {
   private int threads = 20;
   private int step = 20 * 1024;
 
+  //分段下载使用的线程池
   private ExecutorService executor = Executors.newFixedThreadPool(threads);
 
   protected final String id;
@@ -57,7 +58,6 @@ public class Downloader {
 
   public void start() throws IOException {
     File file = new File(location);
-    if (file.exists()) { return; }
     URL resourceURL = new URL(url);
     String urlStatus = touchUrl(resourceURL);
     if (null != urlStatus) {
