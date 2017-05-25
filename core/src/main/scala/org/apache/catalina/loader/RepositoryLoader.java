@@ -32,9 +32,6 @@ public class RepositoryLoader extends WebappLoader {
 
   @Override
   public void startInternal() throws LifecycleException {
-    remote = (null == url) ? new Repository.Remote() : new Repository.Remote(url);
-    local = new Repository.Local(base);
-    log("Loading jars from:" + local.base);
     super.startInternal();
     ClassLoader cl = super.getClassLoader();
     if (cl instanceof WebappClassLoader) {
@@ -42,12 +39,13 @@ public class RepositoryLoader extends WebappLoader {
       WebappClassLoader devCl = (WebappClassLoader) cl;
       URL resource = cl.getResource(DependencyResolver.DependenciesFile);
       if (null == resource) {
-        log("Cannot find " + DependencyResolver.DependenciesFile + ",Repository loading aborted.");
         return;
       }
+      log("Loading jars from:" + base);
       List<Artifact> artifacts = resolver.resolve(resource);
       StringBuilder sb = new StringBuilder("Append ");
       sb.append(artifacts.size()).append(" jars:");
+      
       new ArtifactDownloader(remote, local).download(artifacts);
       for (Artifact artifact : artifacts) {
         File file = new File(local.path(artifact));
@@ -83,7 +81,6 @@ public class RepositoryLoader extends WebappLoader {
 
   class DependencyResolver {
     public static final String DependenciesFile = "META-INF/beangle/container.dependencies";
-
     public List<Artifact> resolve(URL resource) {
       List<Artifact> artifacts = new ArrayList<Artifact>();
       if (null == resource) return Collections.emptyList();

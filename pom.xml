@@ -36,6 +36,7 @@
     <tomcat.version>8.0.43</tomcat.version>
     <commons.version>5.0.0.M1</commons.version>
     <data.version>5.0.0.M1</data.version>
+    <bgmaven.version>0.3.0</bgmaven.version>
   </properties>
 
 </project>

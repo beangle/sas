@@ -3,11 +3,12 @@ package org.beangle.as.config.shell
 import java.io.{ File, FileInputStream, FileOutputStream }
 import java.net.URL
 
-import org.beangle.as.maven.{ ArtifactDownloader, Repository }
 import org.beangle.commons.io.IOs
 import org.beangle.commons.lang.Strings.{ isEmpty, isNotEmpty, split, substringAfterLast }
 import org.beangle.as.config.model.Container
-import org.beangle.as.maven.Artifact
+import org.beangle.maven.artifact.Artifact
+import org.beangle.maven.artifact.ArtifactDownloader
+import org.beangle.maven.artifact.Repo
 
 object Resolve {
 
@@ -27,8 +28,8 @@ object Resolve {
     val remoteRepoUrl = if (null == loader) null else loader.properties.getOrElse("url", null)
     val localBase = if (null == loader) null else loader.properties.getOrElse("base", null)
 
-    val remote = if (null == remoteRepoUrl) new Repository.Remote() else new Repository.Remote(remoteRepoUrl);
-    val local = new Repository.Local(localBase)
+    val remote = if (null == remoteRepoUrl) new Repo.Remote("remote", Repo.Remote.AliyunURL) else new Repo.Remote("remote", remoteRepoUrl)
+    val local = new Repo.Local(localBase)
 
     container.webapps foreach { webapp =>
       if (isEmpty(webapp.docBase)) {
@@ -38,9 +39,9 @@ object Resolve {
         } else if (isNotEmpty(webapp.gav)) {
           val gavinfo = split(webapp.gav, ":")
           if (gavinfo.length < 3) throw new RuntimeException(s"Invalid gav ${webapp.gav},Using groupId:artifactId:version format.")
-          val artifact = new Artifact(webapp.gav + ":war")
-          new ArtifactDownloader(remote, local).download(java.util.Collections.singletonList(artifact))
-          webapp.docBase = local.path(artifact)
+          val artifact = Artifact(webapp.gav + ":war")
+          new ArtifactDownloader(remote, local).download(List(artifact))
+          webapp.docBase = local.url(artifact)
         } else {
           throw new RuntimeException(s"Invalid Webapp definition ${webapp.name},one of (docBase,url,gav) properties needed.")
         }
