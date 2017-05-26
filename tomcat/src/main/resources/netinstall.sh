@@ -16,5 +16,5 @@ if [ -f beangle-as-tomcat-$beangle_as_version.zip ]; then
   cd $BEANGLE_SERVER
   chmod a+x bin/*.sh
   bin/init.sh
-  bin/install.sh tomcat 8.0.43
+  bin/install.sh tomcat 8.0.44
 fi

@@ -48,6 +48,7 @@ if $wget_avaliable && $unzip_avaliable && $bspatch_avaliable; then
   ./install.sh libx org.beangle.commons beangle-commons-core_2.12     $beangle_commons_ver
   ./install.sh libx org.beangle.commons beangle-commons-template_2.12 $beangle_commons_ver
   ./install.sh libx org.beangle.data beangle-data-jdbc_2.12 $beangle_data_ver
+  ./install.sh libx org.beangle.maven beangle-maven-artifact_2.12 $beangle_maven_ver
   ./install.sh libx org.beangle.as beangle-as-config $beangle_as_ver
   ./install.sh libx org.beangle.as beangle-as-core   $beangle_as_ver
   ./install.sh libx org.freemarker freemarker $freemarker_ver
