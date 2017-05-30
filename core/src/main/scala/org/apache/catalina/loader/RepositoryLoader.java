@@ -38,7 +38,7 @@ public class RepositoryLoader extends WebappLoader {
       File dependency;
       try {
         dependency = File.createTempFile("dependency", ".txt");
-        normalizeBase();
+        normalizeUrlAndBase();
         List<Artifact> artifacts = DependencyResolver.resolve(resource, dependency);
 
         String catalinaHome = System.getenv("TOMCAT_HOME");
@@ -86,10 +86,10 @@ public class RepositoryLoader extends WebappLoader {
 
   public void setBase(String base) {
     this.base = base;
-    normalizeBase();
   }
 
-  private void normalizeBase() {
+  private void normalizeUrlAndBase() {
+    if (null == this.url) this.url = "http://maven.aliyun.com/nexus/content/groups/public";
     if (null == base) {
       this.base = System.getProperty("user.home") + "/.m2/repository";
     } else {

@@ -2,7 +2,7 @@
 PRGDIR=`dirname "$0"`
 
 # download_lib groupId artifactId version target_dir
-download_lib(){
+function download_lib(){
   local group_id=`echo "$1" | tr . /`
   local URL="$M2_REMOTE_REPO/$group_id/$2/$3/$2-$3.jar"
   local artifact_name="$2-$3.jar"
@@ -39,7 +39,7 @@ download_lib(){
   fi
 }
 
-install_tomcat()
+function install_tomcat()
 {
   cd $SERVER_HOME
 
