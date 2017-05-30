@@ -9,7 +9,7 @@
   <artifactId>beangle-as-parent</artifactId>
   <packaging>pom</packaging>
   <name>Beangle Application Server Parent</name>
-  <version>0.2.7</version>
+  <version>0.2.8-SNAPSHOT</version>
 
   <url>https://github.com/beangle/as</url>
 
