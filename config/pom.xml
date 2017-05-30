@@ -32,6 +32,11 @@
       <version>${commons.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.beangle.maven</groupId>
+      <artifactId>beangle-maven-artifact_2.12</artifactId>
+      <version>${bgmaven.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.beangle.as</groupId>
       <artifactId>beangle-as-core</artifactId>
       <version>${project.version}</version>

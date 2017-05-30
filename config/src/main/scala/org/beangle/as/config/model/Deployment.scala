@@ -19,4 +19,15 @@
  */
 package org.beangle.as.config.model
 
-class Deployment(var webapp: String, var on: String, var path: String)
+import org.beangle.commons.lang.Strings
+
+class Deployment(var webapp: String, var on: String, var path: String) {
+  def matches(server: String): Boolean = {
+    if (server == on) {
+      true
+    } else {
+      val res = Strings.split(on, ",") find (one => one == server || server.startsWith(one + "."))
+      res.isDefined
+    }
+  }
+}

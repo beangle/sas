@@ -26,6 +26,7 @@ source ./setenv.sh
 
 wget_avaliable=false
 unzip_avaliable=false
+bspatch_avaliable=false
 
 if command -v wget >/dev/null 2; then
   wget_avaliable=true
@@ -35,7 +36,11 @@ if command -v unzip >/dev/null 2; then
   unzip_avaliable=true
 fi
 
-if $wget_avaliable && $unzip_avaliable ;then
+if command -v bspatch >/dev/null 2; then
+  bspatch_avaliable=true
+fi
+
+if $wget_avaliable && $unzip_avaliable && $bspatch_avaliable; then
   install_lib_of_versions org.scala-lang scala-library scala_vers
   install_lib_of_versions org.scala-lang scala-reflect scala_vers
   install_lib_of_versions org.scala-lang.modules scala-xml_2.12 scalaxml_vers
@@ -43,6 +48,7 @@ if $wget_avaliable && $unzip_avaliable ;then
   ./install.sh libx org.beangle.commons beangle-commons-core_2.12     $beangle_commons_ver
   ./install.sh libx org.beangle.commons beangle-commons-template_2.12 $beangle_commons_ver
   ./install.sh libx org.beangle.data beangle-data-jdbc_2.12 $beangle_data_ver
+  ./install.sh libx org.beangle.maven beangle-maven-artifact_2.12 $beangle_maven_ver
   ./install.sh libx org.beangle.as beangle-as-config $beangle_as_ver
   ./install.sh libx org.beangle.as beangle-as-core   $beangle_as_ver
   ./install.sh libx org.freemarker freemarker $freemarker_ver
@@ -53,6 +59,8 @@ elif $wget_avaliable; then
   echo "unzip needed,install it first."
 elif $unzip_avaliable; then
   echo "wget needed,install it first."
+elif $bspatch_avaliable; then
+  echo "bspatch needed,install it first."
 else
   echo "wget and unzip needed,install them first."
 fi
