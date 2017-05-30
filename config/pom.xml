@@ -1,0 +1,50 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>org.beangle.as</groupId>
+    <artifactId>beangle-as-parent</artifactId>
+    <version>0.2.7</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>beangle-as-config</artifactId>
+  <packaging>jar</packaging>
+  <name>Beangle AS Config</name>
+
+  <properties>
+    <bundle.symbolicName>org.beangle.as.config</bundle.symbolicName>
+    <bundle.namespace>org.beangle.as</bundle.namespace>
+    <freemarker.version>2.3.25-incubating</freemarker.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.beangle.commons</groupId>
+      <artifactId>beangle-commons-core_2.12</artifactId>
+      <version>${commons.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.beangle.data</groupId>
+      <artifactId>beangle-data-jdbc_2.12</artifactId>
+      <version>${data.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.beangle.commons</groupId>
+      <artifactId>beangle-commons-template_2.12</artifactId>
+      <version>${commons.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.beangle.maven</groupId>
+      <artifactId>beangle-maven-artifact_2.12</artifactId>
+      <version>${bgmaven.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.beangle.as</groupId>
+      <artifactId>beangle-as-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.freemarker</groupId>
+      <artifactId>freemarker</artifactId>
+      <version>${freemarker.version}</version>
+    </dependency>
+  </dependencies>
+</project>
