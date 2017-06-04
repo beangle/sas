@@ -98,7 +98,7 @@ object Container {
         val server = new Server(farm, (serverElem \ "@name").text)
         server.http = toInt((serverElem \ "@http").text)
         val host = (serverElem \ "@host").text
-        if (Strings.isEmpty(host)) server.host = host
+        if (Strings.isNotEmpty(host)) server.host = Some(host)
         farm.servers += server
       }
       conf.farms += farm
@@ -197,6 +197,10 @@ class Container {
       if (server.http > 0) ports += server.http
     }
     ports.toList.sorted
+  }
+
+  def hasExternHost: Boolean = {
+    hosts.exists { h => h.ip != "127.0.0.1" && h.ip != "localhost" }
   }
 
 }

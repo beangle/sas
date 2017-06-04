@@ -28,11 +28,13 @@
   [/#list]
   </Engines>
 
+[#if container.hasExternHost]
   <Hosts>
   [#list container.hosts as host]
     <Host name="${host.name}" ip="${host.ip}" [#if host.comment??]comment="${host.comment}"[/#if]/>
   [/#list]
   </Hosts>
+[/#if]
 
   <Farms>
   [#list container.farms as farm]
@@ -41,9 +43,9 @@
       <JvmArgs opts="${farm.jvmopts}"/>
     [/#if]
   [#t/]
-  [@displayConnector farm/]
+    [@displayConnector farm/]
       [#list farm.servers as server]
-      <Server name="${server.name}" http="${server.http}"/>
+      <Server name="${server.name}" http="${server.http}"[#if server.host??] host="${server.host}"[/#if]/>
       [/#list]
     </Farm>
   [/#list]
@@ -73,18 +75,18 @@
   [/#list]
   </Deployments>
 </Sas>
-[#-- display connector--]
+
 [#macro displayConnector holder]
 [#if holder.http??]
 [#assign http=holder.http/]
-    <HttpConnector protocol="HTTP/1.1" URIEncoding="${http.URIEncoding}" enableLookups="${http.enableLookups?c}" disableUploadTimeout="${http.disableUploadTimeout?c}"
-      maxThreads="${http.maxThreads}"  minSpareThreads="${http.minSpareThreads}" 
-      acceptCount="${http.acceptCount}" connectionTimeout="${http.connectionTimeout}" [#if http.maxConnections??]maxConnections="${http.maxConnections}"[/#if] [#rt/]
- [#if http.compression!="off"]
-      compression="${http.compression}" compressionMinSize="${http.compressionMinSize}" compressableMimeType="${http.compressionMimeType}"[#rt/]
- [/#if]
+      <HttpConnector protocol="HTTP/1.1" URIEncoding="${http.URIEncoding}" enableLookups="${http.enableLookups?c}" disableUploadTimeout="${http.disableUploadTimeout?c}"
+                     maxThreads="${http.maxThreads}"  minSpareThreads="${http.minSpareThreads}" acceptCount="${http.acceptCount}" connectionTimeout="${http.connectionTimeout}" [#if http.maxConnections??]maxConnections="${http.maxConnections}"[/#if] [#rt/]
+                     [#if http.compression!="off"]
+                     compression="${http.compression}" compressionMinSize="${http.compressionMinSize}" compressableMimeType="${http.compressionMimeType}"[#rt/]
+                     [/#if]
   />[#lt/]
 [/#if]
 [/#macro]
+
 [#-- display object properties--]
 [#macro spawnProps obj][#list obj.properties?keys as k] ${k}="${obj.properties[k]}" [/#list][/#macro]

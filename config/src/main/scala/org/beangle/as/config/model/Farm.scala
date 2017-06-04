@@ -51,7 +51,7 @@ class Server(val farm: Farm, var name: String) {
 
   var http: Int = _
 
-  var host: String = "localhost"
+  var host: Option[String] = None
 
   def qualifiedName: String = {
     if (Strings.isNotBlank(farm.name)) farm.name + "." + name
