@@ -19,45 +19,73 @@
 package org.beangle.as.config.model
 
 import org.beangle.commons.lang.Numbers.toInt
+import org.beangle.commons.lang.Strings
 
 object Container {
   def apply(xml: scala.xml.Elem): Container = {
     val conf = new Container
-    conf.version = (xml \ "@version").text
-    (xml \ "Listener").foreach { lsnElem =>
-      val listener = new Listener((lsnElem \ "@className").text)
-      for ((k, v) <- (lsnElem.attributes.asAttrMap -- Set("className"))) {
-        listener.properties.put(k, v)
-      }
-      conf.listeners += listener
+
+    (xml \ "Repository") foreach { repoElem =>
+      val local = (repoElem \ "@local").text
+      val remote = (repoElem \ "@remote").text
+      conf.repository = new Repository(if (Strings.isEmpty(local)) null else local, if (Strings.isEmpty(remote)) null else remote)
     }
 
-    (xml \ "Context").foreach { ctxElem =>
-      conf.context = new Context
-      (ctxElem \ "Loader").foreach { ldElem =>
-        val loader = new Loader((ldElem \ "@className").text)
-        for ((k, v) <- (ldElem.attributes.asAttrMap -- Set("className"))) {
-          loader.properties.put(k, v)
+    (xml \ "Engines" \ "Engine") foreach { engineElem =>
+      val name = (engineElem \ "@name").text
+      val version = (engineElem \ "@version").text
+      val typ = (engineElem \ "@type").text
+      val engine = new Engine(name, typ, version)
+
+      (engineElem \ "Listener").foreach { lsnElem =>
+        val listener = new Listener((lsnElem \ "@className").text)
+        for ((k, v) <- (lsnElem.attributes.asAttrMap -- Set("className"))) {
+          listener.properties.put(k, v)
         }
-        conf.context.loader = loader
+        engine.listeners += listener
       }
-      (ctxElem \ "JarScanner").foreach { scanElem =>
-        val jarScanner = new JarScanner()
-        for ((k, v) <- (scanElem.attributes.asAttrMap -- Set("className"))) {
-          jarScanner.properties.put(k, v)
+
+      (engineElem \ "Context").foreach { ctxElem =>
+        val context = new Context
+        (ctxElem \ "Loader").foreach { ldElem =>
+          val loader = new Loader((ldElem \ "@className").text)
+          for ((k, v) <- (ldElem.attributes.asAttrMap -- Set("className"))) {
+            loader.properties.put(k, v)
+          }
+          context.loader = loader
         }
-        conf.context.jarScanner = jarScanner
+        (ctxElem \ "JarScanner").foreach { scanElem =>
+          val jarScanner = new JarScanner()
+          for ((k, v) <- (scanElem.attributes.asAttrMap -- Set("className"))) {
+            jarScanner.properties.put(k, v)
+          }
+          context.jarScanner = jarScanner
+        }
+        engine.context = context
       }
+      conf.engines += engine
     }
 
-    (xml \ "Farm").foreach { farmElem =>
-      val farm = new Farm((farmElem \ "@name").text)
-      farm.jvmopts = (farmElem \ "JvmArgs" \ "@opts").text
+    (xml \ "Hosts" \ "Host") foreach { hostElem =>
+      val name = (hostElem \ "@name").text
+      val ip = (hostElem \ "@ip").text
+      val comment = (hostElem \ "@comment").text
+      val host = new Host(name, ip)
+      if (Strings.isNotBlank(comment)) host.comment = Some(comment)
+      conf.hosts += host
+    }
+
+    (xml \ "Farms" \ "Farm").foreach { farmElem =>
+      val engine = conf.engine((farmElem \ "@engine").text)
+      if (engine.isEmpty) throw new RuntimeException("Cannot find engine for" + (farmElem \ "@engine").text)
+
+      val farm = new Farm((farmElem \ "@name").text, engine.get)
+      val jvmopts = (farmElem \ "JvmArgs" \ "@opts").text
+      farm.jvmopts = if (Strings.isEmpty(jvmopts)) None else Some(jvmopts)
 
       (farmElem \ "HttpConnector") foreach { httpElem =>
         val http = new HttpConnector
         readConnector(httpElem, http)
-        readHttpAndAjpConnector(httpElem, http)
         if (!(httpElem \ "@disableUploadTimeout").isEmpty) http.disableUploadTimeout = (httpElem \ "@disableUploadTimeout").text == "true"
         if (!(httpElem \ "@connectionTimeout").isEmpty) http.connectionTimeout = toInt((httpElem \ "@connectionTimeout").text)
         if (!(httpElem \ "@compression").isEmpty) http.compression = (httpElem \ "@compression").text
@@ -66,72 +94,46 @@ object Container {
         farm.http = http
       }
 
-      (farmElem \ "AjpConnector") foreach { httpElem =>
-        val ajp = new AjpConnector
-        readConnector(httpElem, ajp)
-        readHttpAndAjpConnector(httpElem, ajp)
-        farm.ajp = ajp
-      }
-
-      (farmElem \ "HttpsConnector") foreach { httpsElem =>
-        val https = new HttpsConnector
-        readConnector(httpsElem, https)
-        readHttpAndAjpConnector(httpsElem, https)
-        val properties = httpsElem.attributes.asAttrMap -- Set("protocol", "URIEncoding", "redirectPort", "enableLookups",
-          "acceptCount", "maxThreads", "maxConnections", "minSpareThreads")
-        for ((k, v) <- properties) {
-          https.properties.put(k, v)
-        }
-        farm.https = https
-      }
-
       (farmElem \ "Server") foreach { serverElem =>
-        val server = new Server(farm, (serverElem \ "@name").text, toInt((serverElem \ "@shutdown").text))
-        server.httpPort = toInt((serverElem \ "@http").text)
-        server.httpsPort = toInt((serverElem \ "@https").text)
-        server.ajpPort = toInt((serverElem \ "@ajp").text)
+        val server = new Server(farm, (serverElem \ "@name").text)
+        server.http = toInt((serverElem \ "@http").text)
+        val host = (serverElem \ "@host").text
+        if (Strings.isEmpty(host)) server.host = host
         farm.servers += server
       }
       conf.farms += farm
     }
 
-    (xml \ "Resources") foreach { resourceElem =>
-      (resourceElem \ "Resource").foreach { dsElem =>
-        val ds = new Resource((dsElem \ "@name").text)
-        for ((k, v) <- (dsElem.attributes.asAttrMap -- Set("name"))) {
-          ds.properties.put(k, v)
-        }
-        conf.resources.put(ds.name, ds)
+    (xml \ "Resources" \ "Resource") foreach { resourceElem =>
+      val ds = new Resource((resourceElem \ "@name").text)
+      for ((k, v) <- (resourceElem.attributes.asAttrMap -- Set("name"))) {
+        ds.properties.put(k, v)
       }
+      conf.resources.put(ds.name, ds)
     }
 
-    (xml \ "Webapps").foreach { webappElem =>
-      //      conf.webapp.base = (webappElem \ "@base").text
-      (webappElem \ "Webapp").foreach { contextElem =>
-        val context = new Webapp((contextElem \ "@name").text)
-        if (!(contextElem \ "@reloadable").isEmpty) context.reloadable = (contextElem \ "@reloadable").text == "true"
-        if (!(contextElem \ "@docBase").isEmpty) context.docBase = (contextElem \ "@docBase").text
-        if (!(contextElem \ "@url").isEmpty) context.url = (contextElem \ "@url").text
-        if (!(contextElem \ "@gav").isEmpty) context.gav = (contextElem \ "@gav").text
+    (xml \ "Webapps" \ "Webapp").foreach { webappElem =>
+      val context = new Webapp((webappElem \ "@name").text)
+      if (!(webappElem \ "@reloadable").isEmpty) context.reloadable = (webappElem \ "@reloadable").text == "true"
+      if (!(webappElem \ "@docBase").isEmpty) context.docBase = (webappElem \ "@docBase").text
+      if (!(webappElem \ "@url").isEmpty) context.url = (webappElem \ "@url").text
+      if (!(webappElem \ "@gav").isEmpty) context.gav = (webappElem \ "@gav").text
 
-        for ((k, v) <- (contextElem.attributes.asAttrMap -- Set("name", "docBase", "reloadable", "url", "gav"))) {
-          context.properties.put(k, v)
-        }
-
-        (contextElem \ "ResourceRef").foreach { dsElem =>
-          context.resources += conf.resources((dsElem \ "@ref").text)
-        }
-        (contextElem \ "Realm").foreach { realmElem =>
-          context.realms = realmElem.toString()
-        }
-        conf.webapps += context
+      for ((k, v) <- (webappElem.attributes.asAttrMap -- Set("name", "docBase", "reloadable", "url", "gav"))) {
+        context.properties.put(k, v)
       }
+
+      (webappElem \ "ResourceRef").foreach { dsElem =>
+        context.resources += conf.resources((dsElem \ "@ref").text)
+      }
+      (webappElem \ "Realm").foreach { realmElem =>
+        context.realms = realmElem.toString()
+      }
+      conf.webapps += context
     }
 
-    (xml \ "Deployments") foreach { deploymentElem =>
-      (deploymentElem \ "Deployment").foreach { deployElem =>
-        conf.deployments += new Deployment((deployElem \ "@webapp").text, (deployElem \ "@on").text, (deployElem \ "@path").text)
-      }
+    (xml \ "Deployments" \ "Deployment") foreach { deployElem =>
+      conf.deployments += new Deployment((deployElem \ "@webapp").text, (deployElem \ "@on").text, (deployElem \ "@path").text)
     }
     conf
   }
@@ -139,26 +141,21 @@ object Container {
   private def readConnector(xml: scala.xml.Node, connector: Connector) {
     if (!(xml \ "@protocol").isEmpty) connector.protocol = (xml \ "@protocol").text
     if (!(xml \ "@URIEncoding").isEmpty) connector.URIEncoding = (xml \ "@URIEncoding").text
-    //if (!(xml \ "@redirectPort").isEmpty) connector.redirectPort = Some(toInt((xml \ "@redirectPort").text))
     if (!(xml \ "@enableLookups").isEmpty) connector.enableLookups = (xml \ "@enableLookups").text == "true"
-  }
-
-  private def readHttpAndAjpConnector(xml: scala.xml.Node, connector: HttpAndAjp) {
     if (!(xml \ "@acceptCount").isEmpty) connector.acceptCount = toInt((xml \ "@acceptCount").text)
     if (!(xml \ "@maxThreads").isEmpty) connector.maxThreads = toInt((xml \ "@maxThreads").text)
     if (!(xml \ "@maxConnections").isEmpty) connector.maxConnections = Some(toInt((xml \ "@maxConnections").text))
     if (!(xml \ "@minSpareThreads").isEmpty) connector.minSpareThreads = toInt((xml \ "@minSpareThreads").text)
   }
+
 }
 class Container {
 
-  var engine = "tomcat"
+  var repository: Repository = _
 
-  var version = "8.0.17"
+  val engines = new collection.mutable.ListBuffer[Engine]
 
-  var context: Context = _
-
-  val listeners = new collection.mutable.ListBuffer[Listener]
+  val hosts = new collection.mutable.ListBuffer[Host]
 
   val farms = new collection.mutable.ListBuffer[Farm]
 
@@ -171,8 +168,13 @@ class Container {
   def webappNames: Set[String] = {
     webapps.map(c => c.name).toSet
   }
+
   def resourceNames: Set[String] = {
     resources.keySet.toSet
+  }
+
+  def engine(name: String): Option[Engine] = {
+    engines.find(e => e.name == name)
   }
 
   def farmResourceNames(farm: Farm): Set[String] = {
@@ -192,34 +194,9 @@ class Container {
   def ports: List[Int] = {
     val ports = new collection.mutable.HashSet[Int]
     for (farm <- farms; server <- farm.servers) {
-      if (server.httpPort > 0) ports += server.httpPort
-      if (server.httpsPort > 0) ports += server.httpsPort
-      if (server.ajpPort > 0) ports += server.ajpPort
+      if (server.http > 0) ports += server.http
     }
     ports.toList.sorted
   }
 
-  def httpPorts: Set[Int] = {
-    val httpPorts = new collection.mutable.HashSet[Int]
-    for (farm <- farms; server <- farm.servers) {
-      if (server.httpPort > 0) httpPorts += server.httpPort
-    }
-    httpPorts.toSet
-  }
-
-  def httpsPorts: Set[Int] = {
-    val httpsPorts = new collection.mutable.HashSet[Int]
-    for (farm <- farms; server <- farm.servers) {
-      if (server.httpsPort > 0) httpsPorts += server.httpsPort
-    }
-    httpsPorts.toSet
-  }
-
-  def ajpPorts: Set[Int] = {
-    val ajpPorts = new collection.mutable.HashSet[Int]
-    for (farm <- farms; server <- farm.servers) {
-      if (server.ajpPort > 0) ajpPorts += server.ajpPort
-    }
-    ajpPorts.toSet
-  }
 }

@@ -29,16 +29,19 @@ import org.beangle.commons.lang.Numbers.{ isDigits, toInt }
 import org.beangle.data.jdbc.vendor.{ UrlFormat, Vendors }
 import org.beangle.as.config.model.{ Container, Deployment, Farm, Resource, Webapp }
 import org.beangle.as.config.util.Template
+import org.beangle.as.config.model.Engine
 
 object Config extends ShellEnv {
 
   var currentFarm: Option[Farm] = None
   var currentWebapp: Option[Webapp] = None
+  var currentEngine: Option[Engine] = None
 
   def printHelp() {
     println("""  info              print config xml content
   save              save config
   apply             apply the config to as server
+  create engine     create a engine
   create farm       create a farm profile
   remove farm       remove a farm profile
   create webapp     create a webapp context
@@ -47,8 +50,8 @@ object Config extends ShellEnv {
   remove datasource remove a datasource config
   add ref           add a resource reference
   remove ref        remove a resource reference
-  deploy            create a deployment
-  undeploy          remove a deployment
+  create deploy     create a deployment
+  remove deploy     remove a deployment
   jvmopts           set jvm options
   help              print this help conent""")
   }
@@ -69,6 +72,7 @@ object Config extends ShellEnv {
         prefix + " >"
       }, Set("exit", "quit", "q"), command => command match {
         case "info"              => println(toXml)
+        case "create engine"     => createEngine()
         case "create farm"       => createFarm()
         case "remove farm"       => removeFarm()
         case "use farm"          => useFarm()
@@ -78,8 +82,8 @@ object Config extends ShellEnv {
         case "remove datasource" => removeResource()
         case "add ref"           => addResourceRef()
         case "remove ref"        => removeResourceRef()
-        case "deploy"            => createDeployment()
-        case "undeploy"          => removeDeployment()
+        case "create deploy"     => createDeployment()
+        case "remove deploy"     => removeDeployment()
         case "jvmopts"           => setJvmOpts()
         case "save" =>
           println("Writing to " + workdir + configFile)
@@ -91,12 +95,21 @@ object Config extends ShellEnv {
     }
   }
 
+  def createEngine(): Engine = {
+    val name = prompt("engine name:", "tomcat8")
+    val typ = prompt("engine type:", "catalina")
+    val version = prompt("engine version:", null)
+    val engine = new Engine(name, typ, version)
+
+    container.engines += engine
+    currentEngine = Some(engine)
+    engine
+  }
+
   def createFarm(): Farm = {
     val farmName = prompt("farm name?", "farm1", name => !container.farmNames.contains(name))
-    val farm = prompt("create as farm(single or cluster)?", "single", c => c == "cluster" || c == "single") match {
-      case "cluster" => Farm.build(farmName, toInt(prompt("enter server count(<10):", "3", cnt => isDigits(cnt) && toInt(cnt) <= 10)))
-      case "single"  => Farm.build(farmName, 1)
-    }
+    val farm =
+      Farm.build(farmName, currentEngine.get, toInt(prompt("enter server count(<10):", "3", cnt => isDigits(cnt) && toInt(cnt) <= 10)))
     container.farms += farm
     farm
   }
@@ -265,11 +278,11 @@ object Config extends ShellEnv {
       println("farm is empty,create first.")
     } else {
       currentFarm match {
-        case Some(farm) => farm.jvmopts = prompt("jvm opts:")
+        case Some(farm) => farm.jvmopts = Some(prompt("jvm opts:"))
         case None => {
           val farmName = prompt("choose farm name?", null, name => container.farmNames.contains(name))
           container.farms.find(f => f.name == farmName).foreach { f =>
-            f.jvmopts = prompt("jvm opts:")
+            f.jvmopts = Some(prompt("jvm opts:"))
           }
         }
       }

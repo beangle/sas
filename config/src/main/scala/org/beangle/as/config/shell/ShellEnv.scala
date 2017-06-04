@@ -34,6 +34,7 @@ trait ShellEnv extends Logging {
 
   def read() = {
     assert(null != workdir)
+    if (workdir.endsWith("/")) workdir = workdir.substring(0, workdir.length - 1)
     val target = new File(workdir + configFile)
     if (target.exists) {
       logger.info(s"Read config file ${target.getName}")
@@ -46,7 +47,7 @@ trait ShellEnv extends Logging {
     val data = new collection.mutable.HashMap[String, Any]()
     data.put("container", container)
     val sw = new StringWriter()
-    val freemarkerTemplate = cfg.getTemplate(s"${container.engine}/config.xml.ftl")
+    val freemarkerTemplate = cfg.getTemplate(s"server.xml.ftl")
     freemarkerTemplate.process(data, sw)
     sw.close()
     sw.toString()

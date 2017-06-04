@@ -61,9 +61,7 @@ object Firewall extends ShellEnv {
   }
 
   def info() {
-    println("http ports:" + container.httpPorts.mkString(" "))
-    println("https ports:" + container.httpsPorts.mkString(" "))
-    println("ajp ports:" + container.ajpPorts.mkString(" "))
+    println("http ports:" + container.ports.mkString(" "))
   }
 
   def apply() {
@@ -72,17 +70,9 @@ object Firewall extends ShellEnv {
       return
     }
     val ports = new collection.mutable.ListBuffer[Int]
-    if (!container.httpPorts.isEmpty) {
-      val answer = prompt("apply http ports:" + container.httpPorts.mkString(" ") + "(y/n)?")
-      if ("y" == answer.toLowerCase) ports ++= container.httpPorts
-    }
-    if (!container.httpsPorts.isEmpty) {
-      val answer = prompt("apply https ports:" + container.httpsPorts.mkString(" ") + "(y/n)?")
-      if ("y" == answer.toLowerCase) ports ++= container.httpsPorts
-    }
-    if (!container.ajpPorts.isEmpty) {
-      val answer = prompt("apply ajp ports:" + container.ajpPorts.mkString(" ") + "(y/n)?")
-      if ("y" == answer.toLowerCase) ports ++= container.ajpPorts
+    if (!container.ports.isEmpty) {
+      val answer = prompt("apply http ports:" + container.ports.mkString(" ") + "(y/n)?")
+      if ("y" == answer.toLowerCase) ports ++= container.ports
     }
 
     if (!ports.isEmpty) {

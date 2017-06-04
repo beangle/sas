@@ -5,23 +5,23 @@
     <version>24.1</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.beangle.as</groupId>
-  <artifactId>beangle-as-parent</artifactId>
+  <groupId>org.beangle.sas</groupId>
+  <artifactId>beangle-sas-parent</artifactId>
   <packaging>pom</packaging>
-  <name>Beangle Application Server Parent</name>
+  <name>Beangle Simple Application Server Parent</name>
   <version>0.2.8-SNAPSHOT</version>
 
-  <url>https://github.com/beangle/as</url>
+  <url>https://github.com/beangle/sas</url>
 
   <issueManagement>
     <system>github</system>
-    <url>https://github.com/beangle/as/issues</url>
+    <url>https://github.com/beangle/sas/issues</url>
   </issueManagement>
 
   <scm>
-    <connection>scm:git:git://github.com/beangle/as.git</connection>
-    <developerConnection>scm:git:git@github.com:beangle/as.git</developerConnection>
-    <url>https://github.com/beangle/as</url>
+    <connection>scm:git:git://github.com/beangle/sas.git</connection>
+    <developerConnection>scm:git:git@github.com:beangle/sas.git</developerConnection>
+    <url>https://github.com/beangle/sas</url>
     <tag>HEAD</tag>
   </scm>
 
@@ -29,7 +29,7 @@
     <module>http</module>
     <module>core</module>
     <module>config</module>
-    <module>tomcat</module>
+    <module>server</module>
   </modules>
 
   <properties>

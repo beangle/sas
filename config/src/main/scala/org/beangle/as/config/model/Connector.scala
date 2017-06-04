@@ -18,9 +18,8 @@
  */
 package org.beangle.as.config.model
 
-import java.{ util => ju }
 /**
- * As Connector
+ * Sas Connector
  */
 sealed class Connector {
 
@@ -47,10 +46,6 @@ sealed class Connector {
    * and a request is received for which a matching <security-constraint> requires SSL transport,
    * Catalina will automatically redirect the request to the port number specified here.
    */
-  //  var redirectPort: Option[Int] = _
-}
-
-trait HttpAndAjp {
   /**
    * The maximum queue length for incoming connection requests when all possible request processing threads are in use.
    * Any requests received when the queue is full will be refused. The default value is 100
@@ -84,7 +79,7 @@ trait HttpAndAjp {
   var minSpareThreads: Int = 10
 }
 
-class HttpConnector extends Connector with HttpAndAjp {
+class HttpConnector extends Connector {
 
   this.protocol = "HTTP/1.1"
 
@@ -126,14 +121,4 @@ class HttpConnector extends Connector with HttpAndAjp {
    * The default value is text/html,text/xml,text/javascript,text/css,text/plain.
    */
   var compressionMimeType: String = "text/html,text/xml,text/javascript,text/css,text/plain"
-}
-
-class AjpConnector extends Connector with HttpAndAjp {
-  this.protocol = "AJP/1.3"
-
-}
-
-class HttpsConnector extends Connector with HttpAndAjp {
-  this.protocol = "org.apache.coyote.http11.Http11NioProtocol"
-  val properties = new ju.Properties
 }

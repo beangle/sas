@@ -22,40 +22,45 @@ package org.beangle.as.config.model
 import org.beangle.commons.lang.Strings
 
 object Farm {
-  def build(name: String, serverCount: Int): Farm = {
+  def build(name: String, engine: Engine, serverCount: Int): Farm = {
     require(serverCount > 0 && serverCount <= 10, "Cannot create farm contain so much servers.")
-    val farm = new Farm(name)
+    val farm = new Farm(name, engine)
     Range(0, serverCount).foreach { i =>
-      val server1 = new Server(farm, "server" + (i + 1), 8005 + i)
+      val server1 = new Server(farm, "server" + (i + 1))
       if (null != farm.http) {
-        server1.http = farm.http
-        server1.httpPort = 8080 + i
-      }
-      if (null != farm.ajp) {
-        server1.ajp = farm.ajp
-        server1.ajpPort = 9009 + i
-      }
-      if (null != farm.https) {
-        server1.https = farm.https
-        server1.httpsPort = 9009 + i
+        server1.http = 8080 + i
       }
       farm.servers += server1
     }
     if (1 == serverCount) farm.servers.head.name = "server"
-    farm.jvmopts = "-noverify -Xmx1G -Xms1G"
+    farm.jvmopts = Some("-noverify -Xmx1G -Xms1G")
     farm
   }
 }
 
-class Farm(var name: String) {
+class Farm(var name: String, var engine: Engine) {
 
   var http = new HttpConnector
 
-  var ajp: AjpConnector = _
-
-  var https: HttpsConnector = _
-
   var servers = new collection.mutable.ListBuffer[Server]
 
-  var jvmopts: String = _
+  var jvmopts: Option[String] = None
+}
+
+class Server(val farm: Farm, var name: String) {
+
+  var http: Int = _
+
+  var host: String = "localhost"
+
+  def qualifiedName: String = {
+    if (Strings.isNotBlank(farm.name)) farm.name + "." + name
+    else name
+  }
+
+  def port(http: Int): this.type = {
+    require(http >= 80, "http port should >= 80")
+    this.http = http
+    this
+  }
 }

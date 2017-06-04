@@ -44,14 +44,14 @@ object Template {
     data.put("farm", farm)
     data.put("server", server)
     val sw = new StringWriter()
-    val freemarkerTemplate = cfg.getTemplate(s"${container.engine}/conf/server.xml.ftl")
+    val freemarkerTemplate = cfg.getTemplate(s"${farm.engine.typ}/conf/server.xml.ftl")
     freemarkerTemplate.process(data, sw)
     val serverDir = targetDir + "/servers/" + server.qualifiedName
     new File(serverDir).mkdirs()
     Files.writeString(new File(serverDir + "/conf/server.xml"), sw.toString)
 
-    if (Strings.isNotBlank(farm.jvmopts)) {
-      val envTemplate = cfg.getTemplate(s"${container.engine}/bin/setenv.sh.ftl")
+    if (farm.jvmopts.isDefined) {
+      val envTemplate = cfg.getTemplate(s"${farm.engine.typ}/bin/setenv.sh.ftl")
       val nsw = new StringWriter()
       envTemplate.process(data, nsw)
       new File(serverDir + "/bin").mkdirs()

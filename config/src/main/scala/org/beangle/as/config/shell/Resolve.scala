@@ -9,6 +9,7 @@ import org.beangle.as.config.model.Container
 import org.beangle.maven.artifact.Artifact
 import org.beangle.maven.artifact.ArtifactDownloader
 import org.beangle.maven.artifact.Repo
+import org.beangle.commons.lang.Strings
 
 object Resolve {
 
@@ -24,12 +25,13 @@ object Resolve {
   }
 
   def resolve(container: Container, home: String) {
-    val loader = container.context.loader
-    val remoteRepoUrl = if (null == loader) null else loader.properties.getOrElse("url", null)
-    val localBase = if (null == loader) null else loader.properties.getOrElse("base", null)
+    val repository = container.repository
 
-    val remote = if (null == remoteRepoUrl) new Repo.Remote("remote", Repo.Remote.AliyunURL) else new Repo.Remote("remote", remoteRepoUrl)
-    val local = new Repo.Local(localBase)
+    val remote =
+      if (Strings.isEmpty(repository.remote)) new Repo.Remote("remote", Repo.Remote.AliyunURL)
+      else new Repo.Remote("remote", repository.remote)
+
+    val local = new Repo.Local(repository.local)
 
     container.webapps foreach { webapp =>
       if (isEmpty(webapp.docBase)) {
@@ -48,6 +50,7 @@ object Resolve {
       }
     }
   }
+
   private def download(url: String, dir: String): String = {
     val fileName = substringAfterLast(url, "/")
     val destFile = new File(dir + fileName)
