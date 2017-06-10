@@ -27,7 +27,9 @@
       [#if http.redirectPort??]
       redirectPort="${http.redirectPort}"
       [/#if]
+      [#if http.acceptCount??]
       acceptCount="${http.acceptCount}"
+      [/#if]
       maxThreads="${http.maxThreads}"
       minSpareThreads="${http.minSpareThreads}"
       [#if http.redirectPort??]

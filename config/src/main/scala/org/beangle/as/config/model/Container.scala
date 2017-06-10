@@ -83,7 +83,7 @@ object Container {
       val jvmopts = (farmElem \ "JvmArgs" \ "@opts").text
       farm.jvmopts = if (Strings.isEmpty(jvmopts)) None else Some(jvmopts)
 
-      (farmElem \ "HttpConnector") foreach { httpElem =>
+      (farmElem \ "Http") foreach { httpElem =>
         val http = new HttpConnector
         readConnector(httpElem, http)
         if (!(httpElem \ "@disableUploadTimeout").isEmpty) http.disableUploadTimeout = (httpElem \ "@disableUploadTimeout").text == "true"
@@ -139,10 +139,8 @@ object Container {
   }
 
   private def readConnector(xml: scala.xml.Node, connector: Connector) {
-    if (!(xml \ "@protocol").isEmpty) connector.protocol = (xml \ "@protocol").text
-    if (!(xml \ "@URIEncoding").isEmpty) connector.URIEncoding = (xml \ "@URIEncoding").text
     if (!(xml \ "@enableLookups").isEmpty) connector.enableLookups = (xml \ "@enableLookups").text == "true"
-    if (!(xml \ "@acceptCount").isEmpty) connector.acceptCount = toInt((xml \ "@acceptCount").text)
+    if (!(xml \ "@acceptCount").isEmpty) connector.acceptCount = Some(toInt((xml \ "@acceptCount").text))
     if (!(xml \ "@maxThreads").isEmpty) connector.maxThreads = toInt((xml \ "@maxThreads").text)
     if (!(xml \ "@maxConnections").isEmpty) connector.maxConnections = Some(toInt((xml \ "@maxConnections").text))
     if (!(xml \ "@minSpareThreads").isEmpty) connector.minSpareThreads = toInt((xml \ "@minSpareThreads").text)

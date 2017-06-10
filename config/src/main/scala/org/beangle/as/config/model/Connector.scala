@@ -50,7 +50,7 @@ sealed class Connector {
    * The maximum queue length for incoming connection requests when all possible request processing threads are in use.
    * Any requests received when the queue is full will be refused. The default value is 100
    */
-  var acceptCount: Int = 100
+  var acceptCount: Option[Int] = None
 
   /**
    * The maximum number of request processing threads to be created by this Connector,
@@ -71,7 +71,7 @@ sealed class Connector {
    * in which case the default will be the value of maxThreads from the executor. For NIO the default is 10000.
    * For APR/native, the default is 8192.
    */
-  var maxConnections: Option[Int] = _
+  var maxConnections: Option[Int] = None
 
   /**
    * The minimum number of threads always kept running. If not specified, the default of 10 is used.

@@ -51,12 +51,15 @@
   [/#list]
   </Farms>
 
+[#if container.resources?size>0]
   <Resources>
  [#list container.resources?keys as r]
     <Resource  name="${r}"  [@spawnProps container.resources[r] /] />
  [/#list]
   </Resources>
+[/#if]
 
+[#if container.webapps?size>0]
   <Webapps>
     [#list container.webapps as webapp]
     <Webapp name="${webapp.name}" reloadable="${webapp.reloadable?c}" [#if webapp.docBase??]docBase="${webapp.docBase}"[/#if] [#rt/]
@@ -68,22 +71,24 @@
     </Webapp>
     [/#list]
   </Webapps>
+[/#if]
 
+[#if container.deployments?size>0]
   <Deployments>
   [#list container.deployments as deployment]
     <Deployment webapp="${deployment.webapp}" on="${deployment.on}" path="${deployment.path}"  />
   [/#list]
   </Deployments>
+[/#if]
 </Sas>
 
 [#macro displayConnector holder]
 [#if holder.http??]
 [#assign http=holder.http/]
-      <HttpConnector protocol="HTTP/1.1" URIEncoding="${http.URIEncoding}" enableLookups="${http.enableLookups?c}" disableUploadTimeout="${http.disableUploadTimeout?c}"
-                     maxThreads="${http.maxThreads}"  minSpareThreads="${http.minSpareThreads}" acceptCount="${http.acceptCount}" connectionTimeout="${http.connectionTimeout}" [#if http.maxConnections??]maxConnections="${http.maxConnections}"[/#if] [#rt/]
-                     [#if http.compression!="off"]
-                     compression="${http.compression}" compressionMinSize="${http.compressionMinSize}" compressableMimeType="${http.compressionMimeType}"[#rt/]
-                     [/#if]
+      <Http maxThreads="${http.maxThreads}" minSpareThreads="${http.minSpareThreads}"[#if http.acceptCount??] acceptCount="${http.acceptCount}"[/#if] connectionTimeout="${http.connectionTimeout}" [#if http.maxConnections??]maxConnections="${http.maxConnections}"[/#if] [#rt/]
+           [#if http.compression!="off"]
+            compression="${http.compression}" compressionMinSize="${http.compressionMinSize}" compressableMimeType="${http.compressionMimeType}"[#rt/]
+           [/#if]
   />[#lt/]
 [/#if]
 [/#macro]
