@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <cdi>
   <container name="web">
-    <module class="org.beangle.as.http.web.DefaultModule"/>
+    <module class="org.beangle.sas.http.web.DefaultModule"/>
   </container>
 </cdi>

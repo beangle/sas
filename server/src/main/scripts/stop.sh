@@ -1,7 +1,6 @@
 #!/bin/sh
 PRGDIR=`dirname "$0"`
-SERVER_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
-TOMCAT_HOME=`cd "$PRGDIR/../tomcat/" >/dev/null; pwd`
+SAS_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
 export TARGET="$1"
 
 if [ "$TARGET" = "" ]; then
@@ -9,16 +8,16 @@ if [ "$TARGET" = "" ]; then
   exit
 fi
 
-cd $SERVER_HOME
+cd $SAS_HOME
 
 shopt -s nullglob
 if [ -d servers ]; then
-  cd $SERVER_HOME/servers
+  cd $SAS_HOME/servers
   stopped=0
   for dir in * ; do
     if [ "$dir" = "$TARGET" ] || [ "${dir%.*}" = "$TARGET" ] || [ "all" = "$TARGET" ]; then
       stopped=$((stopped+1))
-      $SERVER_HOME/bin/stop-server.sh $dir
+      $SAS_HOME/bin/catalina.sh stop $dir
     fi
   done
 

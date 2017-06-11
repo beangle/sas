@@ -10,7 +10,7 @@
       <excludes>
         <exclude>org.apache.tomcat:tomcat-juli</exclude>
         <exclude>org.apache.tomcat:tomcat-jdbc</exclude>
-        <exclude>org.beangle.as:beangle-as-core</exclude>
+        <exclude>org.beangle.sas:beangle-sas-core</exclude>
       </excludes>
     </dependencySet>
   </dependencySets>

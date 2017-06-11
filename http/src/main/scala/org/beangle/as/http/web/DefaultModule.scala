@@ -1,4 +1,4 @@
-package org.beangle.as.http.web
+package org.beangle.sas.http.web
 
 import org.beangle.commons.cdi.bind.BindModule
 

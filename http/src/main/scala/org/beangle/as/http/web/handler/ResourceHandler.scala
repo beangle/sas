@@ -1,4 +1,4 @@
-package org.beangle.as.http.web.handler
+package org.beangle.sas.http.web.handler
 
 import java.io.{ File, FileInputStream }
 

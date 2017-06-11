@@ -1,30 +1,24 @@
 #!/bin/sh
 PRGDIR=`dirname "$0"`
-export SERVER_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
-if [ -d $SERVER_HOME/tomcat ]; then
-  export TOMCAT_HOME="$SERVER_HOME/tomcat"
-else
-  echo "Cannot find tomcat,Please install it first."
-  exit 1
-fi
+export SAS_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
 export TARGET="$1"
 
-if [ ! -d $SERVER_HOME/bin/lib ]; then
+if [ ! -d $SAS_HOME/bin/lib ]; then
   echo "Please init beangle tomcat server first."
   exit 1
 fi
 
-cd $SERVER_HOME
+cd $SAS_HOME
 
-java -cp "$SERVER_HOME/lib/*:$SERVER_HOME/bin/lib/*" org.beangle.as.config.shell.Gen $SERVER_HOME/conf/server.xml $TARGET $SERVER_HOME
+java -cp "$SAS_HOME/lib/*:$SAS_HOME/bin/lib/*" org.beangle.sas.config.shell.Resolve $SAS_HOME/conf/server.xml $TARGET
 
 shopt -s nullglob
 if [ -d servers ]; then
-  cd $SERVER_HOME/servers
+  cd $SAS_HOME/servers
   started=0
   for dir in *; do
     if [ "$dir" = "$TARGET" ] ||  [ "all" = "$TARGET" ] || [ "${dir%.*}" = "$TARGET" ]; then
-      $SERVER_HOME/bin/start-server.sh $dir start
+      $SAS_HOME/bin/catalina.sh start $dir
       started=$((started+1))
     fi
   done

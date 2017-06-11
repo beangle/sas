@@ -1,9 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
-<Sas version="0.2.8">
-  <Repository local="" remote=""/>
-
+<Sas version="0.3.0">
   <Engines>
-    <Engine name="tomcat80" type="catalina" version="8.0.44">
+    <Engine name="tomcat80" type="tomcat" version="8.0.44">
       <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
       <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
       <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
@@ -17,7 +15,7 @@
   </Engines>
 
   <Hosts>
-    <Host name="localhost" ip="127.0.0.1" comment="dd"/>
+    <Host name="localhost" ip="127.0.0.1"/>
   </Hosts>
 
   <Farms>

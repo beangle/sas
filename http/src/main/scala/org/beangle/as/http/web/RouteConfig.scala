@@ -16,11 +16,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Beangle.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.beangle.as.http.web
+package org.beangle.sas.http.web
 
 import org.beangle.webmvc.dispatch.{ Route, RouteProvider }
 import org.beangle.commons.http.HttpMethods._
-import org.beangle.as.http.web.handler.ResourceHandler
+import org.beangle.sas.http.web.handler.ResourceHandler
 
 /**
  * @author chaostone

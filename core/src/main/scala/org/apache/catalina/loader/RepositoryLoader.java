@@ -41,8 +41,8 @@ public class RepositoryLoader extends WebappLoader {
         normalizeUrlAndBase();
         List<Artifact> artifacts = DependencyResolver.resolve(resource, dependency);
 
-        String catalinaHome = System.getenv("TOMCAT_HOME");
-        ProcessBuilder pb = new ProcessBuilder(catalinaHome + "/../bin/resolve.sh",
+        String sasHome = System.getenv("SAS_HOME");
+        ProcessBuilder pb = new ProcessBuilder(sasHome + "/bin/resolve.sh",
             dependency.getAbsolutePath(), url, base);
 
         pb.redirectErrorStream(true);
