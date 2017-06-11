@@ -45,7 +45,7 @@
       [#if deployment.matches(server.qualifiedName)]
       [#list container.webapps as webapp]
       [#if webapp.name == deployment.webapp]
-      <Context path="${deployment.path}" reloadable="${webapp.reloadable?c}"[#rt/]
+      <Context path="${deployment.path}" reloadable="${webapp.reloadable?c}" swallowOutput="true"[#rt/]
       [#lt/] docBase="${webapp.docBase}"[#rt/]
       [#lt/][#list webapp.properties?keys as p] ${p}="${webapp.properties[p]}"[/#list]>
         [#list webapp.resources as resource]

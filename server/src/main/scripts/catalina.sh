@@ -15,8 +15,11 @@ export CATALINA_TMPDIR="$CATALINA_BASE"/temp
 LOGGING_CONFIG="-Djava.util.logging.config.file=$CATALINA_BASE/conf/logging.properties"
 LOGGING_MANAGER="-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager"
 
-# Ensure that any user defined CLASSPATH variables are not used on startup,
-# but allow them to be specified in setenv.sh, in rare case when it is needed.
+function echoEnvs(){
+  echo "Using CATALINA_BASE:   $CATALINA_BASE"
+  echo "Using JRE_HOME:        $JRE_HOME"
+  echo "Using CATALINA_PID:    $CATALINA_PID"
+}
 CLASSPATH=
 
 if [ -r "$CATALINA_BASE/bin/setenv.sh" ]; then
@@ -62,22 +65,18 @@ JAVA_OPTS="$JAVA_OPTS $JSSE_OPTS"
 # Do this here so custom URL handles (specifically 'war:...') can be used in the security policy
 JAVA_OPTS="$JAVA_OPTS -Djava.protocol.handler.pkgs=org.apache.catalina.webresources"
 
-
-  echo "Using CATALINA_BASE:   $CATALINA_BASE"
-  echo "Using CATALINA_HOME:   $CATALINA_HOME"
-  echo "Using CATALINA_TMPDIR: $CATALINA_TMPDIR"
-  echo "Using JRE_HOME:        $JRE_HOME"
-  echo "Using CATALINA_PID:    $CATALINA_PID"
-
 if [ "$CATALINA_CMD" = "run" ]; then
+    echoEnvs
     eval exec "\"$_RUNJAVA\"" "\"$LOGGING_CONFIG\"" $LOGGING_MANAGER $JAVA_OPTS $CATALINA_OPTS \
       -classpath "\"$CLASSPATH\"" \
       -Dcatalina.base="\"$CATALINA_BASE\"" \
       -Dcatalina.home="\"$CATALINA_HOME\"" \
       -Djava.io.tmpdir="\"$CATALINA_TMPDIR\"" \
-      org.apache.catalina.startup.Bootstrap "$@" start
+      org.apache.catalina.startup.Bootstrap start
 
 elif [ "$CATALINA_CMD" = "start" ] ; then
+  echoEnvs
+
   if [ -s "$CATALINA_PID" ]; then
     echo "Existing PID file found during start."
       PID=`cat "$CATALINA_PID"`
@@ -103,7 +102,7 @@ elif [ "$CATALINA_CMD" = "start" ] ; then
     -Dcatalina.base="\"$CATALINA_BASE\"" \
     -Dcatalina.home="\"$CATALINA_HOME\"" \
     -Djava.io.tmpdir="\"$CATALINA_TMPDIR\"" \
-    org.apache.catalina.startup.Bootstrap "$@" start \
+    org.apache.catalina.startup.Bootstrap start \
     >> "$CATALINA_OUT" 2>&1 "&"
 
   echo $! > "$CATALINA_PID"
@@ -115,6 +114,8 @@ elif [ "$CATALINA_CMD" = "stop" ] ; then
   FORCE=1
 
   if [  -s "$CATALINA_PID" ]; then
+    echoEnvs
+
     PID=`cat "$CATALINA_PID"`
     kill -15 $PID >/dev/null 2>&1
   else
