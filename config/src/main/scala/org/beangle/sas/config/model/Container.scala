@@ -1,27 +1,29 @@
 /*
  * Beangle, Agile Development Scaffold and Toolkit
  *
- * Copyright (c) 2005-2014, Beangle Software.
+ * Copyright (c) 2005-2017, Beangle Software.
  *
  * Beangle is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * Beangle is distributed in the hope that it will be useful.
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with Beangle.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.beangle.sas.config.model
 
 import org.beangle.commons.lang.Numbers.toInt
 import org.beangle.commons.lang.Strings
+import org.apache.catalina.loader.RepositoryLoader
 
 object Container {
+
   def apply(xml: scala.xml.Elem): Container = {
     val conf = new Container
     val sasVersion = (xml \ "@version").text
@@ -34,9 +36,6 @@ object Container {
       val local = (repoElem \ "@local").text
       val remote = (repoElem \ "@remote").text
       conf.repository = new Repository(if (Strings.isEmpty(local)) None else Some(local), if (Strings.isEmpty(remote)) None else Some(remote))
-    }
-    if (null == conf.repository) {
-      conf.repository = new Repository(None, None)
     }
 
     (xml \ "Engines" \ "Engine") foreach { engineElem =>
@@ -166,6 +165,37 @@ object Container {
     if (!(xml \ "@minSpareThreads").isEmpty) connector.minSpareThreads = toInt((xml \ "@minSpareThreads").text)
   }
 
+  def applyDefault(conf: Container): Unit = {
+    if (null == conf.repository) {
+      conf.repository = new Repository(None, None)
+    }
+    conf.engines foreach { engine =>
+      if (engine.typ == EngineType.Tomcat) {
+        if (engine.listeners.isEmpty) {
+          engine.listeners += new Listener("org.apache.catalina.core.AprLifecycleListener").property("SSLEngine", "on")
+          engine.listeners += new Listener("org.apache.catalina.core.JreMemoryLeakPreventionListener")
+          engine.listeners += new Listener("org.apache.catalina.mbeans.GlobalResourcesLifecycleListener")
+          engine.listeners += new Listener("org.apache.catalina.core.ThreadLocalLeakPreventionListener")
+        }
+
+        if (null == engine.context) engine.context = new Context()
+
+        val context = engine.context
+        if (context.loader == null) {
+          context.loader = new Loader(classOf[RepositoryLoader].getName)
+        }
+        if (context.jarScanner == null) {
+          val scanner = new JarScanner
+          scanner.properties.put("scanBootstrapClassPath", "false")
+          scanner.properties.put("scanAllDirectories", "false")
+          scanner.properties.put("scanAllFiles", "false")
+          scanner.properties.put("scanClassPath", "false")
+          context.jarScanner = scanner
+        }
+        engine.jars += Jar.gav("org.beangle.sas:beangle-sas-core:" + conf.version)
+      }
+    }
+  }
 }
 class Container {
 

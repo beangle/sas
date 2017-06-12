@@ -1,3 +1,21 @@
+/*
+ * Beangle, Agile Development Scaffold and Toolkit
+ *
+ * Copyright (c) 2005-2017, Beangle Software.
+ *
+ * Beangle is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Beangle is distributed in the hope that it will be useful.
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Beangle.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.beangle.sas.config.shell
 
 import java.io.{ File, FileInputStream, FileOutputStream }
@@ -25,6 +43,7 @@ object Resolve {
     }
     val configFile = new File(args(0))
     val container = Container(scala.xml.XML.load(new FileInputStream(configFile)))
+    Container.applyDefault(container)
     val server = args(1)
     val sasHome = configFile.getParentFile.getParentFile.getCanonicalPath
 
@@ -54,7 +73,6 @@ object Resolve {
           }
         }
 
-        engine.jars += Jar.gav("org.beangle.sas:beangle-sas-core:" + container.version)
         engine.jars foreach { jar =>
           val jarName = jar.name
           if (!new File(tomcat, "/lib/" + jarName).exists()) {

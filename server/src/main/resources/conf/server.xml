@@ -1,17 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <Sas version="0.3.0">
   <Engines>
-    <Engine name="tomcat80" type="tomcat" version="8.0.44">
-      <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
-      <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
-      <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
-      <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
-    
-      <Context>
-        <Loader className="org.apache.catalina.loader.RepositoryLoader"/>
-        <JarScanner scanBootstrapClassPath="false" scanAllDirectories="false" scanAllFiles="false" scanClassPath="false"/>
-      </Context>
-    </Engine>
+    <Engine name="tomcat80" type="tomcat" version="8.0.44"/>
   </Engines>
 
   <Hosts>
