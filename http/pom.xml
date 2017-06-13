@@ -13,9 +13,6 @@
   <properties>
     <bundle.symbolicName>org.beangle.sas.http</bundle.symbolicName>
     <bundle.namespace>org.beangle.sas.http</bundle.namespace>
-    <spring.version>4.0.4.RELEASE</spring.version>
-    <beangle.maven.version>0.3.0</beangle.maven.version>
-    <beangle.mvc.version>0.3.10</beangle.mvc.version>
   </properties>
 
   <description>
@@ -26,12 +23,12 @@
     <dependency>
       <groupId>org.beangle.commons</groupId>
       <artifactId>beangle-commons-core_2.12</artifactId>
-      <version>${commons.version}</version>
+      <version>${beangle.commons.version}</version>
     </dependency>
     <dependency>
       <groupId>org.beangle.commons</groupId>
       <artifactId>beangle-commons-web_2.12</artifactId>
-      <version>${commons.version}</version>
+      <version>${beangle.commons.version}</version>
     </dependency>
     <dependency>
       <groupId>org.beangle.webmvc</groupId>
@@ -39,19 +36,9 @@
       <version>${beangle.mvc.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.beangle.commons</groupId>
-      <artifactId>beangle-commons-cdi_2.12</artifactId>
-      <version>${commons.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-beans</artifactId>
-      <version>${spring.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context</artifactId>
-      <version>${spring.version}</version>
+      <groupId>org.beangle.cdi</groupId>
+      <artifactId>beangle-cdi-spring_2.12</artifactId>
+      <version>${beangle.cdi.version}</version>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>

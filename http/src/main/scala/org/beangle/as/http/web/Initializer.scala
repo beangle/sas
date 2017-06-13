@@ -18,7 +18,7 @@
  */
 package org.beangle.sas.http.web
 
-import org.beangle.commons.cdi.spring.web.ContextListener
+import org.beangle.cdi.spring.web.ContextListener
 import org.beangle.webmvc.dispatch.Dispatcher
 
 import javax.servlet.ServletContext

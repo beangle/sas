@@ -21,7 +21,7 @@ package org.beangle.sas.config.shell
 import java.io.{ File, FileInputStream, StringWriter }
 
 import org.beangle.commons.logging.Logging
-import org.beangle.commons.template.freemarker.Configurer
+import org.beangle.template.freemarker.Configurer
 import org.beangle.sas.config.model.Container
 
 trait ShellEnv extends Logging {

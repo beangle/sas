@@ -28,7 +28,7 @@ import freemarker.cache.ClassTemplateLoader
 import freemarker.template.Configuration
 import org.beangle.commons.lang.ClassLoaders
 import org.beangle.commons.io.Files
-import org.beangle.commons.template.freemarker.{ Configurer => FreemarkerConfigurer }
+import org.beangle.template.freemarker.{ Configurer => FreemarkerConfigurer }
 
 object Firewall extends ShellEnv {
 

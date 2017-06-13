@@ -18,7 +18,7 @@
  */
 package org.beangle.sas.http.web
 
-import org.beangle.commons.cdi.bind.BindModule
+import org.beangle.cdi.bind.BindModule
 
 class DefaultModule extends BindModule {
 

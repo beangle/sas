@@ -23,7 +23,7 @@ import java.io.{ File, StringWriter }
 import java.lang.reflect.{ Method, Modifier }
 import org.beangle.commons.io.{ Files => IOFiles }
 import org.beangle.commons.lang.Strings
-import org.beangle.commons.template.freemarker.Configurer
+import org.beangle.template.freemarker.Configurer
 import org.beangle.sas.config.model.{ Container, Farm, Server }
 import freemarker.cache.ClassTemplateLoader
 import freemarker.ext.beans.BeansWrapper.MethodAppearanceDecision

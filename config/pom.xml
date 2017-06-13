@@ -12,39 +12,33 @@
   <properties>
     <bundle.symbolicName>org.beangle.sas.config</bundle.symbolicName>
     <bundle.namespace>org.beangle.sas</bundle.namespace>
-    <freemarker.version>2.3.25-incubating</freemarker.version>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>org.beangle.commons</groupId>
       <artifactId>beangle-commons-core_2.12</artifactId>
-      <version>${commons.version}</version>
+      <version>${beangle.commons.version}</version>
     </dependency>
     <dependency>
       <groupId>org.beangle.data</groupId>
       <artifactId>beangle-data-jdbc_2.12</artifactId>
-      <version>${data.version}</version>
+      <version>${beangle.data.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.beangle.commons</groupId>
-      <artifactId>beangle-commons-template_2.12</artifactId>
-      <version>${commons.version}</version>
+      <groupId>org.beangle.template</groupId>
+      <artifactId>beangle-template-freemarker_2.12</artifactId>
+      <version>${beangle.template.version}</version>
     </dependency>
     <dependency>
       <groupId>org.beangle.maven</groupId>
       <artifactId>beangle-maven-artifact_2.12</artifactId>
-      <version>${bgmaven.version}</version>
+      <version>${beangle.maven.version}</version>
     </dependency>
     <dependency>
       <groupId>org.beangle.sas</groupId>
       <artifactId>beangle-sas-core</artifactId>
       <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.freemarker</groupId>
-      <artifactId>freemarker</artifactId>
-      <version>${freemarker.version}</version>
     </dependency>
   </dependencies>
 </project>

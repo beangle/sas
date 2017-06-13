@@ -61,8 +61,8 @@ if $wget_avaliable && $unzip_avaliable && $bspatch_avaliable; then
   download org.scala-lang scala-reflect $scala_ver
   download org.scala-lang.modules scala-xml_2.12 $scalaxml_ver
   download org.beangle.commons beangle-commons-core_2.12     $beangle_commons_ver
-  download org.beangle.commons beangle-commons-template_2.12 $beangle_commons_ver
   download org.beangle.data beangle-data-jdbc_2.12 $beangle_data_ver
+  download org.beangle.template beangle-template-freemarker_2.12 $beangle_commons_ver
   download org.beangle.maven beangle-maven-artifact_2.12 $beangle_maven_ver
   download org.beangle.sas beangle-sas-config $beangle_sas_ver
   download org.beangle.sas beangle-sas-core   $beangle_sas_ver

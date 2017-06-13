@@ -20,7 +20,6 @@ package org.beangle.sas.config.model
 
 import org.beangle.commons.lang.Numbers.toInt
 import org.beangle.commons.lang.Strings
-import org.apache.catalina.loader.RepositoryLoader
 
 object Container {
 
@@ -182,7 +181,7 @@ object Container {
 
         val context = engine.context
         if (context.loader == null) {
-          context.loader = new Loader(classOf[RepositoryLoader].getName)
+          context.loader = new Loader("org.apache.catalina.loader.RepositoryLoader")
         }
         if (context.jarScanner == null) {
           val scanner = new JarScanner
