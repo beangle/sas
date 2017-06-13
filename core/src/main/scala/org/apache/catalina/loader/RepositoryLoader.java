@@ -1,3 +1,21 @@
+/*
+ * Beangle, Agile Development Scaffold and Toolkit
+ *
+ * Copyright (c) 2005-2017, Beangle Software.
+ *
+ * Beangle is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Beangle is distributed in the hope that it will be useful.
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Beangle.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.apache.catalina.loader;
 
 import java.io.File;
@@ -30,9 +48,9 @@ public class RepositoryLoader extends WebappLoader {
     super.startInternal();
     ClassLoader cl = super.getClassLoader();
 
-    if (cl instanceof WebappClassLoader) {
+    if (cl instanceof WebappClassLoaderBase) {
       @SuppressWarnings("resource")
-      WebappClassLoader devCl = (WebappClassLoader) cl;
+      WebappClassLoaderBase devCl = (WebappClassLoaderBase) cl;
       URL resource = cl.getResource(DependencyResolver.DependenciesFile);
       if (null == resource) { return; }
       File dependency;
@@ -41,8 +59,8 @@ public class RepositoryLoader extends WebappLoader {
         normalizeUrlAndBase();
         List<Artifact> artifacts = DependencyResolver.resolve(resource, dependency);
 
-        String catalinaHome = System.getenv("TOMCAT_HOME");
-        ProcessBuilder pb = new ProcessBuilder(catalinaHome + "/../bin/resolve.sh",
+        String sasHome = System.getenv("SAS_HOME");
+        ProcessBuilder pb = new ProcessBuilder(sasHome + "/bin/resolve.sh",
             dependency.getAbsolutePath(), url, base);
 
         pb.redirectErrorStream(true);
@@ -69,6 +87,7 @@ public class RepositoryLoader extends WebappLoader {
       }
     } else {
       logError("Unable to install WebappClassLoader !");
+      logError("getClassloader is "+ cl.getClass().getName());
     }
   }
 

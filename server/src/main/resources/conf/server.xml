@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Sas version="0.3.0">
+  <Engines>
+    <Engine name="tomcat80" type="tomcat" version="8.0.44"/>
+  </Engines>
+
+  <Hosts>
+    <Host name="localhost" ip="127.0.0.1"/>
+  </Hosts>
+
+  <Farms>
+    <Farm name="farm" engine="tomcat80">
+      <JvmArgs opts="-noverify -Xmx500M -Xms500M -Djava.security.egd=file:/dev/./urandom"/>
+      <HttpConnector acceptCount="100"  maxThreads="200"  minSpareThreads="10"  compression="off" />
+      <Server name="server1" http="8080" host="localhost"/>
+      <Server name="server2" http="8081" host="localhost"/>
+    </Farm>
+  </Farms>
+
+<!-- 
+  <Webapps>
+    <Webapp name="${your_app_name}" reloadable="false" docBase="${sas.home}/webapps/${your_war_name}">
+      <ResourceRef type="javax.sql.DataSource" ref="jdbc/${datasource}"/>
+    </Webapp>
+  </Webapps>
+
+  <Resources>
+    <Resource  name="jdbc/${datasource}"   driverClassName="org.postgresql.Driver"
+                      url="jdbc:postgresql://localhost:5432/postgres"   type="javax.sql.DataSource"
+                      username="postgres"  password="postgres" />
+  </Resources>
+
+  <Deployments>
+    <Deployment webapp="${your_app_name}" on="default" path="/${context_path}"  />
+  </Deployments>
+-->
+</Sas>

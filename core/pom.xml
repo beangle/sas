@@ -1,18 +1,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <groupId>org.beangle.as</groupId>
-    <artifactId>beangle-as-parent</artifactId>
-    <version>0.2.8-SNAPSHOT</version>
+    <groupId>org.beangle.sas</groupId>
+    <artifactId>beangle-sas-parent</artifactId>
+    <version>0.3.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>beangle-as-core</artifactId>
+  <artifactId>beangle-sas-core</artifactId>
   <packaging>jar</packaging>
-  <name>Beangle AS Core</name>
+  <name>Beangle Sas Core</name>
 
   <properties>
-    <bundle.symbolicName>org.beangle.as.core</bundle.symbolicName>
-    <bundle.namespace>org.beangle.as</bundle.namespace>
+    <bundle.symbolicName>org.beangle.sas.core</bundle.symbolicName>
+    <bundle.namespace>org.beangle.sas</bundle.namespace>
   </properties>
 
   <dependencies>
