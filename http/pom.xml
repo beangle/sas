@@ -1,21 +1,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <groupId>org.beangle.as</groupId>
-    <artifactId>beangle-as-parent</artifactId>
-    <version>0.2.7</version>
+    <groupId>org.beangle.sas</groupId>
+    <artifactId>beangle-sas-parent</artifactId>
+    <version>0.3.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>beangle-as-http</artifactId>
+  <artifactId>beangle-sas-http</artifactId>
   <packaging>war</packaging>
-  <name>Beangle AS Http Server</name>
+  <name>Beangle Sas Http Server</name>
 
   <properties>
-    <bundle.symbolicName>org.beangle.as.http</bundle.symbolicName>
-    <bundle.namespace>org.beangle.as.http</bundle.namespace>
-    <spring.version>4.0.4.RELEASE</spring.version>
-    <beangle.maven.version>0.3.0</beangle.maven.version>
-    <beangle.mvc.version>0.3.10</beangle.mvc.version>
+    <bundle.symbolicName>org.beangle.sas.http</bundle.symbolicName>
+    <bundle.namespace>org.beangle.sas.http</bundle.namespace>
   </properties>
 
   <description>
@@ -26,12 +23,12 @@
     <dependency>
       <groupId>org.beangle.commons</groupId>
       <artifactId>beangle-commons-core_2.12</artifactId>
-      <version>${commons.version}</version>
+      <version>${beangle.commons.version}</version>
     </dependency>
     <dependency>
       <groupId>org.beangle.commons</groupId>
       <artifactId>beangle-commons-web_2.12</artifactId>
-      <version>${commons.version}</version>
+      <version>${beangle.commons.version}</version>
     </dependency>
     <dependency>
       <groupId>org.beangle.webmvc</groupId>
@@ -39,19 +36,9 @@
       <version>${beangle.mvc.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.beangle.commons</groupId>
-      <artifactId>beangle-commons-cdi_2.12</artifactId>
-      <version>${commons.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-beans</artifactId>
-      <version>${spring.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context</artifactId>
-      <version>${spring.version}</version>
+      <groupId>org.beangle.cdi</groupId>
+      <artifactId>beangle-cdi-spring_2.12</artifactId>
+      <version>${beangle.cdi.version}</version>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>

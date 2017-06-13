@@ -16,18 +16,24 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Beangle.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.beangle.sas.http.web
+package org.beangle.sas.config.model
 
-import org.beangle.webmvc.dispatch.{ Route, RouteProvider }
-import org.beangle.commons.http.HttpMethods._
-import org.beangle.sas.http.web.handler.ResourceHandler
+class Webapp(var name: String) {
 
-/**
- * @author chaostone
- */
-class RouteConfig extends RouteProvider {
+  val resources = new collection.mutable.ListBuffer[Resource]
 
-  def routes: Iterable[Route] = {
-    List(new Route(GET, "/{path*}", new ResourceHandler))
-  }
+  def resourceNames: Set[String] = resources.map(d => d.name).toSet
+
+  var reloadable = false
+
+  var docBase: String = _
+
+  var url: String = _
+
+  var gav: String = _
+
+  val properties = new java.util.Properties
+
+  var realms: String = _
+
 }

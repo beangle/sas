@@ -16,18 +16,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Beangle.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.beangle.sas.http.web
+package org.beangle.sas.config.model
 
-import org.beangle.webmvc.dispatch.{ Route, RouteProvider }
-import org.beangle.commons.http.HttpMethods._
-import org.beangle.sas.http.web.handler.ResourceHandler
+class Host(var name: String, var ip: String, var comment: Option[String] = None) {
 
-/**
- * @author chaostone
- */
-class RouteConfig extends RouteProvider {
-
-  def routes: Iterable[Route] = {
-    List(new Route(GET, "/{path*}", new ResourceHandler))
-  }
 }
