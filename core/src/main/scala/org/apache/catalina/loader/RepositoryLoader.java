@@ -48,9 +48,9 @@ public class RepositoryLoader extends WebappLoader {
     super.startInternal();
     ClassLoader cl = super.getClassLoader();
 
-    if (cl instanceof WebappClassLoader) {
+    if (cl instanceof WebappClassLoaderBase) {
       @SuppressWarnings("resource")
-      WebappClassLoader devCl = (WebappClassLoader) cl;
+      WebappClassLoaderBase devCl = (WebappClassLoaderBase) cl;
       URL resource = cl.getResource(DependencyResolver.DependenciesFile);
       if (null == resource) { return; }
       File dependency;
@@ -87,6 +87,7 @@ public class RepositoryLoader extends WebappLoader {
       }
     } else {
       logError("Unable to install WebappClassLoader !");
+      logError("getClassloader is "+ cl.getClass().getName());
     }
   }
 
