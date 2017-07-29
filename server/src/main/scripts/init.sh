@@ -56,7 +56,7 @@ if command -v bspatch >/dev/null 2; then
 fi
 
 if $wget_avaliable && $unzip_avaliable && $bspatch_avaliable; then
-  echo "Downloading and link libraries."
+  echo "Downloading and link libraries..."
   download org.scala-lang scala-library $scala_ver
   download org.scala-lang scala-reflect $scala_ver
   download org.scala-lang.modules scala-xml_2.12 $scalaxml_ver
