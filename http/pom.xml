@@ -70,7 +70,7 @@
             <id>generate</id>
             <phase>prepare-package</phase>
             <goals>
-              <goal>gen-dependency</goal>
+              <goal>sas</goal>
             </goals>
           </execution>
         </executions>
