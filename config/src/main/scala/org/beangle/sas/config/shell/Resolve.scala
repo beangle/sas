@@ -21,18 +21,12 @@ package org.beangle.sas.config.shell
 import java.io.{ File, FileInputStream, FileOutputStream }
 import java.net.URL
 
-import org.beangle.commons.io.IOs
-import org.beangle.commons.lang.Strings
+import org.beangle.commons.io.{ Dirs, IOs }
+import org.beangle.commons.lang.{ ClassLoaders, Strings }
 import org.beangle.commons.lang.Strings.{ isEmpty, isNotEmpty, split, substringAfterLast }
 import org.beangle.maven.artifact.{ Artifact, ArtifactDownloader, Repo }
-import org.beangle.sas.config.model.Container
-import org.beangle.sas.config.util.{ Dirs, Template, Zipper }
-import org.beangle.sas.config.model.Engine
-import org.beangle.sas.config.model.Farm
-import org.beangle.sas.config.model.Server
-import org.beangle.commons.io.Files
-import org.beangle.commons.lang.ClassLoaders
-import org.beangle.sas.config.model.Jar
+import org.beangle.sas.config.model.{ Container, Engine, Farm, Server }
+import org.beangle.sas.config.util.{ Gen, Zipper }
 
 object Resolve {
 
@@ -67,7 +61,7 @@ object Resolve {
           new ArtifactDownloader(remote, local).download(List(artifact))
           val tomcatZip = new File(local.url(artifact))
           if (tomcatZip.exists()) {
-            makeTomcatEngine(sasHome, tomcatZip)
+            makeTomcatEngine(sasHome, tomcatZip, engine)
           } else {
             System.out.println("Cannot download " + artifact)
           }
@@ -130,7 +124,7 @@ object Resolve {
 
   def makeTomcatServer(container: Container, farm: Farm, server: Server, sasHome: String): Unit = {
     makeTomcatBase(sasHome, farm.engine, server.qualifiedName)
-    Template.generate(container, farm, server, sasHome)
+    Gen.spawn(container, farm, server, sasHome)
   }
 
   def makeTomcatBase(sasHome: String, engine: Engine, serverName: String): Unit = {
@@ -156,7 +150,7 @@ object Resolve {
     }
   }
 
-  def makeTomcatEngine(sasHome: String, tomcatZip: File): Unit = {
+  def makeTomcatEngine(sasHome: String, tomcatZip: File, engine: Engine): Unit = {
     val engineHome = new File(sasHome + "/engines")
     engineHome.mkdirs()
     val tomcatDirname = tomcatZip.getName.replace(".zip", "")
@@ -167,11 +161,13 @@ object Resolve {
     }
     Zipper.unzip(tomcatZip, engineHome)
     new File(engineHome + "/apache-tomcat-" + version).renameTo(engineDir)
+    //delete outer dirs
     Dirs.on(engineDir).delete("work", "webapps", "logs", "temp", "RUNNING.txt")
       .delete("NOTICE", "LICENSE", "RELEASE-NOTES")
 
+    // clean up conf
     val conf = Dirs.on(engineDir, "conf").delete("server.xml", "tomcat-users.xml", "tomcat-users.xsd",
-      "jaspic-providers.xml", "jaspic-providers.xsd")
+      "jaspic-providers.xml", "jaspic-providers.xsd", "web.xml")
 
     Set("catalina.properties", "logging.properties") foreach { f =>
       ClassLoaders.getResourceAsStream("tomcat/conf/" + f) foreach { fi =>
@@ -179,6 +175,7 @@ object Resolve {
       }
     }
 
+    //clean bin
     Dirs.on(engineDir, "bin").delete("startup.sh", "shutdown.sh", "configtest.sh", "version.sh",
       "digest.sh", "tool-wrapper.sh", "catalina.sh", "setclasspath.sh")
 
@@ -193,6 +190,14 @@ object Resolve {
       }
       i += 1
     }
+
+    //clean up lib
+    Dirs.on(engineDir, "lib").delete("tomcat-i18n-es.jar", "tomcat-i18n-fr.jar", "tomcat-i18n-ja.jar")
+
+    if (!engine.jspSupport) {
+      Dirs.on(engineDir, "lib").delete("jsp-api.jar", "el-api.jar", "ecj-4.6.3.jar", "jasper.jar", "jasper-el.jar")
+    }
+    Gen.spawn(engine, engineDir.getAbsolutePath)
   }
 
   private def download(url: String, dir: String): String = {

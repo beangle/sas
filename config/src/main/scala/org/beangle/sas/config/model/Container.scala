@@ -41,7 +41,10 @@ object Container {
       val name = (engineElem \ "@name").text
       val version = (engineElem \ "@version").text
       val typ = (engineElem \ "@type").text
+      val jspSupport = (engineElem \ "@jspSupport").text
+
       val engine = new Engine(name, typ, version)
+      engine.jspSupport = (jspSupport == "true")
 
       (engineElem \ "Listener").foreach { lsnElem =>
         val listener = new Listener((lsnElem \ "@className").text)
