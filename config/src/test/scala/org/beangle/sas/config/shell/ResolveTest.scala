@@ -23,6 +23,7 @@ import org.scalatest.{ FunSpec, Matchers }
 import org.scalatest.junit.JUnitRunner
 import java.io.File
 import org.beangle.sas.config.model.Engine
+import org.beangle.sas.config.util.Gen
 
 @RunWith(classOf[JUnitRunner])
 class ResolveTest extends FunSpec with Matchers {
@@ -30,10 +31,13 @@ class ResolveTest extends FunSpec with Matchers {
     it("make catalina engine") {
       val sasHome = "/tmp/sas"
       val engine = new Engine("tomcat85", "tomcat", "8.5.15")
+      engine.jspSupport = true
       val file = new File("/tmp/apache-tomcat-8.5.15.zip")
       if (file.exists()) {
-        Resolve.makeTomcatEngine("/tmp/sas", file)
+        Resolve.makeTomcatEngine("/tmp/sas", file, engine)
         Resolve.makeTomcatBase(sasHome, engine, "farm.server1")
+
+        Gen.spawn(engine, "/tmp/sas/engines/tomcat-8.5.15")
       }
     }
   }

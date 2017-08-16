@@ -18,21 +18,21 @@
  */
 package org.beangle.sas.config.util
 
-import java.beans.PropertyDescriptor
 import java.io.{ File, StringWriter }
-import java.lang.reflect.{ Method, Modifier }
+
 import org.beangle.commons.io.{ Files => IOFiles }
-import org.beangle.commons.lang.Strings
+import org.beangle.sas.config.model.{ Container, Engine, Farm, Server }
 import org.beangle.template.freemarker.Configurer
-import org.beangle.sas.config.model.{ Container, Farm, Server }
-import freemarker.cache.ClassTemplateLoader
-import freemarker.ext.beans.BeansWrapper.MethodAppearanceDecision
-import freemarker.template.{ Configuration, DefaultObjectWrapper, TemplateModel }
+import org.beangle.commons.activation.MimeTypeProvider
+import org.beangle.commons.activation.MimeTypes
+import org.beangle.commons.config.Resources
+import org.beangle.commons.io.IOs
+import org.beangle.commons.lang.ClassLoaders.{ getResource, getResources }
 
-object Template {
-  val cfg = Configurer.newConfig
+object Gen {
+  private val cfg = Configurer.newConfig
 
-  def generate(container: Container, farm: Farm, server: Server, targetDir: String) {
+  def spawn(container: Container, farm: Farm, server: Server, targetDir: String): Unit = {
     val data = new collection.mutable.HashMap[String, Any]()
     data.put("container", container)
     data.put("farm", farm)
@@ -53,5 +53,17 @@ object Template {
       IOFiles.writeString(target, nsw.toString)
       target.setExecutable(true)
     }
+  }
+
+  def spawn(engine: Engine, engineDir: String): Unit = {
+    val data = new collection.mutable.HashMap[String, Any]()
+    data.put("engine", engine)
+    val mimetypes = MimeTypes.buildMimeTypes(new Resources(None,
+      List.empty, getResource("mime.types")))
+    data.put("mimetypes", mimetypes)
+    val envTemplate = cfg.getTemplate(s"${engine.typ}/conf/web.xml.ftl")
+    val nsw = new StringWriter()
+    envTemplate.process(data, nsw)
+    IOFiles.writeString(new File(engineDir + "/conf/web.xml"), nsw.toString)
   }
 }

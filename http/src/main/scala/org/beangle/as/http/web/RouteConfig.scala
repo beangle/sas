@@ -19,7 +19,7 @@
 package org.beangle.sas.http.web
 
 import org.beangle.webmvc.dispatch.{ Route, RouteProvider }
-import org.beangle.commons.web.http.HttpMethods._
+import org.beangle.commons.net.http.HttpMethods._
 import org.beangle.sas.http.web.handler.ResourceHandler
 
 /**
