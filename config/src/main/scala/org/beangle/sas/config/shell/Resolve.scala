@@ -56,6 +56,7 @@ object Resolve {
     container.engines foreach { engine =>
       if (engine.typ == "tomcat") {
         val tomcat = new File(sasHome + "/engines/tomcat-" + engine.version)
+        // tomcat not exists or empty dir
         if (!tomcat.exists() || tomcat.list().length == 0) {
           val artifact = Artifact("org.apache.tomcat:tomcat:zip:" + engine.version)
           new ArtifactDownloader(remote, local).download(List(artifact))
