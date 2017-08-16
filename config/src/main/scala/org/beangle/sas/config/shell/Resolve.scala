@@ -95,7 +95,8 @@ object Resolve {
         } else if (isNotEmpty(webapp.gav)) {
           val gavinfo = split(webapp.gav, ":")
           if (gavinfo.length < 3) throw new RuntimeException(s"Invalid gav ${webapp.gav},Using groupId:artifactId:version format.")
-          val artifact = Artifact(webapp.gav + ":war")
+          val old = Artifact(webapp.gav)
+          val artifact = Artifact(old.groupId, old.artifactId, old.version, old.classifier, "war")
           new ArtifactDownloader(remote, local).download(List(artifact))
           webapp.docBase = local.url(artifact)
         } else {
