@@ -57,7 +57,7 @@ object Resolve {
       if (engine.typ == "tomcat") {
         val tomcat = new File(sasHome + "/engines/tomcat-" + engine.version)
         if (!tomcat.exists() || tomcat.list().length == 0) {
-          val artifact = Artifact("org.apache.tomcat:tomcat:" + engine.version + ":zip")
+          val artifact = Artifact("org.apache.tomcat:tomcat:zip:" + engine.version)
           new ArtifactDownloader(remote, local).download(List(artifact))
           val tomcatZip = new File(local.url(artifact))
           if (tomcatZip.exists()) {
