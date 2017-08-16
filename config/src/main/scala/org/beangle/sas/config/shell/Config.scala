@@ -20,16 +20,12 @@ package org.beangle.sas.config.shell
 
 import java.io.File
 
-import scala.Range
-
 import org.beangle.commons.io.Files
 import org.beangle.commons.lang.{ Strings, SystemInfo }
 import org.beangle.commons.lang.Consoles.{ confirm, prompt, shell }
 import org.beangle.commons.lang.Numbers.{ isDigits, toInt }
 import org.beangle.data.jdbc.vendor.{ UrlFormat, Vendors }
-import org.beangle.sas.config.model.{ Container, Deployment, Farm, Resource, Webapp }
-import org.beangle.sas.config.util.Template
-import org.beangle.sas.config.model.Engine
+import org.beangle.sas.config.model.{ Container, Deployment, Farm, Resource, Webapp, Engine }
 
 object Config extends ShellEnv {
 

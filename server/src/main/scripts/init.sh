@@ -56,7 +56,7 @@ if command -v bspatch >/dev/null 2; then
 fi
 
 if $wget_avaliable && $unzip_avaliable && $bspatch_avaliable; then
-  echo "Downloading and link libraries."
+  echo "Downloading and link libraries..."
   download org.scala-lang scala-library $scala_ver
   download org.scala-lang scala-reflect $scala_ver
   download org.scala-lang.modules scala-xml_2.12 $scalaxml_ver
@@ -70,13 +70,14 @@ if $wget_avaliable && $unzip_avaliable && $bspatch_avaliable; then
   download org.slf4j slf4j-api $slf4j_ver
   download org.slf4j slf4j-nop $slf4j_ver
   echo "Initialization Completed.You can custom conf/server.xml."
-elif $wget_avaliable; then
-  echo "unzip needed,install it first."
-elif $unzip_avaliable; then
-  echo "wget needed,install it first."
-elif $bspatch_avaliable; then
-  echo "bspatch needed,install it first."
 else
-  echo "wget and unzip needed,install them first."
+  if ! $wget_avaliable; then
+    echo "wget needed,install it first."
+  fi
+  if ! $unzip_avaliable; then
+    echo "unzip needed,install it first."
+  fi
+  if ! $bspatch_avaliable; then
+    echo "bspatch needed,install it first."
+  fi
 fi
-
