@@ -20,7 +20,7 @@ package org.beangle.sas.http.web.handler
 
 import java.io.{ File, FileInputStream }
 
-import org.beangle.commons.activation.MimeTypeProvider
+import org.beangle.commons.activation.MimeTypes
 import org.beangle.commons.lang.{ Strings, SystemInfo }
 import org.beangle.commons.lang.annotation.spi
 import org.beangle.commons.web.io.DefaultWagon
@@ -49,7 +49,7 @@ class ResourceHandler extends Handler {
     find(path) match {
       case Some(f) =>
         val ext = Strings.substringAfterLast(path, ".")
-        if (Strings.isNotEmpty(ext)) MimeTypeProvider.getMimeType(ext) foreach (m => response.setContentType(m.toString))
+        if (Strings.isNotEmpty(ext)) MimeTypes.getMimeType(ext) foreach (m => response.setContentType(m.toString))
         if (etagChanged(String.valueOf(f.lastModified), request, response)) {
           CacheControl.expiresAfter(expireMinutes, response)
           response.setDateHeader("Last-Modified", f.lastModified)
