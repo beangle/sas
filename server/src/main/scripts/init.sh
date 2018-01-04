@@ -50,7 +50,7 @@ if command -v unzip >/dev/null 2; then
   unzip_avaliable=true
 fi
 
-if $wget_avaliable && $unzip_avaliable then
+if $wget_avaliable && $unzip_avaliable; then
   echo "Downloading and link libraries..."
   download org.scala-lang scala-library $scala_ver
   download org.scala-lang scala-reflect $scala_ver
