@@ -105,7 +105,7 @@ object Resolve {
         }
       } else {
         if (webapp.docBase.contains("${sas.home}")) {
-          webapp.docBase = webapp.docBase.replace("${sas.home}", "../..")
+          webapp.docBase = webapp.docBase.replace("${sas.home}", "../../..")
         }
       }
     }
