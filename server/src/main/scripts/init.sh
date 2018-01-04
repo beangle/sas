@@ -41,7 +41,6 @@ function download(){
 
 wget_avaliable=false
 unzip_avaliable=false
-bspatch_avaliable=false
 
 if command -v wget >/dev/null 2; then
   wget_avaliable=true
@@ -51,11 +50,7 @@ if command -v unzip >/dev/null 2; then
   unzip_avaliable=true
 fi
 
-if command -v bspatch >/dev/null 2; then
-  bspatch_avaliable=true
-fi
-
-if $wget_avaliable && $unzip_avaliable && $bspatch_avaliable; then
+if $wget_avaliable && $unzip_avaliable then
   echo "Downloading and link libraries..."
   download org.scala-lang scala-library $scala_ver
   download org.scala-lang scala-reflect $scala_ver
@@ -66,6 +61,7 @@ if $wget_avaliable && $unzip_avaliable && $bspatch_avaliable; then
   download org.beangle.maven beangle-maven-artifact_2.12 $beangle_maven_ver
   download org.beangle.sas beangle-sas-config $beangle_sas_ver
   download org.beangle.sas beangle-sas-core   $beangle_sas_ver
+  download org.apache.commons commons-compress $commons_compress_ver
   download org.freemarker freemarker $freemarker_ver
   download org.slf4j slf4j-api $slf4j_ver
   download org.slf4j slf4j-nop $slf4j_ver
@@ -76,8 +72,5 @@ else
   fi
   if ! $unzip_avaliable; then
     echo "unzip needed,install it first."
-  fi
-  if ! $bspatch_avaliable; then
-    echo "bspatch needed,install it first."
   fi
 fi

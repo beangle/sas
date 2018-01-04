@@ -23,7 +23,6 @@ import java.io.{ File, StringWriter }
 import org.beangle.commons.io.{ Files => IOFiles }
 import org.beangle.sas.config.model.{ Container, Engine, Farm, Server }
 import org.beangle.template.freemarker.Configurer
-import org.beangle.commons.activation.MimeTypeProvider
 import org.beangle.commons.activation.MimeTypes
 import org.beangle.commons.config.Resources
 import org.beangle.commons.io.IOs
