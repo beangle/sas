@@ -2,7 +2,7 @@
   <parent>
     <groupId>org.beangle</groupId>
     <artifactId>beangle-scala</artifactId>
-    <version>24.5</version>
+    <version>24.9</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.beangle.sas</groupId>
@@ -34,12 +34,13 @@
 
   <properties>
     <tomcat.version>8.5.15</tomcat.version>
-    <beangle.commons.version>5.0.0</beangle.commons.version>
-    <beangle.cdi.version>0.0.14</beangle.cdi.version>
-    <beangle.maven.version>0.3.8</beangle.maven.version>
-    <beangle.data.version>5.0.0</beangle.data.version>
-    <beangle.mvc.version>0.3.15</beangle.mvc.version>
-    <beangle.template.version>0.0.19</beangle.template.version>
+    <beangle.commons.version>5.1.0.M3</beangle.commons.version>
+    <beangle.cdi.version>0.0.15</beangle.cdi.version>
+    <beangle.repo.version>0.0.3</beangle.repo.version>
+    <beangle.maven.version>0.3.11</beangle.maven.version>
+    <beangle.data.version>5.0.3</beangle.data.version>
+    <beangle.mvc.version>0.3.17</beangle.mvc.version>
+    <beangle.template.version>0.0.20</beangle.template.version>
   </properties>
 
 </project>
