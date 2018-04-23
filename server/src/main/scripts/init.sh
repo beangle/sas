@@ -58,7 +58,7 @@ if $wget_avaliable && $unzip_avaliable; then
   download org.beangle.commons beangle-commons-core_2.12     $beangle_commons_ver
   download org.beangle.data beangle-data-jdbc_2.12 $beangle_data_ver
   download org.beangle.template beangle-template-freemarker_2.12 $beangle_template_ver
-  download org.beangle.maven beangle-maven-artifact_2.12 $beangle_maven_ver
+  download org.beangle.repo beangle-repo-artifact_2.12 $beangle_repo_ver
   download org.beangle.sas beangle-sas-config $beangle_sas_ver
   download org.beangle.sas beangle-sas-core   $beangle_sas_ver
   download org.apache.commons commons-compress $commons_compress_ver
