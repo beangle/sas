@@ -26,7 +26,6 @@
   </scm>
 
   <modules>
-    <module>http</module>
     <module>core</module>
     <module>config</module>
     <module>server</module>
