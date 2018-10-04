@@ -37,6 +37,7 @@
       [#else]
       compression="off"
       [/#if]
+      xpoweredBy="Beangle Sas ${container.version}"
       />
 
     <Engine name="Catalina" defaultHost="localhost">

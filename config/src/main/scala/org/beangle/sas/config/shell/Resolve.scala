@@ -165,7 +165,7 @@ object Resolve {
     new File(engineHome + "/apache-tomcat-" + version).renameTo(engineDir)
     //delete outer dirs
     Dirs.on(engineDir).delete("work", "webapps", "logs", "temp", "RUNNING.txt")
-      .delete("NOTICE", "LICENSE", "RELEASE-NOTES")
+      .delete("NOTICE", "LICENSE", "RELEASE-NOTES", "BUILDING.txt", "CONTRIBUTING.md", "README.md")
 
     // clean up conf
     val conf = Dirs.on(engineDir, "conf").delete("server.xml", "tomcat-users.xml", "tomcat-users.xsd",
@@ -179,7 +179,7 @@ object Resolve {
 
     //clean bin
     Dirs.on(engineDir, "bin").delete("startup.sh", "shutdown.sh", "configtest.sh", "version.sh",
-      "digest.sh", "tool-wrapper.sh", "catalina.sh", "setclasspath.sh")
+      "digest.sh", "tool-wrapper.sh", "catalina.sh", "setclasspath.sh", "makebase.sh", "ciphers.sh")
 
     val bin = new File(engineDir, "bin")
     val binFiles = bin.list()
@@ -197,7 +197,8 @@ object Resolve {
     Dirs.on(engineDir, "lib").delete("tomcat-i18n-es.jar", "tomcat-i18n-fr.jar", "tomcat-i18n-ja.jar")
 
     if (!engine.jspSupport) {
-      Dirs.on(engineDir, "lib").delete("jsp-api.jar", "el-api.jar", "ecj-4.6.3.jar", "jasper.jar", "jasper-el.jar")
+      Dirs.on(engineDir, "lib").delete("jsp-api.jar", "el-api.jar", "ecj-4.6.3.jar",
+        "ecj-4.7.3a.jar", "jasper.jar", "jasper-el.jar")
     }
     Gen.spawn(engine, engineDir.getAbsolutePath)
   }

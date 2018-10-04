@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Sas version="0.4.0">
+  <!--从这里下载webapp的各类依赖性，如果涉及到没有开源的包，可以改为自己的伺服-->
+  <Repository remote="maven.aliyun.com/nexus/content/groups/public"/>
+
+  <Engines>
+    <Engine name="tomcat90" type="tomcat" version="9.0.12">
+      <!--添加必要的驱动,不需要容器提供数据源，可以删除-->
+      <Jar gav="org.postgresql:postgresql:42.2.5"/>
+      <!--
+      <Jar gav="com.oracle:ojdbc14:11.2.0.1.0"/>
+      -->
+    </Engine>
+  </Engines>
+
+  <Farms>
+    <Farm name="cdn" engine="tomcat90">
+      <JvmArgs opts="-noverify -Xmx100M -Xms100M"/>
+      <Http maxThreads="200" acceptCount="200" />
+      <Server name="server1" http="8080" />
+    </Farm>
+
+    <!--
+    <Farm name="your_farm_name" engine="tomcat90">
+      <JvmArgs opts="-noverify -Xmx500M -Xms500M"/>
+      <Http maxThreads="200" acceptCount="200" />
+      <Server name="server1" http="9080" />
+    </Farm>
+    -->
+  </Farms>
+
+  <Resources>
+    <!--
+    <Resource  name="jdbc/datasource"   driverClassName="org.postgresql.Driver"
+                      url="jdbc:postgresql://localhost:5432/postgres"   type="javax.sql.DataSource"
+                      username="postgres"  password="postgres" />
+    -->
+  </Resources>
+
+  <Webapps>
+    <Webapp name="micdn" gav="org.beangle.micdn:beangle-micdn-server:0.0.4"/>
+    <!--
+    <Webapp name="your_app_name" docBase="as.home/webapps/your_war_name">
+      <ResourceRef ref="jdbc/datasource"/>
+    </Webapp>
+    -->
+  </Webapps>
+
+  <Deployments>
+    <Deployment webapp="micdn" on="cdn" path=""/>
+    <!--
+    <Deployment webapp="your_app_name" on="your_farm_name" path="/context_path"/>
+    -->
+  </Deployments>
+</Sas>
