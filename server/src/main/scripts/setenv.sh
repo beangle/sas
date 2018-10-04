@@ -4,7 +4,7 @@ export M2_REPO="$HOME/.m2/repository"
 
 export scala_ver=2.12.7
 export scalaxml_ver=1.1.1
-export beangle_sas_ver=0.4.0
+export beangle_sas_ver=0.4.1
 export beangle_commons_ver=5.1.2
 export beangle_template_ver=0.0.22
 export beangle_data_ver=5.0.8
