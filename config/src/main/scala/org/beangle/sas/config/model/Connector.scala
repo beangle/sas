@@ -122,3 +122,17 @@ class HttpConnector extends Connector {
    */
   var compressionMimeType: String = "text/html,text/xml,text/javascript,text/css,text/plain"
 }
+
+/**
+ * Http/2 Connector
+ */
+class Http2Connector extends HttpConnector {
+  this.protocol = "org.apache.coyote.http11.Http11AprProtocol"
+
+  /**证书密钥文件地址*/
+  var caKeyFile: String = _
+
+  /**证书文件地址*/
+  var caFile: String = _
+
+}

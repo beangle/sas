@@ -19,6 +19,7 @@
  [/#if]
 
   <Service name="Catalina">
+    [#if server.http>0 && farm.http??]
     [#assign http=farm.http/]
     <Connector port="${server.http}" protocol="HTTP/1.1"
       URIEncoding="${http.URIEncoding}"
@@ -38,6 +39,30 @@
       compression="off"
       [/#if]
       />
+    [/#if]
+    [#if server.http2>0 && farm.http2??]
+    [#assign http=farm.http2/]
+    <Connector port="${server.http2}" protocol="org.apache.coyote.http11.Http11AprProtocol"
+      URIEncoding="${http.URIEncoding}" SSLEnabled="true"
+      enableLookups="${http.enableLookups?c}"
+      [#if http.acceptCount??]
+      acceptCount="${http.acceptCount}"
+      [/#if]
+      maxThreads="${http.maxThreads}"
+      minSpareThreads="${http.minSpareThreads}"
+      connectionTimeout="${http.connectionTimeout}"
+      disableUploadTimeout="${http.disableUploadTimeout?c}"
+      [#if http.compression!="off"]
+      compression="${http.compression}"
+      compressionMinSize="${http.compressionMinSize}"
+      compressableMimeType="${http.compressionMimeType}"
+      [#else]compression="off"[/#if]>
+      <UpgradeProtocol className="org.apache.coyote.http2.Http2Protocol" />
+      <SSLHostConfig>
+         <Certificate certificateKeyFile="${http.caKeyFile}" certificateFile="${http.caFile}" />
+      </SSLHostConfig>
+    </Connector>
+    [/#if]
 
     <Engine name="Catalina" defaultHost="localhost">
       <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="false">

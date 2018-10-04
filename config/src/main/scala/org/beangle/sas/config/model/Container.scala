@@ -106,18 +106,21 @@ object Container {
 
       (farmElem \ "Http") foreach { httpElem =>
         val http = new HttpConnector
-        readConnector(httpElem, http)
-        if (!(httpElem \ "@disableUploadTimeout").isEmpty) http.disableUploadTimeout = (httpElem \ "@disableUploadTimeout").text == "true"
-        if (!(httpElem \ "@connectionTimeout").isEmpty) http.connectionTimeout = toInt((httpElem \ "@connectionTimeout").text)
-        if (!(httpElem \ "@compression").isEmpty) http.compression = (httpElem \ "@compression").text
-        if (!(httpElem \ "@compressionMinSize").isEmpty) http.compressionMinSize = toInt((httpElem \ "@compressionMinSize").text)
-        if (!(httpElem \ "@compressionMimeType").isEmpty) http.compressionMimeType = (httpElem \ "@compressionMimeType").text
+        readHttpConnector(httpElem, http)
         farm.http = http
       }
 
+      (farmElem \ "Http2") foreach { elem =>
+        val http2 = new Http2Connector
+        readHttpConnector(elem, http2)
+        if (!(elem \ "@caKeyFile").isEmpty) http2.caKeyFile = (elem \ "@caKeyFile").text
+        if (!(elem \ "@caFile").isEmpty) http2.caFile = (elem \ "@caFile").text
+        farm.http2 = http2
+      }
       (farmElem \ "Server") foreach { serverElem =>
         val server = new Server(farm, (serverElem \ "@name").text)
         server.http = toInt((serverElem \ "@http").text)
+        server.http2 = toInt((serverElem \ "@http2").text)
         val host = (serverElem \ "@host").text
         if (Strings.isNotEmpty(host)) server.host = Some(host)
         farm.servers += server
@@ -159,12 +162,18 @@ object Container {
     conf
   }
 
-  private def readConnector(xml: scala.xml.Node, connector: Connector) {
-    if (!(xml \ "@enableLookups").isEmpty) connector.enableLookups = (xml \ "@enableLookups").text == "true"
-    if (!(xml \ "@acceptCount").isEmpty) connector.acceptCount = Some(toInt((xml \ "@acceptCount").text))
-    if (!(xml \ "@maxThreads").isEmpty) connector.maxThreads = toInt((xml \ "@maxThreads").text)
-    if (!(xml \ "@maxConnections").isEmpty) connector.maxConnections = Some(toInt((xml \ "@maxConnections").text))
-    if (!(xml \ "@minSpareThreads").isEmpty) connector.minSpareThreads = toInt((xml \ "@minSpareThreads").text)
+  private def readHttpConnector(elem: scala.xml.Node, http: HttpConnector) {
+    if (!(elem \ "@enableLookups").isEmpty) http.enableLookups = (elem \ "@enableLookups").text == "true"
+    if (!(elem \ "@acceptCount").isEmpty) http.acceptCount = Some(toInt((elem \ "@acceptCount").text))
+    if (!(elem \ "@maxThreads").isEmpty) http.maxThreads = toInt((elem \ "@maxThreads").text)
+    if (!(elem \ "@maxConnections").isEmpty) http.maxConnections = Some(toInt((elem \ "@maxConnections").text))
+    if (!(elem \ "@minSpareThreads").isEmpty) http.minSpareThreads = toInt((elem \ "@minSpareThreads").text)
+
+    if (!(elem \ "@disableUploadTimeout").isEmpty) http.disableUploadTimeout = (elem \ "@disableUploadTimeout").text == "true"
+    if (!(elem \ "@connectionTimeout").isEmpty) http.connectionTimeout = toInt((elem \ "@connectionTimeout").text)
+    if (!(elem \ "@compression").isEmpty) http.compression = (elem \ "@compression").text
+    if (!(elem \ "@compressionMinSize").isEmpty) http.compressionMinSize = toInt((elem \ "@compressionMinSize").text)
+    if (!(elem \ "@compressionMimeType").isEmpty) http.compressionMimeType = (elem \ "@compressionMimeType").text
   }
 
   def applyDefault(conf: Container): Unit = {
