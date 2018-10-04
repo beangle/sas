@@ -24,7 +24,14 @@
     <Farm name="your_farm_name" engine="tomcat90">
       <JvmArgs opts="-noverify -Xmx500M -Xms500M"/>
       <Http maxThreads="200" acceptCount="200" />
-      <Server name="server1" http="9080" />
+      <!--如果使用http/2协议，可以配置ca证书
+      使用OpenSSL生成ca证书
+      openssl genrsa -out ca.key 4096
+      openssl req -new -x509 -days 1826 -key ca.key -out ca.crt
+      可以参考 https://blog.didierstevens.com/2008/12/30/howto-make-your-own-cert-with-openssl/
+      -->
+      <Http2 maxThreads="200" acceptCount="200" caKeyFile="/path/to/caKeyFile.key" caFile="/path/to/ca.crt" />
+      <Server name="server1" http="9080" http2="9443"/>
     </Farm>
     -->
   </Farms>
