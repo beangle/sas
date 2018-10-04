@@ -1,20 +1,20 @@
 /*
- * Beangle, Agile Development Scaffold and Toolkit
+ * Beangle, Agile Development Scaffold and Toolkits.
  *
- * Copyright (c) 2005-2017, Beangle Software.
+ * Copyright © 2005, The Beangle Software.
  *
- * Beangle is free software: you can redistribute it and/or modify
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Beangle is distributed in the hope that it will be useful.
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with Beangle.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.beangle.sas.config.shell
 
@@ -65,8 +65,8 @@ object Firewall extends ShellEnv {
   }
 
   def apply() {
-    if (!firewalldEnabled && !isRoot) {
-      println("Please run the program by root")
+    if (!firewalldEnabled) {
+      println("Cannot find firewalld utilities,firewall config abort.")
       return
     }
     val ports = new collection.mutable.ListBuffer[Int]
@@ -77,10 +77,17 @@ object Firewall extends ShellEnv {
 
     if (!ports.isEmpty) {
       val sb = new StringBuilder()
-      for (port <- ports)
+      for (port <- ports) {
         sb ++= (" --add-port=" + port + "/tcp")
-      Runtime.getRuntime().exec("firewall-cmd --permanent --zone=public" + sb.mkString)
-      println("firewalld changed successfully.")
+      }
+      val cmd = "firewall-cmd --permanent --zone=public" + sb.mkString
+      if (isRoot) {
+        println("executing:" + cmd)
+        Runtime.getRuntime().exec(cmd)
+        println("firewalld changed successfully.")
+      }else{
+        println("Please login using root, and execute command :"+cmd)
+      }
     }
   }
 

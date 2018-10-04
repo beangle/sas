@@ -2,7 +2,7 @@
   <parent>
     <groupId>org.beangle.sas</groupId>
     <artifactId>beangle-sas-parent</artifactId>
-    <version>0.3.2</version>
+    <version>0.3.3</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>beangle-sas-config</artifactId>
@@ -31,9 +31,9 @@
       <version>${beangle.template.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.beangle.maven</groupId>
-      <artifactId>beangle-maven-artifact_2.12</artifactId>
-      <version>${beangle.maven.version}</version>
+      <groupId>org.beangle.repo</groupId>
+      <artifactId>beangle-repo-artifact_2.12</artifactId>
+      <version>${beangle.repo.version}</version>
     </dependency>
     <dependency>
       <groupId>org.beangle.sas</groupId>
