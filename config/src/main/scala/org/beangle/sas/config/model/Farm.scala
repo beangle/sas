@@ -59,6 +59,8 @@ class Farm(var name: String, var engine: Engine) {
 
   var http = new HttpConnector
 
+  var http2: Http2Connector = _
+
   var servers = new collection.mutable.ListBuffer[Server]
 
   var jvmopts: Option[String] = None
@@ -66,7 +68,11 @@ class Farm(var name: String, var engine: Engine) {
 
 class Server(val farm: Farm, var name: String) {
 
+  /** http/1 端口*/
   var http: Int = _
+
+  /** http/2 端口*/
+  var http2: Int = _
 
   var host: Option[String] = None
 
