@@ -35,7 +35,7 @@
     <tomcat.version>9.0.12</tomcat.version>
     <beangle.commons.version>5.1.2</beangle.commons.version>
     <beangle.cdi.version>0.0.17</beangle.cdi.version>
-    <beangle.repo.version>0.0.6</beangle.repo.version>
+    <beangle.repo.version>0.0.7</beangle.repo.version>
     <beangle.maven.version>0.3.14</beangle.maven.version>
     <beangle.data.version>5.0.8</beangle.data.version>
     <beangle.template.version>0.0.22</beangle.template.version>
