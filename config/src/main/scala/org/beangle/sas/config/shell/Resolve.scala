@@ -24,7 +24,7 @@ import java.net.URL
 import org.beangle.commons.io.{ Dirs, IOs }
 import org.beangle.commons.lang.{ ClassLoaders, Strings }
 import org.beangle.commons.lang.Strings.{ isEmpty, isNotEmpty, split, substringAfterLast }
-import org.beangle.repo.artifact.{ Artifact, ArtifactDownloader, Repo }
+import org.beangle.repo.artifact.{ Artifact, ArtifactDownloader, BeangleResolver, Repo }
 import org.beangle.sas.config.model.{ Container, Engine, Farm, Server }
 import org.beangle.sas.config.util.{ Gen, Zipper }
 
@@ -97,9 +97,17 @@ object Resolve {
           val gavinfo = split(webapp.gav, ":")
           if (gavinfo.length < 3) throw new RuntimeException(s"Invalid gav ${webapp.gav},Using groupId:artifactId:version format.")
           val old = Artifact(webapp.gav)
-          val artifact = Artifact(old.groupId, old.artifactId, old.version, old.classifier, "war")
-          new ArtifactDownloader(remote, local).download(List(artifact))
-          webapp.docBase = local.url(artifact)
+          val war = Artifact(old.groupId, old.artifactId, old.version, old.classifier, "war")
+          new ArtifactDownloader(remote, local).download(List(war))
+          webapp.docBase = local.url(war)
+          //解析轻量级war
+          val libs = BeangleResolver.resolve(webapp.docBase)
+          new ArtifactDownloader(remote, local).download(libs)
+          val missing = libs filter (!local.exists(_))
+          if (!missing.isEmpty) {
+            System.err.println("Download error :" + missing)
+            System.err.println("Cannot launch webapp :" + webapp.docBase)
+          }
         } else {
           throw new RuntimeException(s"Invalid Webapp definition ${webapp.name},one of (docBase,url,gav) properties needed.")
         }
