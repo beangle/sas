@@ -98,12 +98,11 @@ object Resolve {
           if (gavinfo.length < 3) throw new RuntimeException(s"Invalid gav ${webapp.gav},Using groupId:artifactId:version format.")
           val old = Artifact(webapp.gav)
           val war = Artifact(old.groupId, old.artifactId, old.version, old.classifier, "war")
-          val downloader = new ArtifactDownloader(remote, local)
-          downloader.download(List(war))
+          new ArtifactDownloader(remote, local).download(List(war))
           webapp.docBase = local.url(war)
           //解析轻量级war
           val libs = BeangleResolver.resolve(webapp.docBase)
-          downloader.download(libs)
+          new ArtifactDownloader(remote, local).download(libs)
           val missing = libs filter (!local.exists(_))
           if (!missing.isEmpty) {
             System.err.println("Download error :" + missing)
