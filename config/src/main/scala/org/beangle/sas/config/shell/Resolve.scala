@@ -92,7 +92,7 @@ object Resolve {
       if (isEmpty(webapp.docBase)) {
         if (isNotEmpty(webapp.url)) {
           val fileName = download(webapp.url, sasHome + "/webapps/")
-          webapp.docBase = "../../../webapps/" + fileName
+          webapp.docBase = sasHome + "/webapps/" + fileName
         } else if (isNotEmpty(webapp.gav)) {
           val gavinfo = split(webapp.gav, ":")
           if (gavinfo.length < 3) throw new RuntimeException(s"Invalid gav ${webapp.gav},Using groupId:artifactId:version format.")
@@ -100,21 +100,22 @@ object Resolve {
           val war = Artifact(old.groupId, old.artifactId, old.version, old.classifier, "war")
           new ArtifactDownloader(remote, local).download(List(war))
           webapp.docBase = local.url(war)
-          //解析轻量级war
-          val libs = BeangleResolver.resolve(webapp.docBase)
-          new ArtifactDownloader(remote, local).download(libs)
-          val missing = libs filter (!local.exists(_))
-          if (!missing.isEmpty) {
-            System.err.println("Download error :" + missing)
-            System.err.println("Cannot launch webapp :" + webapp.docBase)
-          }
         } else {
           throw new RuntimeException(s"Invalid Webapp definition ${webapp.name},one of (docBase,url,gav) properties needed.")
         }
       } else {
         if (webapp.docBase.contains("${sas.home}")) {
-          webapp.docBase = webapp.docBase.replace("${sas.home}", "../../..")
+          webapp.docBase = webapp.docBase.replace("${sas.home}", sasHome)
         }
+      }
+
+      //解析轻量级war
+      val libs = BeangleResolver.resolve(webapp.docBase)
+      new ArtifactDownloader(remote, local).download(libs)
+      val missing = libs filter (!local.exists(_))
+      if (!missing.isEmpty) {
+        System.err.println("Download error :" + missing)
+        System.err.println("Cannot launch webapp :" + webapp.docBase)
       }
     }
 

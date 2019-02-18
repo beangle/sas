@@ -3,7 +3,19 @@ PRGDIR=`dirname "$0"`
 SAS_HOME=`cd "$PRGDIR/.." >/dev/null; pwd`
 
 cd $PRGDIR
-source ./setenv.sh
+export M2_REMOTE_REPO="https://maven.aliyun.com/nexus/content/groups/public"
+export M2_REPO="$HOME/.m2/repository"
+
+export scala_ver=2.12.8
+export scalaxml_ver=1.1.1
+export beangle_sas_ver=0.5.0
+export beangle_commons_ver=5.1.3
+export beangle_template_ver=0.0.22
+export beangle_data_ver=5.1.1
+export beangle_repo_ver=0.0.8
+export slf4j_ver=1.7.25
+export freemarker_ver=2.3.28
+export commons_compress_ver=1.18
 
 # download groupId artifactId version
 function download(){
@@ -56,6 +68,7 @@ if $wget_avaliable && $unzip_avaliable; then
   download org.scala-lang scala-reflect $scala_ver
   download org.scala-lang.modules scala-xml_2.12 $scalaxml_ver
   download org.beangle.commons beangle-commons-core_2.12     $beangle_commons_ver
+  download org.beangle.commons beangle-commons-file_2.12     $beangle_commons_ver
   download org.beangle.data beangle-data-jdbc_2.12 $beangle_data_ver
   download org.beangle.template beangle-template-freemarker_2.12 $beangle_template_ver
   download org.beangle.repo beangle-repo-artifact_2.12 $beangle_repo_ver
