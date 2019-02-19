@@ -19,7 +19,6 @@
 package org.apache.catalina.loader;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.net.MalformedURLException;
@@ -31,8 +30,6 @@ import java.util.List;
 import org.apache.catalina.LifecycleException;
 
 public class RepositoryLoader extends WebappLoader {
-
-  String url;
   String base;
 
   public RepositoryLoader() {
@@ -53,41 +50,31 @@ public class RepositoryLoader extends WebappLoader {
       WebappClassLoaderBase devCl = (WebappClassLoaderBase) cl;
       URL resource = cl.getResource(DependencyResolver.DependenciesFile);
       if (null == resource) { return; }
-      File dependency;
-      try {
-        dependency = File.createTempFile("dependency", ".txt");
-        normalizeUrlAndBase();
-        List<Artifact> artifacts = DependencyResolver.resolve(resource, dependency);
-
-        String sasHome = System.getenv("SAS_HOME");
-        ProcessBuilder pb = new ProcessBuilder(sasHome + "/bin/resolve.sh",
-            dependency.getAbsolutePath(), url, base);
-
-        pb.redirectErrorStream(true);
-        Process pro = pb.start();
-        pro.waitFor();
-        log("resolving " + resource.toString());
-        StringBuilder sb = new StringBuilder("Append ");
-        sb.append(artifacts.size()).append(" jars:");
-        Local local = new Local(base);
-        for (Artifact artifact : artifacts) {
-          File file = new File(local.path(artifact));
-          if (!file.exists()) throw new RuntimeException("Cannot find " + artifact);
-          sb.append(file.getName());
-          sb.append("  ");
-          try {
-            devCl.addURL(file.toURI().toURL());
-          } catch (MalformedURLException e) {
-            e.printStackTrace();
-          }
+      normalizeBase();
+      List<Artifact> artifacts = DependencyResolver.resolve(resource);
+      StringBuilder sb = new StringBuilder("Append ");
+      sb.append(artifacts.size()).append(" jars:");
+      Local local = new Local(base);
+      List<Artifact> missings = new ArrayList<Artifact>();
+      for (Artifact artifact : artifacts) {
+        File file = new File(local.path(artifact));
+        if (!file.exists()) {
+          missings.add(artifact);
+          continue;
         }
-        log(sb.toString());
-      } catch (Exception e) {
-        e.printStackTrace();
+        sb.append(file.getName());
+        sb.append("  ");
+        try {
+          devCl.addURL(file.toURI().toURL());
+        } catch (MalformedURLException e) {
+          e.printStackTrace();
+        }
       }
+      log(sb.toString());
+      if (missings.size() > 0) { throw new RuntimeException("Cannot find " + missings); }
     } else {
       logError("Unable to install WebappClassLoader !");
-      logError("getClassloader is "+ cl.getClass().getName());
+      logError("getClassloader is " + cl.getClass().getName());
     }
   }
 
@@ -99,16 +86,11 @@ public class RepositoryLoader extends WebappLoader {
     System.err.println((new StringBuilder("[RepositoryLoader] Error: ")).append(msg).toString());
   }
 
-  public void setUrl(String url) {
-    this.url = url;
-  }
-
   public void setBase(String base) {
     this.base = base;
   }
 
-  private void normalizeUrlAndBase() {
-    if (null == this.url) this.url = "http://maven.aliyun.com/nexus/content/groups/public";
+  private void normalizeBase() {
     if (null == base) {
       this.base = System.getProperty("user.home") + "/.m2/repository";
     } else {
@@ -149,29 +131,23 @@ public class RepositoryLoader extends WebappLoader {
   static class DependencyResolver {
     public static final String DependenciesFile = "META-INF/beangle/container.dependencies";
 
-    public static List<Artifact> resolve(URL resource, File file) {
+    public static List<Artifact> resolve(URL resource) {
       List<Artifact> artifacts = new ArrayList<Artifact>();
       if (null == resource) return Collections.emptyList();
       try {
         InputStreamReader reader = new InputStreamReader(resource.openStream());
         LineNumberReader lr = new LineNumberReader(reader);
-        FileWriter writer = new FileWriter(file);
         String line = null;
         do {
           line = lr.readLine();
           if (line != null && !line.isEmpty()) {
             artifacts.add(new Artifact(line));
-            writer.write(line);
-            writer.write("\n");
           }
         } while (line != null);
-
         lr.close();
-        writer.close();
       } catch (Exception e) {
         e.printStackTrace();
       }
-
       return artifacts;
     }
   }
