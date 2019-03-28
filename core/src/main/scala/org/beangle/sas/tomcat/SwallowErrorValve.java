@@ -43,9 +43,7 @@ import org.beangle.sas.Version;
  */
 public class SwallowErrorValve extends ErrorReportValve {
 
-  /**
-   * @Override
-   */
+  @Override
   protected void report(Request request, Response response, Throwable throwable) {
     int statusCode = response.getStatus();
     if (statusCode < 400 || response.getContentWritten() > 0 || !response.setErrorReported()) { return; }
