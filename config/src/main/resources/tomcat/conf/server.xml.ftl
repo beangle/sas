@@ -1,5 +1,5 @@
 [#ftl]
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
 <Server port="-1" shutdown="SHUTDOWN">
   [#list farm.engine.listeners as listener]
   <Listener className="${listener.className}" [#list listener.properties?keys as k]${k}="${listener.properties[k]}"[/#list]/>
@@ -65,7 +65,7 @@
     [/#if]
 
     <Engine name="Catalina" defaultHost="localhost">
-      <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="false">
+      <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="false" errorReportValveClass="org.beangle.sas.tomcat.SwallowErrorValve">
       [#list container.deployments as deployment]
       [#if deployment.matches(server.qualifiedName)]
       [#list container.webapps as webapp]
