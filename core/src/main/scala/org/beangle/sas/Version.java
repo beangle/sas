@@ -16,15 +16,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.beangle.sas.tomcat;
+package org.beangle.sas;
 
-import org.apache.catalina.valves.ErrorReportValve;
+public class Version {
 
-public class SasErrorReportValve extends ErrorReportValve {
-
-  public SasErrorReportValve() {
-    super();
-    this.setShowReport(false);
-  }
-
+  public static final String version = "0.5.1";
 }
