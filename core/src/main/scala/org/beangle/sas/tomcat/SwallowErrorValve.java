@@ -38,7 +38,7 @@ import org.beangle.sas.Version;
 
 /**
  * Simplify error report
- * 
+ *
  * @author chaostone
  */
 public class SwallowErrorValve extends ErrorReportValve {
@@ -49,6 +49,7 @@ public class SwallowErrorValve extends ErrorReportValve {
   protected void report(Request request, Response response, Throwable throwable) {
     int statusCode = response.getStatus();
     if (statusCode < 400 || response.getContentWritten() > 0 || !response.setErrorReported()) { return; }
+
     AtomicBoolean result = new AtomicBoolean(false);
     response.getCoyoteResponse().action(ActionCode.IS_IO_ALLOWED, result);
     if (!result.get()) { return; }
