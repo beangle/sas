@@ -1,10 +1,10 @@
-<?xml version='1.0' encoding='utf-8'?>
-<Sas version="0.5.0">
+<?xml version="1.0" encoding="UTF-8"?>
+<Sas version="0.5.1">
   <!--从这里下载webapp的各类依赖性，如果涉及到没有开源的包，可以改为自己的伺服-->
   <Repository remote="maven.aliyun.com/nexus/content/groups/public"/>
 
   <Engines>
-    <Engine name="tomcat90" type="tomcat" version="9.0.12">
+    <Engine name="tomcat90" type="tomcat" version="9.0.17">
       <!--添加必要的驱动,不需要容器提供数据源，可以删除-->
       <Jar gav="org.postgresql:postgresql:42.2.5"/>
       <!--
@@ -44,7 +44,7 @@
   </Resources>
 
   <Webapps>
-    <Webapp name="micdn" gav="org.beangle.micdn:beangle-micdn-server:0.0.6"/>
+    <Webapp name="micdn" gav="org.beangle.micdn:beangle-micdn-server:0.1.0"/>
     <!--
     <Webapp name="your_app_name" docBase="as.home/webapps/your_war_name">
       <ResourceRef ref="jdbc/datasource"/>
