@@ -65,7 +65,7 @@
     [/#if]
 
     <Engine name="Catalina" defaultHost="localhost">
-      <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="false">
+      <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="false" errorReportValveClass="org.beangle.sas.tomcat.SasErrorReportValve">
       [#list container.deployments as deployment]
       [#if deployment.matches(server.qualifiedName)]
       [#list container.webapps as webapp]
