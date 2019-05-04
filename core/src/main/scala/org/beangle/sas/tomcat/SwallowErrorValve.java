@@ -52,7 +52,7 @@ public class SwallowErrorValve extends ErrorReportValve {
     response.getCoyoteResponse().action(ActionCode.IS_IO_ALLOWED, result);
     if (!result.get()) { return; }
 
-    if (null == getCookie(request, "dev")) {
+    if (null == getCookie(request, "devMode")) {
       StringBuilder sb = new StringBuilder();
       sb.append("HTTP Status ").append(statusCode);
       try {

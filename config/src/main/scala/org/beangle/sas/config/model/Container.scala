@@ -19,14 +19,14 @@
 package org.beangle.sas.config.model
 
 import org.beangle.commons.lang.Numbers.toInt
-import org.beangle.commons.lang.Strings
+import org.beangle.commons.lang.Strings.{isEmpty, isNotBlank, isNotEmpty}
 
 object Container {
 
   def apply(xml: scala.xml.Elem): Container = {
     val conf = new Container
     val sasVersion = (xml \ "@version").text
-    if (Strings.isEmpty(sasVersion)) {
+    if (isEmpty(sasVersion)) {
       throw new RuntimeException("Sas missing version attribute")
     }
     conf.version = sasVersion
@@ -34,7 +34,7 @@ object Container {
     (xml \ "Repository") foreach { repoElem =>
       val local = (repoElem \ "@local").text
       val remote = (repoElem \ "@remote").text
-      conf.repository = new Repository(if (Strings.isEmpty(local)) None else Some(local), if (Strings.isEmpty(remote)) None else Some(remote))
+      conf.repository = new Repository(if (isEmpty(local)) None else Some(local), if (isEmpty(remote)) None else Some(remote))
     }
 
     (xml \ "Engines" \ "Engine") foreach { engineElem =>
@@ -79,9 +79,9 @@ object Container {
         val url = (jarElem \ "@url").text
         val path = (jarElem \ "@path").text
 
-        if (Strings.isNotBlank(gav)) jar.gav = Some(gav)
-        if (Strings.isNotBlank(url)) jar.url = Some(url)
-        if (Strings.isNotBlank(path)) jar.path = Some(path)
+        if (isNotBlank(gav)) jar.gav = Some(gav)
+        if (isNotBlank(url)) jar.url = Some(url)
+        if (isNotBlank(path)) jar.path = Some(path)
         engine.jars += jar
       }
       conf.engines += engine
@@ -92,7 +92,7 @@ object Container {
       val ip = (hostElem \ "@ip").text
       val comment = (hostElem \ "@comment").text
       val host = new Host(name, ip)
-      if (Strings.isNotBlank(comment)) host.comment = Some(comment)
+      if (isNotBlank(comment)) host.comment = Some(comment)
       conf.hosts += host
     }
 
@@ -102,7 +102,7 @@ object Container {
 
       val farm = new Farm((farmElem \ "@name").text, engine.get)
       val jvmopts = (farmElem \ "JvmArgs" \ "@opts").text
-      farm.jvmopts = if (Strings.isEmpty(jvmopts)) None else Some(jvmopts)
+      farm.jvmopts = if (isEmpty(jvmopts)) None else Some(jvmopts)
 
       (farmElem \ "Http") foreach { httpElem =>
         val http = new HttpConnector
@@ -122,7 +122,7 @@ object Container {
         server.http = toInt((serverElem \ "@http").text)
         server.http2 = toInt((serverElem \ "@http2").text)
         val host = (serverElem \ "@host").text
-        if (Strings.isNotEmpty(host)) server.host = Some(host)
+        if (isNotEmpty(host)) server.host = Some(host)
         farm.servers += server
       }
       conf.farms += farm
@@ -208,6 +208,7 @@ object Container {
     }
   }
 }
+
 class Container {
 
   var version: String = _

@@ -20,5 +20,5 @@ package org.beangle.sas;
 
 public class Version {
 
-  public static final String version = "0.5.1";
+  public static final String version = "0.5.3";
 }
