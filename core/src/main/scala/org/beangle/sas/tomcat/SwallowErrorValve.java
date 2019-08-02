@@ -68,7 +68,7 @@ public class SwallowErrorValve extends ErrorReportValve {
     }
   }
 
-  protected void reportTrace(Request request, Response response, Throwable throwable) {
+  private void reportTrace(Request request, Response response, Throwable throwable) {
     int statusCode = response.getStatus();
     String message = Escape.htmlElementContent(response.getMessage());
     if (message == null) {
@@ -158,12 +158,11 @@ public class SwallowErrorValve extends ErrorReportValve {
 
   }
 
-  public static Cookie getCookie(Request request, String name) {
+  private static Cookie getCookie(Request request, String name) {
     Cookie[] cookies = request.getCookies();
     Cookie returnCookie = null;
-    if (cookies == null) { return returnCookie; }
-    for (int i = 0; i < cookies.length; i++) {
-      Cookie thisCookie = cookies[i];
+    if (cookies == null) { return null; }
+    for (Cookie thisCookie : cookies) {
       if (thisCookie.getName().equals(name) && !thisCookie.getValue().equals("")) {
         returnCookie = thisCookie;
         break;
