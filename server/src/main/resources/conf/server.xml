@@ -44,7 +44,7 @@
   </Resources>
 
   <Webapps>
-    <Webapp name="micdn" gav="org.beangle.micdn:beangle-micdn-server:0.1.0"/>
+    <Webapp name="micdn" gav="org.beangle.micdn:beangle-micdn-server:0.1.3"/>
     <!--
     <Webapp name="your_app_name" docBase="as.home/webapps/your_war_name">
       <ResourceRef ref="jdbc/datasource"/>
