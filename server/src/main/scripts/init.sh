@@ -6,13 +6,13 @@ cd $PRGDIR
 export M2_REMOTE_REPO="https://maven.aliyun.com/nexus/content/groups/public"
 export M2_REPO="$HOME/.m2/repository"
 
-export scala_ver=2.12.8
-export scalaxml_ver=1.1.1
-export beangle_sas_ver=0.5.2
-export beangle_commons_ver=5.1.5
-export beangle_template_ver=0.0.23
-export beangle_data_ver=5.1.4
-export beangle_repo_ver=0.0.10
+export scala_ver=2.13.0
+export scalaxml_ver=1.2.0
+export beangle_sas_ver=0.5.3
+export beangle_commons_ver=5.1.8
+export beangle_template_ver=0.0.24
+export beangle_data_ver=5.1.8
+export beangle_repo_ver=0.0.12
 export slf4j_ver=1.7.25
 export freemarker_ver=2.3.28
 export commons_compress_ver=1.18
@@ -66,13 +66,12 @@ if $wget_avaliable && $unzip_avaliable; then
   echo "Downloading and link libraries..."
   download org.scala-lang scala-library $scala_ver
   download org.scala-lang scala-reflect $scala_ver
-  download org.scala-lang.modules scala-xml_2.12 $scalaxml_ver
-  download org.beangle.commons beangle-commons-core_2.12     $beangle_commons_ver
-  download org.beangle.commons beangle-commons-file_2.12     $beangle_commons_ver
-  download org.beangle.data beangle-data-jdbc_2.12 $beangle_data_ver
-  download org.beangle.template beangle-template-freemarker_2.12 $beangle_template_ver
-  download org.beangle.repo beangle-repo-artifact_2.12 $beangle_repo_ver
-  download org.beangle.sas beangle-sas-config $beangle_sas_ver
+  download org.scala-lang.modules scala-xml_2.13 $scalaxml_ver
+  download org.beangle.commons beangle-commons-core_2.13     $beangle_commons_ver
+  download org.beangle.commons beangle-commons-file_2.13     $beangle_commons_ver
+  download org.beangle.data beangle-data-jdbc_2.13 $beangle_data_ver
+  download org.beangle.template beangle-template-freemarker_2.13 $beangle_template_ver
+  download org.beangle.repo beangle-repo-artifact_2.13 $beangle_repo_ver
   download org.beangle.sas beangle-sas-core   $beangle_sas_ver
   download org.apache.commons commons-compress $commons_compress_ver
   download org.freemarker freemarker $freemarker_ver

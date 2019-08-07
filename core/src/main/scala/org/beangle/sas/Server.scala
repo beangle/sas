@@ -16,9 +16,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.beangle.sas;
+package org.beangle.sas
 
-public class Version {
+trait Server {
 
-  public static final String version = "0.5.3";
+  def start(): Unit
+
+  def stop(): Unit
 }

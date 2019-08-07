@@ -16,9 +16,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.beangle.sas;
+package org.beangle.sas.model
 
-public class Version {
-
-  public static final String version = "0.5.3";
+class Deployment(var webapp: String, var on: String, var path: String) {
+  def matches(server: String): Boolean = {
+    if (server == on) {
+      true
+    } else {
+      val res = on.split(",") find (one => one == server || server.startsWith(one + "."))
+      res.isDefined
+    }
+  }
 }

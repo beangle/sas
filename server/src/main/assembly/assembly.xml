@@ -3,17 +3,6 @@
   <formats>
     <format>zip</format>
   </formats>
-  <dependencySets>
-    <dependencySet>
-      <useProjectArtifact>false</useProjectArtifact>
-      <outputDirectory>bin/lib</outputDirectory>
-      <excludes>
-        <exclude>org.apache.tomcat:tomcat-juli</exclude>
-        <exclude>org.apache.tomcat:tomcat-jdbc</exclude>
-        <exclude>org.beangle.sas:beangle-sas-core</exclude>
-      </excludes>
-    </dependencySet>
-  </dependencySets>
   <fileSets>
     <fileSet>
       <directory>src/main/resources/conf</directory>

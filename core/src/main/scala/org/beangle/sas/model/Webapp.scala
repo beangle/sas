@@ -16,9 +16,24 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.beangle.sas;
+package org.beangle.sas.model
 
-public class Version {
+class Webapp(var name: String) {
 
-  public static final String version = "0.5.3";
+  val resources = new collection.mutable.ListBuffer[Resource]
+
+  def resourceNames: Set[String] = resources.map(d => d.name).toSet
+
+  var reloadable = false
+
+  var docBase: String = _
+
+  var url: String = _
+
+  var gav: String = _
+
+  val properties = new java.util.Properties
+
+  var realms: String = _
+
 }

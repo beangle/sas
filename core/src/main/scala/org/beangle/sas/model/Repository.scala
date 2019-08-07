@@ -16,9 +16,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.beangle.sas;
+package org.beangle.sas.model
 
-public class Version {
+class Repository(val local: Option[String], val remote: Option[String]) {
 
-  public static final String version = "0.5.3";
 }

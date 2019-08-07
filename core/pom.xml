@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.beangle.sas</groupId>
     <artifactId>beangle-sas-parent</artifactId>
-    <version>0.5.2</version>
+    <version>0.5.3</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>beangle-sas-core</artifactId>
@@ -17,6 +17,26 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.beangle.commons</groupId>
+      <artifactId>beangle-commons-core_2.13</artifactId>
+      <version>${beangle.commons.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.beangle.data</groupId>
+      <artifactId>beangle-data-jdbc_2.13</artifactId>
+      <version>${beangle.data.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.beangle.template</groupId>
+      <artifactId>beangle-template-freemarker_2.13</artifactId>
+      <version>${beangle.template.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.beangle.repo</groupId>
+      <artifactId>beangle-repo-artifact_2.13</artifactId>
+      <version>${beangle.repo.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.tomcat</groupId>
       <artifactId>tomcat-catalina</artifactId>
       <version>${tomcat.version}</version>
@@ -26,6 +46,12 @@
       <groupId>org.apache.tomcat</groupId>
       <artifactId>tomcat-jdbc</artifactId>
       <version>${tomcat.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>io.undertow</groupId>
+      <artifactId>undertow-servlet</artifactId>
+      <version>${undertow.version}</version>
       <optional>true</optional>
     </dependency>
   </dependencies>
