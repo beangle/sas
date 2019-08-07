@@ -10,7 +10,7 @@ fi
 
 cd $SAS_HOME
 
-java -cp "$SAS_HOME/lib/*:$SAS_HOME/bin/lib/*" org.beangle.sas.config.shell.Resolve $SAS_HOME/conf/server.xml $TARGET
+java -cp "$SAS_HOME/lib/*:$SAS_HOME/bin/lib/*" org.beangle.sas.shell.Resolve $SAS_HOME/conf/server.xml $TARGET
 
 shopt -s nullglob
 if [ -d servers ]; then

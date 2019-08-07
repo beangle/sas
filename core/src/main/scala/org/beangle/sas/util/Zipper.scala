@@ -22,7 +22,7 @@ import java.io.{File, FileInputStream, FileOutputStream}
 import java.util.zip.ZipInputStream
 
 object Zipper {
-  def unzip(zipFile: File, folder: File) {
+  def unzip(zipFile: File, folder: File): Unit = {
     val outputFolder = folder.getAbsolutePath
     val buffer = new Array[Byte](1024)
     if (!folder.exists()) folder.mkdirs()

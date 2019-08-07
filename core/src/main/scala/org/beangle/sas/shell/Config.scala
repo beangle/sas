@@ -25,7 +25,7 @@ import org.beangle.commons.lang.Consoles.{confirm, prompt, shell}
 import org.beangle.commons.lang.Numbers.{isDigits, toInt}
 import org.beangle.commons.lang.{Strings, SystemInfo}
 import org.beangle.data.jdbc.vendor.{UrlFormat, Vendors}
-import org.beangle.sas.model.{Container, Engine, Farm, Resource, Webapp,Deployment}
+import org.beangle.sas.model._
 
 object Config extends ShellEnv {
 
@@ -33,8 +33,9 @@ object Config extends ShellEnv {
   var currentWebapp: Option[Webapp] = None
   var currentEngine: Option[Engine] = None
 
-  def printHelp() {
-    println("""  info              print config xml content
+  def printHelp(): Unit = {
+    println(
+      """  info              print config xml content
   save              save config
   create engine     create a engine
   create farm       create a farm profile
@@ -51,7 +52,7 @@ object Config extends ShellEnv {
   help              print this help conent""")
   }
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     workdir = if (args.length == 0) SystemInfo.user.dir else args(0)
     read()
     if (null == container) {
@@ -66,25 +67,25 @@ object Config extends ShellEnv {
           else "as"
         prefix + " >"
       }, Set("exit", "quit", "q"), command => command match {
-        case "info"              => println(toXml)
-        case "create engine"     => createEngine()
-        case "create farm"       => createFarm()
-        case "remove farm"       => removeFarm()
-        case "use farm"          => useFarm()
-        case "create webapp"     => createWebapp()
-        case "remove webapp"     => removeWebapp()
+        case "info" => println(toXml)
+        case "create engine" => createEngine()
+        case "create farm" => createFarm()
+        case "remove farm" => removeFarm()
+        case "use farm" => useFarm()
+        case "create webapp" => createWebapp()
+        case "remove webapp" => removeWebapp()
         case "create datasource" => createDataSource()
         case "remove datasource" => removeResource()
-        case "add ref"           => addResourceRef()
-        case "remove ref"        => removeResourceRef()
-        case "create deploy"     => createDeployment()
-        case "remove deploy"     => removeDeployment()
-        case "jvmopts"           => setJvmOpts()
+        case "add ref" => addResourceRef()
+        case "remove ref" => removeResourceRef()
+        case "create deploy" => createDeployment()
+        case "remove deploy" => removeDeployment()
+        case "jvmopts" => setJvmOpts()
         case "save" =>
           println("Writing to " + workdir + configFile)
           Files.writeString(new File(workdir + configFile), toXml)
         case "help" => printHelp()
-        case t      => if (Strings.isNotEmpty(t)) println(t + ": command not found...")
+        case t => if (Strings.isNotEmpty(t)) println(t + ": command not found...")
       })
     }
   }
@@ -108,7 +109,7 @@ object Config extends ShellEnv {
     farm
   }
 
-  def removeFarm() {
+  def removeFarm(): Unit = {
     if (container.farmNames.isEmpty) {
       println("farms is empty!")
     } else {
@@ -137,7 +138,7 @@ object Config extends ShellEnv {
     webapp
   }
 
-  def removeWebapp() {
+  def removeWebapp(): Unit = {
     if (container.webapps.isEmpty) {
       println("webapps is empty!")
     } else {
@@ -148,7 +149,7 @@ object Config extends ShellEnv {
     }
   }
 
-  def removeResource() {
+  def removeResource(): Unit = {
     if (container.resources.isEmpty) {
       println("resources is empty!")
     } else {
@@ -164,7 +165,7 @@ object Config extends ShellEnv {
     }
   }
 
-  def addResourceRef() {
+  def addResourceRef(): Unit = {
     if (container.resources.isEmpty || container.webappNames.isEmpty) {
       println("resources or webapps is empty!")
     } else {
@@ -178,7 +179,7 @@ object Config extends ShellEnv {
     }
   }
 
-  def removeResourceRef() {
+  def removeResourceRef(): Unit = {
     if (container.resources.isEmpty || container.webappNames.isEmpty) {
       println("resources or webapps is empty!")
     } else {
@@ -192,7 +193,7 @@ object Config extends ShellEnv {
     }
   }
 
-  def createDeployment() {
+  def createDeployment(): Unit = {
     if (container.webapps.isEmpty || container.farms.isEmpty) {
       println("farms or webapps is empty!")
     } else {
@@ -214,7 +215,7 @@ object Config extends ShellEnv {
     }
   }
 
-  def removeDeployment() {
+  def removeDeployment(): Unit = {
     if (container.webapps.isEmpty || container.farms.isEmpty) {
       println("farms or webapps is empty!")
     } else {
@@ -240,7 +241,7 @@ object Config extends ShellEnv {
     val formatPrompts = new StringBuilder()
     Range(0, driverInfo.urlformats.length).foreach { i =>
       urlformats += (i -> driverInfo.urlformats(i))
-      formatPrompts ++= (i + " ->" + driverInfo.urlformats(i) + "\n")
+      formatPrompts ++= s"$i ->${driverInfo.urlformats(i)}\n"
     }
     var index = 0
     if (urlformats.size > 1) {
@@ -257,7 +258,7 @@ object Config extends ShellEnv {
     ds
   }
 
-  def createConfig(target: File) {
+  def createConfig(target: File): Unit = {
     println("Create a new config file :" + target)
     target.createNewFile()
     container = new Container
@@ -267,7 +268,7 @@ object Config extends ShellEnv {
     Files.writeString(target, toXml)
   }
 
-  def setJvmOpts() {
+  def setJvmOpts(): Unit = {
     if (container.farmNames.isEmpty) {
       println("farm is empty,create first.")
     } else {
@@ -283,7 +284,7 @@ object Config extends ShellEnv {
     }
   }
 
-  def useFarm() {
+  def useFarm(): Unit = {
     if (container.farmNames.isEmpty) {
       println("farm is empty,create first.")
     } else {

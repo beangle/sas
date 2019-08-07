@@ -6,13 +6,13 @@ cd $PRGDIR
 export M2_REMOTE_REPO="https://maven.aliyun.com/nexus/content/groups/public"
 export M2_REPO="$HOME/.m2/repository"
 
-export scala_ver=2.12.8
-export scalaxml_ver=1.1.1
-export beangle_sas_ver=0.5.2
-export beangle_commons_ver=5.1.5
-export beangle_template_ver=0.0.23
-export beangle_data_ver=5.1.4
-export beangle_repo_ver=0.0.10
+export scala_ver=2.13.0
+export scalaxml_ver=1.2.0
+export beangle_sas_ver=0.5.3
+export beangle_commons_ver=5.1.8
+export beangle_template_ver=0.0.24
+export beangle_data_ver=5.1.8
+export beangle_repo_ver=0.0.12
 export slf4j_ver=1.7.25
 export freemarker_ver=2.3.28
 export commons_compress_ver=1.18

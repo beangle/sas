@@ -202,6 +202,7 @@ object Container {
           scanner.properties.put("scanClassPath", "false")
           context.jarScanner = scanner
         }
+        //添加beangle-sas-core
         engine.jars += Jar.gav("org.beangle.sas:beangle-sas-core:" + conf.version)
       }
     }

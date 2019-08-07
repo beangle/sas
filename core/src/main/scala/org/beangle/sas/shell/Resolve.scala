@@ -44,7 +44,7 @@ object Resolve {
     resolve(container, sasHome, server)
   }
 
-  def resolve(container: Container, sasHome: String, serverName: String) {
+  def resolve(container: Container, sasHome: String, serverName: String): Unit = {
     val repository = container.repository
 
     val remote =
@@ -168,12 +168,12 @@ object Resolve {
     engineHome.mkdirs()
     val tomcatDirname = tomcatZip.getName.replace(".zip", "")
     val version = Strings.substringAfterLast(tomcatDirname, "-")
-    val engineDir = new File(engineHome + "/tomcat-" + version)
+    val engineDir = new File(engineHome.getPath + "/tomcat-" + version)
     if (engineDir.exists()) {
       Dirs.delete(engineDir)
     }
     Zipper.unzip(tomcatZip, engineHome)
-    new File(engineHome + "/apache-tomcat-" + version).renameTo(engineDir)
+    new File(engineHome.getPath + "/apache-tomcat-" + version).renameTo(engineDir)
     //delete outer dirs
     Dirs.on(engineDir).delete("work", "webapps", "logs", "temp", "RUNNING.txt")
       .delete("NOTICE", "LICENSE", "RELEASE-NOTES", "BUILDING.txt", "CONTRIBUTING.md", "README.md")

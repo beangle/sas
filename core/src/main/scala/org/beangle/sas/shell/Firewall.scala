@@ -28,7 +28,7 @@ import org.beangle.template.freemarker.{Configurer => FreemarkerConfigurer}
 
 object Firewall extends ShellEnv {
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     workdir = if (args.length == 0) SystemInfo.user.dir else args(0)
     read()
 
@@ -48,7 +48,7 @@ object Firewall extends ShellEnv {
 
   def firewalldEnabled: Boolean = {
     val p = new ProcessBuilder("which", "firewalld").start()
-    IOs.readString(p.getInputStream()).contains("/usr/sbin/firewalld")
+    IOs.readString(p.getInputStream).contains("/usr/sbin/firewalld")
   }
 
   def isRoot: Boolean = {
@@ -56,11 +56,11 @@ object Firewall extends ShellEnv {
     IOs.readString(p.getInputStream()).contains("uid=0(root)")
   }
 
-  def info() {
+  def info(): Unit = {
     println("http ports:" + container.ports.mkString(" "))
   }
 
-  def apply() {
+  def apply(): Unit = {
     if (!firewalldEnabled) {
       println("Cannot find firewalld utilities,firewall config abort.")
       return
@@ -98,7 +98,7 @@ object Firewall extends ShellEnv {
     return sw.toString()
   }
 
-  def printHelp() {
+  def printHelp(): Unit = {
     println(s"""Avaliable command:
   info        print server port
   conf        generate firewall configuration
