@@ -92,7 +92,7 @@ object Firewall extends ShellEnv {
     val data = new collection.mutable.HashMap[String, Any]()
     data.put("ports", container.ports)
     val sw = new StringWriter()
-    val template = cfg.getTemplate("firewall.ftl")
+    val template = cfg.getTemplate("sas/firewall.ftl")
     template.process(data, sw)
     sw.close()
     return sw.toString()
