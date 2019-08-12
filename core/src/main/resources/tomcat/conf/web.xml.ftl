@@ -1,3 +1,4 @@
+[#ftl]
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"

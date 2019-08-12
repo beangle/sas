@@ -20,6 +20,7 @@ package org.beangle.sas.util
 
 import java.io.{File, StringWriter}
 
+import freemarker.template.Configuration
 import org.beangle.commons.activation.MediaTypes
 import org.beangle.commons.config.Resources
 import org.beangle.commons.io.{Files => IOFiles}
@@ -29,6 +30,9 @@ import org.beangle.template.freemarker.Configurer
 
 object Gen {
   private val cfg = Configurer.newConfig
+  cfg.setTagSyntax(Configuration.SQUARE_BRACKET_TAG_SYNTAX)
+  cfg.setDefaultEncoding("UTF-8")
+  cfg.setNumberFormat("0.##")
 
   def spawn(container: Container, farm: Farm, server: Server, targetDir: String): Unit = {
     val data = new collection.mutable.HashMap[String, Any]()
@@ -57,7 +61,7 @@ object Gen {
     val data = new collection.mutable.HashMap[String, Any]()
     data.put("engine", engine)
     val mimetypes = MediaTypes.buildTypes(new Resources(None,
-      List.empty, getResource("mime.types")))
+      List.empty, getResource("sas/mime.types")))
     data.put("mimetypes", mimetypes)
     val envTemplate = cfg.getTemplate(s"${engine.typ}/conf/web.xml.ftl")
     val nsw = new StringWriter()

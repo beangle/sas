@@ -2,14 +2,14 @@
   <parent>
     <groupId>org.beangle</groupId>
     <artifactId>beangle-scala</artifactId>
-    <version>26.2</version>
+    <version>26.4</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.beangle.sas</groupId>
   <artifactId>beangle-sas-parent</artifactId>
   <packaging>pom</packaging>
   <name>Beangle Simple Application Server Parent</name>
-  <version>0.5.3</version>
+  <version>0.5.4</version>
 
   <url>https://github.com/beangle/sas</url>
 
@@ -36,7 +36,6 @@
     <beangle.commons.version>5.1.8</beangle.commons.version>
     <beangle.cdi.version>0.1.1</beangle.cdi.version>
     <beangle.repo.version>0.0.12</beangle.repo.version>
-    <beangle.maven.version>0.3.18</beangle.maven.version>
     <beangle.data.version>5.1.8</beangle.data.version>
     <beangle.template.version>0.0.24</beangle.template.version>
   </properties>
