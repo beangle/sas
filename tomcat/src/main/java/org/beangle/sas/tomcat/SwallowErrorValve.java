@@ -18,14 +18,6 @@
  */
 package org.beangle.sas.tomcat;
 
-import java.io.Writer;
-import java.util.Collections;
-import java.util.Locale;
-import java.util.Scanner;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.servlet.http.Cookie;
-
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.valves.Constants;
@@ -34,7 +26,13 @@ import org.apache.coyote.ActionCode;
 import org.apache.tomcat.util.ExceptionUtils;
 import org.apache.tomcat.util.res.StringManager;
 import org.apache.tomcat.util.security.Escape;
-import org.beangle.sas.Version;
+
+import javax.servlet.http.Cookie;
+import java.io.Writer;
+import java.util.Collections;
+import java.util.Locale;
+import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Simplify error report
@@ -145,7 +143,7 @@ public class SwallowErrorValve extends ErrorReportValve {
       sb.append("<hr/>");
     }
     if (isShowServerInfo()) {
-      sb.append("<h3>").append("Beangle Sas/" + Version.version).append("</h3>");
+      sb.append("<h3>").append("Beangle Sas").append("</h3>");
     }
     try {
       Writer writer = response.getReporter();
