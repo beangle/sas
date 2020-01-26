@@ -18,7 +18,8 @@
  */
 package org.beangle.sas.model
 
-import org.beangle.sas.util.Strings.{isEmpty, isNotBlank, isNotEmpty, toInt}
+import org.beangle.commons.lang.Numbers.toInt
+import org.beangle.commons.lang.Strings.{isEmpty, isNotBlank, isNotEmpty}
 
 object Container {
 
@@ -100,6 +101,9 @@ object Container {
       if (engine.isEmpty) throw new RuntimeException("Cannot find engine for" + (farmElem \ "@engine").text)
 
       val farm = new Farm((farmElem \ "@name").text, engine.get)
+      (farmElem \ "@enableAccessLog") foreach { n =>
+        farm.enableAccessLog = java.lang.Boolean.valueOf(n.text)
+      }
       val jvmopts = (farmElem \ "JvmArgs" \ "@opts").text
       farm.jvmopts = if (isEmpty(jvmopts)) None else Some(jvmopts)
 
@@ -123,6 +127,14 @@ object Container {
         val host = (serverElem \ "@host").text
         if (isNotEmpty(host)) server.host = Some(host)
         farm.servers += server
+
+        val accessEnabled = serverElem \ "@enableAccessLog"
+        accessEnabled foreach { n =>
+          server.enableAccessLog = java.lang.Boolean.valueOf(n.text)
+        }
+        if (accessEnabled.isEmpty) {
+          server.enableAccessLog = farm.enableAccessLog
+        }
       }
       conf.farms += farm
     }
@@ -175,38 +187,6 @@ object Container {
     if ((elem \ "@compressionMimeType").nonEmpty) http.compressionMimeType = (elem \ "@compressionMimeType").text
   }
 
-  def applyDefault(conf: Container): Unit = {
-    if (null == conf.repository) {
-      conf.repository = new Repository(None, None)
-    }
-    conf.engines foreach { engine =>
-      if (engine.typ == EngineType.Tomcat) {
-        if (engine.listeners.isEmpty) {
-          engine.listeners += new Listener("org.apache.catalina.core.AprLifecycleListener").property("SSLEngine", "on")
-          engine.listeners += new Listener("org.apache.catalina.core.JreMemoryLeakPreventionListener")
-          engine.listeners += new Listener("org.apache.catalina.mbeans.GlobalResourcesLifecycleListener")
-          engine.listeners += new Listener("org.apache.catalina.core.ThreadLocalLeakPreventionListener")
-        }
-
-        if (null == engine.context) engine.context = new Context()
-
-        val context = engine.context
-        if (context.loader == null) {
-          context.loader = new Loader("org.apache.catalina.loader.RepositoryLoader")
-        }
-        if (context.jarScanner == null) {
-          val scanner = new JarScanner
-          scanner.properties.put("scanBootstrapClassPath", "false")
-          scanner.properties.put("scanAllDirectories", "false")
-          scanner.properties.put("scanAllFiles", "false")
-          scanner.properties.put("scanClassPath", "false")
-          context.jarScanner = scanner
-        }
-        //添加beangle-sas-core
-        engine.jars += Jar.gav("org.beangle.sas:beangle-sas-core:" + conf.version)
-      }
-    }
-  }
 }
 
 class Container {

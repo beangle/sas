@@ -17,8 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.beangle.sas.model
-
-import org.beangle.sas.util.Strings
+import org.beangle.commons.lang.Strings
 
 object Farm {
   def build(name: String, engine: Engine, serverCount: Int): Farm = {
@@ -45,18 +44,26 @@ class Farm(var name: String, var engine: Engine) {
 
   var servers = new collection.mutable.ListBuffer[Server]
 
+  /** 是否启用访问日志 */
+  var enableAccessLog: Boolean = _
+
+  /** JVM参数 */
   var jvmopts: Option[String] = None
 }
 
 class Server(val farm: Farm, var name: String) {
 
-  /** http/1 端口*/
+  /** http/1 端口 */
   var http: Int = _
 
-  /** http/2 端口*/
+  /** http/2 端口 */
   var http2: Int = _
 
+  /** 部署的主机 */
   var host: Option[String] = None
+
+  /** 是否启用访问日志 */
+  var enableAccessLog: Boolean = _
 
   def qualifiedName: String = {
     if (Strings.isNotBlank(farm.name)) farm.name + "." + name

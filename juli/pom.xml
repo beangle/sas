@@ -6,32 +6,35 @@
     <version>0.6.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>beangle-sas-tomcat</artifactId>
+  <artifactId>beangle-sas-juli</artifactId>
   <packaging>jar</packaging>
-  <name>Beangle Sas Tomcat</name>
+  <name>Beangle Sas JULI</name>
 
   <properties>
-    <bundle.symbolicName>org.beangle.sas.tomcat</bundle.symbolicName>
+    <bundle.symbolicName>org.beangle.sas.juli</bundle.symbolicName>
     <bundle.namespace>org.beangle.sas</bundle.namespace>
-    <logback.version>1.3.0-alpha5</logback.version>
   </properties>
 
   <dependencies>
     <dependency>
-      <groupId>org.apache.tomcat</groupId>
-      <artifactId>tomcat-catalina</artifactId>
-      <version>${tomcat.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.tomcat</groupId>
-      <artifactId>tomcat-jdbc</artifactId>
-      <version>${tomcat.version}</version>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-access</artifactId>
-      <version>${logback.version}</version>
+      <artifactId>logback-classic</artifactId>
       <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-core</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>tomcat-juli</artifactId>
+      <version>${tomcat.version}</version>
     </dependency>
   </dependencies>
 </project>

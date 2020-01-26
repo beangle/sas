@@ -16,19 +16,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.beangle.sas.shell
+package org.beangle.sas.tomcat
 
 import java.io.File
 
 import org.beangle.sas.model.Engine
 import org.beangle.sas.util.Gen
 import org.junit.runner.RunWith
-import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class ResolveTest extends AnyFunSpec with Matchers {
+class TomcatMakerTest extends AnyFunSpec with Matchers {
   describe("Resolver") {
     it("make catalina engine") {
       val sasHome = "/tmp/sas"
@@ -36,8 +36,8 @@ class ResolveTest extends AnyFunSpec with Matchers {
       engine.jspSupport = true
       val file = new File("/tmp/apache-tomcat-8.5.15.zip")
       if (file.exists()) {
-        Resolve.makeTomcatEngine("/tmp/sas", file, engine)
-        Resolve.makeTomcatBase(sasHome, engine, "farm.server1")
+        TomcatMaker.doMakeEngine("/tmp/sas", file, engine)
+        TomcatMaker.doMakeBase(sasHome, engine, "farm.server1")
 
         Gen.spawn(engine, "/tmp/sas/engines/tomcat-8.5.15")
       }

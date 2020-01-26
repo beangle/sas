@@ -12,7 +12,11 @@ export CATALINA_PID="$CATALINA_BASE"/CATALINA_PID
 export CATALINA_OUT="$CATALINA_BASE"/logs/catalina.out
 export CATALINA_TMPDIR="$CATALINA_BASE"/temp
 
-LOGGING_CONFIG="-Djava.util.logging.config.file=$CATALINA_BASE/conf/logging.properties"
+export beangle_sas_ver=0.6.0
+export slf4j_ver=2.0.0-alpha1
+export logback_ver=1.3.0-alpha5
+
+LOGGING_CONFIG="-Dnop"
 LOGGING_MANAGER="-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager"
 
 function echoEnvs(){
@@ -49,12 +53,11 @@ if [ -z "$_RUNJAVA" ]; then
   _RUNJAVA="$JRE_HOME"/bin/java
 fi
 
-# Add on extra jar files to CLASSPATH
-if [ ! -z "$CLASSPATH" ] ; then
-  CLASSPATH="$CLASSPATH":
-fi
-
-CLASSPATH="$CLASSPATH""$CATALINA_HOME"/bin/bootstrap.jar:$CATALINA_BASE/bin/tomcat-juli.jar
+CLASSPATH="$CATALINA_HOME"/bin/bootstrap.jar:$CATALINA_BASE/bin/tomcat-juli.jar
+CLASSPATH="$CLASSPATH":"$SAS_HOME"/bin/lib/beangle-sas-juli-"$beangle_sas_ver".jar
+CLASSPATH="$CLASSPATH":"$SAS_HOME"/bin/lib/slf4j-api-"$slf4j_ver".jar
+CLASSPATH="$CLASSPATH":"$SAS_HOME"/bin/lib/logback-core-"$logback_ver".jar
+CLASSPATH="$CLASSPATH":"$SAS_HOME"/bin/lib/logback-classic-"$logback_ver".jar
 
 if [ -z "$JSSE_OPTS" ] ; then
   JSSE_OPTS="-Djdk.tls.ephemeralDHKeySize=2048"
@@ -69,9 +72,10 @@ if [ "$CATALINA_CMD" = "run" ]; then
     echoEnvs
     eval exec "\"$_RUNJAVA\"" "\"$LOGGING_CONFIG\"" $LOGGING_MANAGER $JAVA_OPTS $CATALINA_OPTS \
       -classpath "\"$CLASSPATH\"" \
-      -Dcatalina.base="\"$CATALINA_BASE\"" \
       -Dcatalina.home="\"$CATALINA_HOME\"" \
+      -Dcatalina.base="\"$CATALINA_BASE\"" \
       -Djava.io.tmpdir="\"$CATALINA_TMPDIR\"" \
+      -Dsas.home="\"$SAS_HOME\"" \
       org.apache.catalina.startup.Bootstrap start
 
 elif [ "$CATALINA_CMD" = "start" ] ; then

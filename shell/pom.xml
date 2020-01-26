@@ -6,12 +6,12 @@
     <version>0.6.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>beangle-sas-core</artifactId>
+  <artifactId>beangle-sas-shell</artifactId>
   <packaging>jar</packaging>
-  <name>Beangle Sas Core</name>
+  <name>Beangle Sas Shell</name>
 
   <properties>
-    <bundle.symbolicName>org.beangle.sas.core</bundle.symbolicName>
+    <bundle.symbolicName>org.beangle.sas.shell</bundle.symbolicName>
     <bundle.namespace>org.beangle.sas</bundle.namespace>
   </properties>
 
@@ -22,9 +22,24 @@
       <version>${beangle.commons.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.beangle.commons</groupId>
+      <artifactId>beangle-commons-file_2.13</artifactId>
+      <version>${beangle.commons.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.beangle.sas</groupId>
+      <artifactId>beangle-sas-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.beangle.data</groupId>
       <artifactId>beangle-data-jdbc_2.13</artifactId>
       <version>${beangle.data.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.beangle.template</groupId>
+      <artifactId>beangle-template-freemarker_2.13</artifactId>
+      <version>${beangle.template.version}</version>
     </dependency>
     <dependency>
       <groupId>org.beangle.repo</groupId>
@@ -34,6 +49,12 @@
     <dependency>
       <groupId>org.apache.tomcat</groupId>
       <artifactId>tomcat-catalina</artifactId>
+      <version>${tomcat.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>tomcat-jdbc</artifactId>
       <version>${tomcat.version}</version>
       <optional>true</optional>
     </dependency>

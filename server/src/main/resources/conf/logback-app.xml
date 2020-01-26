@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+    <property name="max.retention.days" value="60" />
+    <appender name="STDOUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${catalina.base}/logs/app.log</file>
+        <append>true</append>
+        <encoder>
+          <pattern>%d [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${catalina.base}/logs/archive/app-%d{yyyyMMdd}-%i.log.tar.gz</fileNamePattern>
+            <maxHistory>${max.retention.days}</maxHistory>
+            <maxFileSize>20MB</maxFileSize>
+        </rollingPolicy>
+    </appender>
+
+  <root level="INFO">
+    <appender-ref ref="STDOUT" />
+  </root>
+
+</configuration>

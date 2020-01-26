@@ -18,6 +18,10 @@
  */
 package org.apache.catalina.loader;
 
+import org.apache.catalina.LifecycleException;
+import org.apache.juli.logging.Log;
+import org.apache.juli.logging.LogFactory;
+
 import java.io.File;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
@@ -27,9 +31,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.catalina.LifecycleException;
-
 public class RepositoryLoader extends WebappLoader {
+  private static final Log logger = LogFactory.getLog(RepositoryLoader.class);
   String base;
 
   public RepositoryLoader() {
@@ -49,7 +52,9 @@ public class RepositoryLoader extends WebappLoader {
       @SuppressWarnings("resource")
       WebappClassLoaderBase devCl = (WebappClassLoaderBase) cl;
       URL resource = cl.getResource(DependencyResolver.DependenciesFile);
-      if (null == resource) { return; }
+      if (null == resource) {
+        return;
+      }
       normalizeBase();
       List<Artifact> artifacts = DependencyResolver.resolve(resource);
       StringBuilder sb = new StringBuilder("Append ");
@@ -70,20 +75,13 @@ public class RepositoryLoader extends WebappLoader {
           e.printStackTrace();
         }
       }
-      log(sb.toString());
-      if (missings.size() > 0) { throw new RuntimeException("Cannot find " + missings); }
+      logger.info(sb.toString());
+      if (missings.size() > 0) {
+        throw new RuntimeException("Cannot find " + missings);
+      }
     } else {
-      logError("Unable to install WebappClassLoader !");
-      logError("getClassloader is " + cl.getClass().getName());
+      logger.error("Unable to install WebappClassLoader. And getClassloader is " + cl.getClass().getName());
     }
-  }
-
-  private void log(String msg) {
-    System.out.println((new StringBuilder("[RepositoryLoader]: ")).append(msg).toString());
-  }
-
-  private void logError(String msg) {
-    System.err.println((new StringBuilder("[RepositoryLoader] Error: ")).append(msg).toString());
   }
 
   public void setBase(String base) {
@@ -162,7 +160,7 @@ public class RepositoryLoader extends WebappLoader {
 
     public String path(Artifact artifact) {
       return base + "/" + artifact.groupId.replace('.', '/') + "/" + artifact.artifactId + "/"
-          + artifact.version + "/" + artifact.artifactId + "-" + artifact.version + "." + artifact.packaging;
+        + artifact.version + "/" + artifact.artifactId + "-" + artifact.version + "." + artifact.packaging;
     }
   }
 }

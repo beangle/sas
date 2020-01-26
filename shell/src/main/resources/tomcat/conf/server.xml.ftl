@@ -66,8 +66,13 @@
 
     <Engine name="Catalina" defaultHost="localhost">
       <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="false" errorReportValveClass="org.beangle.sas.tomcat.SwallowErrorValve">
-      [#list container.deployments as deployment]
-      [#if deployment.matches(server.qualifiedName)]
+    [#list container.deployments as deployment]
+     [#if deployment.matches(server.qualifiedName)]
+
+      [#if server.enableAccessLog]
+        <Valve className="ch.qos.logback.access.tomcat.LogbackValve" quiet="true" filename="conf/logback-access.xml"/>
+      [/#if]
+
       [#list container.webapps as webapp]
       [#if webapp.name == deployment.webapp]
       <Context path="${deployment.path}" reloadable="${webapp.reloadable?c}"[#rt/]
@@ -82,11 +87,11 @@
         [#if ctx.loader??]<Loader className="${ctx.loader.className}" [@spawnProps ctx.loader/]/>[/#if]
         [/#if]
         ${webapp.realms!}
-        </Context>
-       [/#if]
-       [/#list]
-       [/#if]
-       [/#list]
+      </Context>
+      [/#if]
+      [/#list]
+     [/#if]
+    [/#list]
       </Host>
     </Engine>
   </Service>
