@@ -36,20 +36,20 @@ object Config extends ShellEnv {
   def printHelp(): Unit = {
     println(
       """  info              print config xml content
-  save              save config
-  create engine     create a engine
-  create farm       create a farm profile
-  remove farm       remove a farm profile
-  create webapp     create a webapp context
-  remove webapp     remove a webapp context
-  create datasource create a datasource config
-  remove datasource remove a datasource config
-  add ref           add a resource reference
-  remove ref        remove a resource reference
-  create deploy     create a deployment
-  remove deploy     remove a deployment
-  jvmopts           set jvm options
-  help              print this help conent""")
+        |  save              save config
+        |  create engine     create a engine
+        |  create farm       create a farm profile
+        |  remove farm       remove a farm profile
+        |  create webapp     create a webapp context
+        |  remove webapp     remove a webapp context
+        |  create datasource create a datasource config
+        |  remove datasource remove a datasource config
+        |  add ref           add a resource reference
+        |  remove ref        remove a resource reference
+        |  create deploy     create a deployment
+        |  remove deploy     remove a deployment
+        |  jvmopts           set jvm options
+        |  help              print this help conent""".stripMargin)
   }
 
   def main(args: Array[String]): Unit = {
@@ -239,7 +239,7 @@ object Config extends ShellEnv {
     ds.driverClassName = driverInfo.className
     val urlformats = new collection.mutable.HashMap[Int, String]
     val formatPrompts = new StringBuilder()
-    Range(0, driverInfo.urlformats.length).foreach { i =>
+    driverInfo.urlformats.indices.foreach { i =>
       urlformats += (i -> driverInfo.urlformats(i))
       formatPrompts ++= s"$i ->${driverInfo.urlformats(i)}\n"
     }

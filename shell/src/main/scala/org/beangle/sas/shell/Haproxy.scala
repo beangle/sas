@@ -26,6 +26,6 @@ object Haproxy extends ShellEnv {
     workdir = if (args.length == 0) SystemInfo.user.dir else args(0)
     read()
     ConfigGenerator.gen(container, workdir)
-    logger.info(s"Generate ${workdir}/conf/haproxy.cfg")
+    println(s"Generate ${workdir}/conf/haproxy.cfg")
   }
 }

@@ -35,11 +35,12 @@ object Firewall extends ShellEnv {
     if (null != container) {
       info()
       shell("firewall> ", Set("exit", "quit", "q"), command => command match {
-        case "info"  => info()
-        case "help"  => printHelp()
-        case "conf"  => println(generate())
+        case "?" => printHelp()
+        case "info" => info()
+        case "help" => printHelp()
+        case "conf" => println(generate())
         case "apply" => apply()
-        case t       => if (isNotEmpty(t)) println(t + ": command not found...")
+        case t => if (isNotEmpty(t)) println(t + ": command not found...")
       })
     } else {
       logger.info("Cannot find conf/server.xml")
@@ -47,13 +48,13 @@ object Firewall extends ShellEnv {
   }
 
   def firewalldEnabled: Boolean = {
-    val p = new ProcessBuilder("which", "firewalld").start()
-    IOs.readString(p.getInputStream).contains("/usr/sbin/firewalld")
+    val p = new ProcessBuilder("which", "firewall-cmd").start()
+    IOs.readString(p.getInputStream).contains("/usr/bin/firewall-cmd")
   }
 
   def isRoot: Boolean = {
     val p = new ProcessBuilder("id").start()
-    IOs.readString(p.getInputStream()).contains("uid=0(root)")
+    IOs.readString(p.getInputStream).contains("uid=0(root)")
   }
 
   def info(): Unit = {
@@ -66,12 +67,12 @@ object Firewall extends ShellEnv {
       return
     }
     val ports = new collection.mutable.ListBuffer[Int]
-    if (!container.ports.isEmpty) {
+    if (container.ports.nonEmpty) {
       val answer = prompt("apply http ports:" + container.ports.mkString(" ") + "(y/n)?")
       if ("y" == answer.toLowerCase) ports ++= container.ports
     }
 
-    if (!ports.isEmpty) {
+    if (ports.nonEmpty) {
       val sb = new StringBuilder()
       for (port <- ports) {
         sb ++= (" --add-port=" + port + "/tcp")
@@ -79,30 +80,32 @@ object Firewall extends ShellEnv {
       val cmd = "firewall-cmd --permanent --zone=public" + sb.mkString
       if (isRoot) {
         println("executing:" + cmd)
-        Runtime.getRuntime().exec(cmd)
+        Runtime.getRuntime.exec(cmd)
         println("firewalld changed successfully.")
-      }else{
-        println("Please login using root, and execute command :"+cmd)
+      } else {
+        println("Please execute the command:\n sudo " + cmd)
       }
     }
   }
 
   def generate(): String = {
     val cfg = FreemarkerConfigurer.newConfig
+    cfg.setNumberFormat("0.##")
     val data = new collection.mutable.HashMap[String, Any]()
     data.put("ports", container.ports)
     val sw = new StringWriter()
     val template = cfg.getTemplate("sas/firewall.ftl")
     template.process(data, sw)
     sw.close()
-    return sw.toString()
+    sw.toString
   }
 
   def printHelp(): Unit = {
-    println(s"""Avaliable command:
-  info        print server port
-  conf        generate firewall configuration
-  apply       apply server port config to firewall
-  help        print this help conent""")
+    println(
+      s"""Avaliable command:
+         |  info        print server port
+         |  conf        generate firewall configuration
+         |  apply       apply server port config to firewall
+         |  help        print this help conent""".stripMargin)
   }
 }
