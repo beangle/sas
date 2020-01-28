@@ -36,9 +36,6 @@ object Resolve {
     }
     val configFile = new File(args(0))
     val container = Container(scala.xml.XML.load(new FileInputStream(configFile)))
-    if (null == container.repository) {
-      container.repository = new Repository(None, None)
-    }
     container.engines foreach { engine =>
       if (engine.typ == EngineType.Tomcat) {
         TomcatMaker.applyEngineDefault(container, engine)

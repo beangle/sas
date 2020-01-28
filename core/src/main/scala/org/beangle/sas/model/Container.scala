@@ -19,6 +19,7 @@
 package org.beangle.sas.model
 
 import org.beangle.commons.lang.Numbers.toInt
+import org.beangle.commons.lang.Strings
 import org.beangle.commons.lang.Strings.{isEmpty, isNotBlank, isNotEmpty}
 
 object Container {
@@ -30,11 +31,15 @@ object Container {
       throw new RuntimeException("Sas missing version attribute")
     }
     conf.version = sasVersion
+    conf.haproxy = Haproxy.getDefault
 
     (xml \ "Repository") foreach { repoElem =>
       val local = (repoElem \ "@local").text
       val remote = (repoElem \ "@remote").text
       conf.repository = new Repository(if (isEmpty(local)) None else Some(local), if (isEmpty(remote)) None else Some(remote))
+    }
+    if (null == conf.repository) {
+      conf.repository = new Repository(None, None)
     }
 
     (xml \ "Engines" \ "Engine") foreach { engineElem =>
@@ -101,6 +106,9 @@ object Container {
       if (engine.isEmpty) throw new RuntimeException("Cannot find engine for" + (farmElem \ "@engine").text)
 
       val farm = new Farm((farmElem \ "@name").text, engine.get)
+      val host = (farmElem \ "@host").text
+      if (isNotEmpty(host)) farm.host = Host(host)
+
       (farmElem \ "@enableAccessLog") foreach { n =>
         farm.enableAccessLog = java.lang.Boolean.valueOf(n.text)
       }
@@ -124,8 +132,6 @@ object Container {
         val server = new Server(farm, (serverElem \ "@name").text)
         server.http = toInt((serverElem \ "@http").text)
         server.http2 = toInt((serverElem \ "@http2").text)
-        val host = (serverElem \ "@host").text
-        if (isNotEmpty(host)) server.host = Some(host)
         farm.servers += server
 
         val accessEnabled = serverElem \ "@enableAccessLog"
@@ -167,10 +173,32 @@ object Container {
       conf.webapps += context
     }
 
+    (xml \ "Haproxy") foreach { proxyElem =>
+      (proxyElem \ "Global") foreach { elem =>
+        conf.haproxy.global = trimlines(elem.text)
+      }
+      (proxyElem \ "Defaults") foreach { elem =>
+        conf.haproxy.defaults = trimlines(elem.text)
+      }
+      (proxyElem \ "Frontend") foreach { elem =>
+        conf.haproxy.frontend = trimlines(elem.text)
+      }
+      (proxyElem \ "Backend") foreach { elem =>
+        val backend = new Backend((elem \ "@name").text, (elem \ "@servers").text)
+        backend.options = trimlines(elem.text)
+        conf.haproxy.addBackend(backend)
+      }
+    }
+
     (xml \ "Deployments" \ "Deployment") foreach { deployElem =>
-      conf.deployments += new Deployment((deployElem \ "@webapp").text, (deployElem \ "@on").text, (deployElem \ "@path").text)
+      val deployment = new Deployment((deployElem \ "@webapp").text, (deployElem \ "@on").text, (deployElem \ "@path").text)
+      conf.deployments += deployment
     }
     conf
+  }
+
+  private def trimlines(content: String): String = {
+    Strings.split(content, '\n').map(_.trim).mkString("\n")
   }
 
   private def readHttpConnector(elem: scala.xml.Node, http: HttpConnector): Unit = {
@@ -194,6 +222,8 @@ class Container {
   var version: String = _
 
   var repository: Repository = _
+
+  var haproxy: Haproxy = _
 
   val engines = new collection.mutable.ListBuffer[Engine]
 
@@ -251,8 +281,23 @@ class Container {
     res.headOption
   }
 
-  def getDeployments(serverName: String): Seq[Deployment] = {
-    deployments.filter(_.matches(serverName)).toSeq
+  def getMatchedServers(pattern: String): List[Server] = {
+    val res = new collection.mutable.ArrayBuffer[Server]
+    val patterns = pattern.split(",")
+    farms foreach { x =>
+      x.servers foreach { server =>
+        val fullname = server.qualifiedName
+        val matched = patterns.exists(one => one == fullname || fullname.startsWith(one + "."))
+        if (matched) {
+          res += server
+        }
+      }
+    }
+    res.toList
+  }
+
+  def getDeployments(server: Server): Seq[Deployment] = {
+    deployments.filter(_.matches(this, server)).toSeq
   }
 
   def hasExternHost: Boolean = {

@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.beangle.sas.model
+
 import org.beangle.commons.lang.Strings
 
 object Farm {
@@ -38,6 +39,10 @@ object Farm {
 
 class Farm(var name: String, var engine: Engine) {
 
+  /** 部署的主机 */
+  var host: Host = Host.Localhost
+
+  /** http连接配置 */
   var http = new HttpConnector
 
   var http2: Http2Connector = _
@@ -58,9 +63,6 @@ class Server(val farm: Farm, var name: String) {
 
   /** http/2 端口 */
   var http2: Int = _
-
-  /** 部署的主机 */
-  var host: Option[String] = None
 
   /** 是否启用访问日志 */
   var enableAccessLog: Boolean = _

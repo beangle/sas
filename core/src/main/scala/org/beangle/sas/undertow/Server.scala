@@ -19,13 +19,12 @@
 package org.beangle.sas.undertow
 
 import java.io.Closeable
-
-import io.undertow.{Handlers, Undertow}
 import java.util.logging.Logger
 
 import io.undertow.server.HttpHandler
-import io.undertow.servlet.api.{ServletContainer, ServletStackTraces}
 import io.undertow.servlet.Servlets
+import io.undertow.servlet.api.{ServletContainer, ServletStackTraces}
+import io.undertow.{Handlers, Undertow}
 import org.beangle.sas.model.Container
 
 class Server(name: String, container: Container) extends org.beangle.sas.Server {
@@ -102,7 +101,7 @@ class Server(name: String, container: Container) extends org.beangle.sas.Server 
     //      customizer.customize(builder);
     //    }
     container.getServer(name) foreach { s =>
-      builder.addHttpListener(s.http, s.host.getOrElse("0.0.0.0"))
+      builder.addHttpListener(s.http, s.farm.host.ip)
     }
     val sc = Servlets.newContainer()
     builder.setHandler(createDeployments(sc))
@@ -111,10 +110,8 @@ class Server(name: String, container: Container) extends org.beangle.sas.Server 
 
   private def createDeployments(sc: ServletContainer): HttpHandler = {
     var httpHandler: HttpHandler = null
-    container.getDeployments(name) foreach { deploy =>
-      container.getDeployments(name) foreach { deploy =>
-        httpHandler = Handlers.path().addPrefixPath(deploy.path, httpHandler)
-      }
+    val server = container.getServer(name).orNull
+    container.getDeployments(server) foreach { deploy =>
       val deployment = Servlets.deployment()
       //deployment.setClassLoader(getServletClassLoader());
       deployment.setContextPath(deploy.path)

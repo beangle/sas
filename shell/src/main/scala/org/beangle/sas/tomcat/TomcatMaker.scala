@@ -27,7 +27,6 @@ import org.beangle.commons.lang.Strings.substringAfterLast
 import org.beangle.commons.lang.{ClassLoaders, Strings}
 import org.beangle.repo.artifact.{Artifact, ArtifactDownloader, Repo}
 import org.beangle.sas.model._
-import org.beangle.sas.util.Gen
 
 object TomcatMaker {
 

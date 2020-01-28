@@ -16,16 +16,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.beangle.sas.model
+package org.beangle.sas.shell
 
-object Host {
-  val Localhost = new Host("localhost", "127.0.0.1", None)
+import org.beangle.commons.lang.SystemInfo
+import org.beangle.sas.haproxy.ConfigGenerator
 
-  def apply(ip: String): Host = {
-    new Host(ip, ip, None)
+object Haproxy extends ShellEnv {
+  def main(args: Array[String]): Unit = {
+    workdir = if (args.length == 0) SystemInfo.user.dir else args(0)
+    read()
+    ConfigGenerator.gen(container, workdir)
+    logger.info(s"Generate ${workdir}/conf/haproxy.cfg")
   }
-}
-
-class Host(var name: String, var ip: String, var comment: Option[String] = None) {
-
 }

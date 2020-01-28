@@ -67,7 +67,7 @@
     <Engine name="Catalina" defaultHost="localhost">
       <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="false" errorReportValveClass="org.beangle.sas.tomcat.SwallowErrorValve">
     [#list container.deployments as deployment]
-     [#if deployment.matches(server.qualifiedName)]
+     [#if deployment.matches(container,server)]
 
       [#if server.enableAccessLog]
         <Valve className="ch.qos.logback.access.tomcat.LogbackValve" quiet="true" filename="conf/logback-access.xml"/>

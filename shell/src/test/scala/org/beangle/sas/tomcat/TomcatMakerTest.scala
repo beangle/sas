@@ -21,7 +21,6 @@ package org.beangle.sas.tomcat
 import java.io.File
 
 import org.beangle.sas.model.Engine
-import org.beangle.sas.util.Gen
 import org.junit.runner.RunWith
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
