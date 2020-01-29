@@ -32,6 +32,7 @@ object Container {
     }
     conf.version = sasVersion
     conf.haproxy = Haproxy.getDefault
+    conf.nginx = Nginx.getDefault
 
     (xml \ "Repository") foreach { repoElem =>
       val local = (repoElem \ "@local").text
@@ -173,22 +174,62 @@ object Container {
       conf.webapps += context
     }
 
-    (xml \ "Haproxy") foreach { proxyElem =>
-      (proxyElem \ "Global") foreach { elem =>
-        conf.haproxy.global = trimlines(elem.text)
+    (xml \ "Proxy") foreach { proxyElem =>
+      val proxy = new Proxy
+      (proxyElem \ "@maxconn") foreach { e =>
+        proxy.maxconn = Integer.valueOf(e.text)
       }
-      (proxyElem \ "Defaults") foreach { elem =>
-        conf.haproxy.defaults = trimlines(elem.text)
+      (proxyElem \ "@hostname") foreach { e =>
+        proxy.hostname = Some(e.text)
       }
-      (proxyElem \ "Frontend") foreach { elem =>
-        conf.haproxy.frontend = trimlines(elem.text)
-      }
-      (proxyElem \ "Backend") foreach { elem =>
-        val backend = new Backend((elem \ "@name").text, (elem \ "@servers").text)
-        backend.options = trimlines(elem.text)
-        conf.haproxy.addBackend(backend)
+      conf.haproxy.update(proxy)
+      conf.nginx.update(proxy)
+
+      (proxyElem \ "Haproxy") foreach { ha =>
+        val haproxy = conf.haproxy
+        (ha \ "Stat") foreach { elem =>
+          val stat = new Haproxy.Stat
+          haproxy.stat = Some(stat)
+          (elem \ "@uri") foreach { e =>
+            stat.uri = e.text
+          }
+          (elem \ "@auth") foreach { e =>
+            stat.auth = e.text
+          }
+        }
+
+        (ha \ "Https") foreach { elem =>
+          val https = new Haproxy.Https
+          haproxy.https = Some(https)
+          (elem \ "@ciphers") foreach { e =>
+            https.ciphers = e.text
+          }
+          (elem \ "@pem") foreach { e =>
+            https.pem = e.text
+          }
+        }
+        haproxy.enableHttps=haproxy.https.isDefined
+        if(haproxy.hostname.isEmpty && haproxy.enableHttps){
+          throw new RuntimeException("Cannot find hostname,when https enabled")
+        }
+
+        (ha \ "Global") foreach { elem =>
+          haproxy.global = trimlines(elem.text)
+        }
+        (ha \ "Defaults") foreach { elem =>
+          haproxy.defaults = trimlines(elem.text)
+        }
+        (ha \ "Frontend") foreach { elem =>
+          haproxy.frontend = trimlines(elem.text)
+        }
+        (ha \ "Backend") foreach { elem =>
+          val backend = new Proxy.Backend((elem \ "@name").text, (elem \ "@servers").text)
+          backend.options = trimlines(elem.text)
+          haproxy.addBackend(backend)
+        }
       }
     }
+    conf.haproxy.init()
 
     (xml \ "Deployments" \ "Deployment") foreach { deployElem =>
       val deployment = new Deployment((deployElem \ "@webapp").text, (deployElem \ "@on").text, (deployElem \ "@path").text)
@@ -224,6 +265,8 @@ class Container {
   var repository: Repository = _
 
   var haproxy: Haproxy = _
+
+  var nginx: Nginx = _
 
   val engines = new collection.mutable.ListBuffer[Engine]
 

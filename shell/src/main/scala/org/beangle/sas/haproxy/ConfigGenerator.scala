@@ -20,7 +20,7 @@ package org.beangle.sas.haproxy
 
 import java.io.{File, StringWriter}
 
-import freemarker.cache.{ClassTemplateLoader, FileTemplateLoader, MultiTemplateLoader}
+import freemarker.cache.ClassTemplateLoader
 import freemarker.template.Configuration
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.io.{Files => IOFiles}
@@ -36,14 +36,13 @@ object ConfigGenerator {
   def gen(container: Container, workDir: String): Unit = {
     val data = new collection.mutable.HashMap[String, Any]()
     data.put("container", container)
-    val servers=Collections.newMap[String,List[Server]]
-    container.deployments foreach{d=>
-      servers.getOrElseUpdate(d.on,container.getMatchedServers(d.on))
+    val servers = Collections.newMap[String, List[Server]]
+    container.deployments foreach { d =>
+      servers.getOrElseUpdate(d.on, container.getMatchedServers(d.on))
     }
-    data.put("servers",servers)
+    data.put("servers", servers)
     val sw = new StringWriter()
-    val loader = new MultiTemplateLoader(Array(new FileTemplateLoader(new File(workDir + "/conf")), new ClassTemplateLoader(getClass, "/haproxy")))
-    cfg.setTemplateLoader(loader)
+    cfg.setTemplateLoader(new ClassTemplateLoader(getClass, "/haproxy"))
     val freemarkerTemplate = cfg.getTemplate("haproxy.cfg.ftl")
     freemarkerTemplate.process(data, sw)
     new File(workDir).mkdirs()

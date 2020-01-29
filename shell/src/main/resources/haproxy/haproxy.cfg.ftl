@@ -1,5 +1,6 @@
 global
 ${addMargin(container.haproxy.global)}
+${addMargin(container.haproxy.genStat)}
 
 defaults
 ${addMargin(container.haproxy.defaults)}

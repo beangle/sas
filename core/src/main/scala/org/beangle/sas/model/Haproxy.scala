@@ -18,11 +18,6 @@
  */
 package org.beangle.sas.model
 
-import org.beangle.commons.collection.Collections
-import org.beangle.commons.lang.Strings
-
-import scala.collection.mutable
-
 object Haproxy {
 
   def getDefault: Haproxy = {
@@ -31,13 +26,12 @@ object Haproxy {
       """log         127.0.0.1 local2
         |chroot      /var/lib/haproxy
         |pidfile     /var/run/haproxy.pid
-        |maxconn     15000
+        |maxconn     ${maxconn}
         |user        haproxy
         |group       haproxy
         |daemon
         |tune.ssl.default-dh-param 2048
         |ssl-default-bind-options no-sslv3 no-tlsv10
-        |stats socket /var/lib/haproxy/stats
         |ssl-default-bind-ciphers PROFILE=SYSTEM
         |ssl-default-server-ciphers PROFILE=SYSTEM""".stripMargin
 
@@ -57,64 +51,71 @@ object Haproxy {
         |timeout server          10m
         |timeout http-keep-alive 60s
         |timeout check           60s
-        |maxconn                 15000
-        |
-        |stats refresh 30s
-        |stats uri  /stats
-        |stats realm haproxy-user
-        |stats auth admin:ChangeItNow""".stripMargin
-
-    proxy.frontend =
-      """bind *:80
-        |bind *:443 ssl crt /etc/haproxy/server.pem ciphers TLSv1+HIGH:!aNULL:!eNULL:!3DES:!RC4:!CAMELLIA:!DH:!kECDHE:@STRENGTH no-sslv3 no-tlsv10
-        |http-request set-header X-Forwarded-Proto https if { ssl_fc }
-        |http-request set-header X-Forwarded-Port %[dst_port]
-        |redirect scheme https if !{ ssl_fc }""".stripMargin
+        |maxconn                 ${maxconn}""".stripMargin
 
     proxy
   }
+
+  class Stat {
+    var auth: String = "admin:ChangeItNow"
+    var uri: String = "/stats"
+  }
+
+  class Https {
+    var pem = "/etc/haproxy/server.pem"
+    var ciphers = "TLSv1+HIGH:!aNULL:!eNULL:!3DES:!RC4:!CAMELLIA:!DH:!kECDHE:@STRENGTH no-sslv3 no-tlsv10"
+    var port = 443
+  }
+
 }
 
-class Haproxy {
+import org.beangle.sas.model.Haproxy.{Https, Stat}
+
+class Haproxy extends Proxy {
+  /** 全局设置 */
   var global: String = _
+  /** 默认设置 */
   var defaults: String = _
+  /** 前端设置 */
   var frontend: String = _
-  val backends: mutable.Map[String, Backend] = Collections.newMap[String, Backend]
+  /** 统计状态设置 */
+  var stat: Option[Stat] = None
+  /** https配置 */
+  var https: Option[Https] = None
 
-  def getBackend(backendName: String): Backend = {
-    var name = backendName
-    name = Strings.replace(name, ",", "_")
-    name = Strings.replace(name, ".", "_")
-    backends.get(name) match {
-      case None =>
-        val backend = new Backend(name, backendName)
-        backend.options = "balance roundrobin"
-        backends.put(name, backend)
-        backend
-      case Some(b) => b
+  def init(): Unit = {
+    this.global = process(this.global)
+    this.defaults = process(this.defaults)
+    if (null == this.frontend) {
+      this.frontend = genFrontend()
     }
+    this.frontend = process(this.frontend)
   }
 
-  def addBackend(backend: Backend): this.type = {
-    backends.put(backend.name, backend)
-    this
-  }
-}
-
-class Backend(var name: String, var servers: String) {
-  var options: String = _
-
-  def getServers(container: Container): List[Server] = {
-    container.getMatchedServers(servers)
-  }
-
-  def contains(server: Server): Boolean = {
-    val sname = server.qualifiedName
-    if (sname == servers) {
-      true
+  def genFrontend(): String = {
+    if (this.enableHttps) {
+      """bind *:80
+        |bind *:${https.port} ssl crt ${https.pem} ciphers ${https.ciphers}
+        |http-request set-header X-Forwarded-Proto https if { ssl_fc }
+        |http-request set-header X-Forwarded-Port %[dst_port]
+        |acl is_me hdr_beg(host) ${hostname}
+        |redirect scheme https if !{ ssl_fc } is_me""".stripMargin
     } else {
-      val res = servers.split(",") find (one => one == sname || sname.startsWith(one + "."))
-      res.isDefined
+      "bind *:80"
+    }
+  }
+
+  def genStat(): String = {
+    stat match {
+      case None => ""
+      case Some(_) =>
+        process(
+          """stats socket /var/lib/haproxy/stats
+            |stats refresh 30s
+            |stats uri ${stat.uri}
+            |stats realm haproxy-user
+            |stats auth ${stat.auth}""".stripMargin)
     }
   }
 }
+
