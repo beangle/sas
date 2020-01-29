@@ -19,13 +19,22 @@
 package org.beangle.sas.shell
 
 import org.beangle.commons.lang.SystemInfo
-import org.beangle.sas.haproxy.ConfigGenerator
+import org.beangle.sas.proxy.ProxyGenerator
 
-object Haproxy extends ShellEnv {
+object Proxy extends ShellEnv {
   def main(args: Array[String]): Unit = {
     workdir = if (args.length == 0) SystemInfo.user.dir else args(0)
     read()
-    ConfigGenerator.gen(container, workdir)
-    println(s"Generate ${workdir}/conf/haproxy.cfg")
+    container.proxy.engine match {
+      case "haproxy" =>
+        ProxyGenerator.genHaproxy(container, workdir)
+        println(s"Generate ${workdir}/conf/haproxy.cfg")
+      case "nginx" =>
+        ProxyGenerator.genNginx(container, workdir)
+        println(s"Generate ${workdir}/conf/nginx.conf")
+      case _=>
+        println("only support haproxy and nginx.")
+    }
+
   }
 }

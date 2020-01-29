@@ -31,8 +31,7 @@ object Container {
       throw new RuntimeException("Sas missing version attribute")
     }
     conf.version = sasVersion
-    conf.haproxy = Haproxy.getDefault
-    conf.nginx = Nginx.getDefault
+    conf.proxy = new Proxy
 
     (xml \ "Repository") foreach { repoElem =>
       val local = (repoElem \ "@local").text
@@ -175,66 +174,62 @@ object Container {
     }
 
     (xml \ "Proxy") foreach { proxyElem =>
-      val proxy = new Proxy
+      val proxy = conf.proxy
       (proxyElem \ "@maxconn") foreach { e =>
         proxy.maxconn = Integer.valueOf(e.text)
       }
       (proxyElem \ "@hostname") foreach { e =>
         proxy.hostname = Some(e.text)
       }
-      conf.haproxy.update(proxy)
-      conf.nginx.update(proxy)
+      (proxyElem \ "@engine") foreach { e =>
+        proxy.engine =  e.text
+      }
 
-      (proxyElem \ "Haproxy") foreach { ha =>
-        val haproxy = conf.haproxy
-        (ha \ "Stat") foreach { elem =>
-          val stat = new Haproxy.Stat
-          haproxy.stat = Some(stat)
-          (elem \ "@uri") foreach { e =>
-            stat.uri = e.text
-          }
-          (elem \ "@auth") foreach { e =>
-            stat.auth = e.text
-          }
+      (proxyElem \ "Status") foreach { elem =>
+        val stat = new Proxy.Status
+        proxy.status = Some(stat)
+        (elem \ "@uri") foreach { e =>
+          stat.uri = e.text
         }
-
-        (ha \ "Https") foreach { elem =>
-          val https = new Haproxy.Https
-          haproxy.https = Some(https)
-          (elem \ "@ciphers") foreach { e =>
-            https.ciphers = e.text
-          }
-          (elem \ "@pem") foreach { e =>
-            https.pem = e.text
-          }
-        }
-        haproxy.enableHttps=haproxy.https.isDefined
-        if(haproxy.hostname.isEmpty && haproxy.enableHttps){
-          throw new RuntimeException("Cannot find hostname,when https enabled")
-        }
-
-        (ha \ "Global") foreach { elem =>
-          haproxy.global = trimlines(elem.text)
-        }
-        (ha \ "Defaults") foreach { elem =>
-          haproxy.defaults = trimlines(elem.text)
-        }
-        (ha \ "Frontend") foreach { elem =>
-          haproxy.frontend = trimlines(elem.text)
-        }
-        (ha \ "Backend") foreach { elem =>
-          val backend = new Proxy.Backend((elem \ "@name").text, (elem \ "@servers").text)
-          backend.options = trimlines(elem.text)
-          haproxy.addBackend(backend)
+        (elem \ "@auth") foreach { e =>
+          stat.auth = e.text
         }
       }
+
+      (proxyElem \ "Https") foreach { elem =>
+        val https = new Proxy.Https
+        proxy.https = Some(https)
+        (elem \ "@ciphers") foreach { e =>
+          https.ciphers = e.text
+        }
+        (elem \ "@certificate") foreach { e =>
+          https.certificate = e.text
+        }
+        (elem \ "@certificateKey") foreach { e =>
+          https.certificateKey = e.text
+        }
+        (elem \ "@forceHttps") foreach { e =>
+          https.forceHttps = java.lang.Boolean.valueOf(e.text)
+        }
+      }
+      if (proxy.hostname.isEmpty && proxy.enableHttps) {
+        throw new RuntimeException("Cannot find hostname,when https enabled")
+      }
+
+      (proxyElem \ "Backend") foreach { elem =>
+        val backend = new Proxy.Backend((elem \ "@name").text, (elem \ "@servers").text)
+        if (Strings.isNotBlank(elem.text)) {
+          backend.options = Some(trimlines(elem.text))
+        }
+        proxy.addBackend(backend)
+      }
     }
-    conf.haproxy.init()
 
     (xml \ "Deployments" \ "Deployment") foreach { deployElem =>
       val deployment = new Deployment((deployElem \ "@webapp").text, (deployElem \ "@on").text, (deployElem \ "@path").text)
       conf.deployments += deployment
     }
+    conf.generateBackend()
     conf
   }
 
@@ -264,9 +259,7 @@ class Container {
 
   var repository: Repository = _
 
-  var haproxy: Haproxy = _
-
-  var nginx: Nginx = _
+  var proxy: Proxy = _
 
   val engines = new collection.mutable.ListBuffer[Engine]
 
@@ -341,6 +334,12 @@ class Container {
 
   def getDeployments(server: Server): Seq[Deployment] = {
     deployments.filter(_.matches(this, server)).toSeq
+  }
+
+  def generateBackend(): Unit = {
+    deployments foreach { d =>
+      proxy.getBackend(d.on)
+    }
   }
 
   def hasExternHost: Boolean = {
