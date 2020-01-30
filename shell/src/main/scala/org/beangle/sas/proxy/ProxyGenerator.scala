@@ -29,15 +29,19 @@ import org.beangle.template.freemarker.Configurer
 object ProxyGenerator {
   private val cfg = Configurer.newConfig
   cfg.setTagSyntax(Configuration.SQUARE_BRACKET_TAG_SYNTAX)
-  cfg.setDefaultEncoding("UTF-8")
   cfg.setNumberFormat("0.##")
-  cfg.setWhitespaceStripping(true)
 
   private def gen(container: Container, workDir: String, proxyFileName: String): Unit = {
     val data = new collection.mutable.HashMap[String, Any]()
     data.put("container", container)
-    val loader = new MultiTemplateLoader(Array(new FileTemplateLoader(new File(workDir + "/conf")),
-      new ClassTemplateLoader(getClass, "/proxy")))
+    val localTemplateDir = new File(workDir + "/conf/proxy")
+    val loader =
+      if (localTemplateDir.exists()) {
+        new MultiTemplateLoader(Array(new FileTemplateLoader(localTemplateDir),
+          new ClassTemplateLoader(getClass, "/proxy")))
+      } else {
+        new ClassTemplateLoader(getClass, "/proxy")
+      }
     cfg.setTemplateLoader(loader)
     val freemarkerTemplate = cfg.getTemplate(proxyFileName + ".ftl")
     val sw = new StringWriter()

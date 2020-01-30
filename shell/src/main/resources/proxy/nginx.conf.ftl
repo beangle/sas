@@ -33,7 +33,7 @@ http {
     [#list proxy.backends?keys?sort as name]
     [#assign backend=proxy.backends[name]/]
     upstream ${name}{
-[#if backend.options??]${addMargin(backend.options)}[/#if]
+[#if backend.options??]${addMargin(backend.options)}[/#if][#t]
     [#list backend.getServers(container) as server]
         server ${server.farm.host.ip}:${server.http};
     [/#list]
@@ -82,6 +82,7 @@ http {
             proxy_set_header  X-Real-IP  $remote_addr;
             proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header  X-Forwarded-Proto  $scheme;
+            proxy_set_header  Host $host:$server_port;
             proxy_pass http://${proxy.getBackend(deployment.on).name};
         }
     [/#if]
