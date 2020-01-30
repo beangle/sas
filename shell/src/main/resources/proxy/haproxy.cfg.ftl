@@ -43,8 +43,10 @@ frontend main
     bind *:${proxy.https.port} ssl crt ${proxy.https.certificate!"/etc/haproxy/${proxy.hostname}.pem"} ciphers ${proxy.https.ciphers!"TLSv1+HIGH:!aNULL:!eNULL:!3DES:!RC4:!CAMELLIA:!DH:!kECDHE:@STRENGTH"} ${proxy.https.protocols!"no-sslv3 no-tlsv10"}
     http-request set-header X-Forwarded-Proto https if { ssl_fc }
     http-request set-header X-Forwarded-Port %[dst_port]
+    [#if proxy.https.forceHttps]
     acl is_me hdr_beg(host) ${proxy.hostname}
     redirect scheme https if !{ ssl_fc } is_me
+    [/#if]
     [/#if]
 
 [#assign max_path_len=1]

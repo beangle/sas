@@ -9,7 +9,7 @@ CATALINA_SERVER="$2"
 export CATALINA_BASE="$SAS_HOME"/servers/$CATALINA_SERVER
 export CATALINA_HOME=$CATALINA_BASE
 export CATALINA_PID="$CATALINA_BASE"/CATALINA_PID
-export CATALINA_OUT="$CATALINA_BASE"/logs/catalina.out
+export CATALINA_OUT="$CATALINA_BASE"/logs/console.out
 export CATALINA_TMPDIR="$CATALINA_BASE"/temp
 
 export beangle_sas_ver=0.6.0

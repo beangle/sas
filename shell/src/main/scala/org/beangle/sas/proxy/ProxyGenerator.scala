@@ -31,7 +31,7 @@ object ProxyGenerator {
   cfg.setTagSyntax(Configuration.SQUARE_BRACKET_TAG_SYNTAX)
   cfg.setNumberFormat("0.##")
 
-  private def gen(container: Container, workDir: String, proxyFileName: String): Unit = {
+  private def gen(container: Container, workDir: String, proxyFileName: String): File = {
     val data = new collection.mutable.HashMap[String, Any]()
     data.put("container", container)
     val localTemplateDir = new File(workDir + "/conf/proxy")
@@ -47,14 +47,16 @@ object ProxyGenerator {
     val sw = new StringWriter()
     freemarkerTemplate.process(data, sw)
     new File(workDir).mkdirs()
-    IOFiles.writeString(new File(workDir + "/conf/" + proxyFileName), sw.toString)
+    val target = new File(workDir + "/conf/" + proxyFileName)
+    IOFiles.writeString(target, sw.toString)
+    target
   }
 
-  def genHaproxy(container: Container, workDir: String): Unit = {
-    this.gen(container, workDir, "haproxy.cfg")
+  def genHaproxy(container: Container, workDir: String): File = {
+      gen(container, workDir, "haproxy.cfg")
   }
 
-  def genNginx(container: Container, workDir: String): Unit = {
-    this.gen(container, workDir, "nginx.conf")
+  def genNginx(container: Container, workDir: String): File = {
+    gen(container, workDir, "nginx.conf")
   }
 }

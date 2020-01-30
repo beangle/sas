@@ -27,12 +27,14 @@ object Proxy extends ShellEnv {
     read()
     container.proxy.engine match {
       case "haproxy" =>
-        ProxyGenerator.genHaproxy(container, workdir)
+        val file = ProxyGenerator.genHaproxy(container, workdir)
         println(s"Generate ${workdir}/conf/haproxy.cfg")
+        println("Execute:\n    cp " + file.getAbsolutePath + " /etc/haproxy/haproxy.cfg")
       case "nginx" =>
-        ProxyGenerator.genNginx(container, workdir)
+        val file = ProxyGenerator.genNginx(container, workdir)
         println(s"Generate ${workdir}/conf/nginx.conf")
-      case _=>
+        println("Execute:\n    cp " + file.getAbsolutePath + " /etc/nginx/nginx.conf")
+      case _ =>
         println("only support haproxy and nginx.")
     }
 
