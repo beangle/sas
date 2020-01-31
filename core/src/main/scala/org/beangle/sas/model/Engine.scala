@@ -20,8 +20,7 @@ package org.beangle.sas.model
 
 import java.io.File
 import java.net.URL
-
-import org.beangle.sas.util.Strings
+import org.beangle.commons.lang.Strings
 
 object EngineType {
   val Tomcat = "tomcat"

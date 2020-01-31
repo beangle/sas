@@ -18,6 +18,14 @@
  */
 package org.beangle.sas.model
 
+object Host {
+  val Localhost = new Host("localhost", "127.0.0.1", None)
+
+  def apply(ip: String): Host = {
+    new Host(ip, ip, None)
+  }
+}
+
 class Host(var name: String, var ip: String, var comment: Option[String] = None) {
 
 }

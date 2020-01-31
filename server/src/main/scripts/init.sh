@@ -6,19 +6,21 @@ cd $PRGDIR
 export M2_REMOTE_REPO="https://maven.aliyun.com/nexus/content/groups/public"
 export M2_REPO="$HOME/.m2/repository"
 
-export scala_ver=2.13.0
-export scalaxml_ver=1.2.0
-export beangle_sas_ver=0.5.4
-export beangle_commons_ver=5.1.8
-export beangle_template_ver=0.0.24
-export beangle_data_ver=5.1.8
-export beangle_repo_ver=0.0.12
-export slf4j_ver=1.7.25
+export scala_ver=2.13.1
+export scalaxml_ver=2.0.0-M1
+export beangle_sas_ver=0.6.0
+export beangle_commons_ver=5.1.11
+export beangle_template_ver=0.0.25
+export beangle_data_ver=5.3.2
+export beangle_repo_ver=0.0.13
+export slf4j_ver=2.0.0-alpha1
+export logback_ver=1.3.0-alpha5
+
 export freemarker_ver=2.3.28
 export commons_compress_ver=1.18
 
 # download groupId artifactId version
-function download(){
+download(){
   local group_id=`echo "$1" | tr . /`
   local URL="$M2_REMOTE_REPO/$group_id/$2/$3/$2-$3.jar"
   local artifact_name="$2-$3.jar"
@@ -72,11 +74,16 @@ if $wget_avaliable && $unzip_avaliable; then
   download org.beangle.data beangle-data-jdbc_2.13 $beangle_data_ver
   download org.beangle.template beangle-template-freemarker_2.13 $beangle_template_ver
   download org.beangle.repo beangle-repo-artifact_2.13 $beangle_repo_ver
-  download org.beangle.sas beangle-sas-core   $beangle_sas_ver
+  download org.beangle.sas beangle-sas-core  $beangle_sas_ver
+  download org.beangle.sas beangle-sas-shell  $beangle_sas_ver
+  download org.beangle.sas beangle-sas-tomcat  $beangle_sas_ver
+  download org.beangle.sas beangle-sas-juli  $beangle_sas_ver
   download org.apache.commons commons-compress $commons_compress_ver
   download org.freemarker freemarker $freemarker_ver
   download org.slf4j slf4j-api $slf4j_ver
-  download org.slf4j slf4j-nop $slf4j_ver
+  download ch.qos.logback logback-core $logback_ver
+  download ch.qos.logback logback-classic $logback_ver
+  download ch.qos.logback logback-access $logback_ver
   echo "Initialization Completed.You can custom conf/server.xml."
 else
   if ! $wget_avaliable; then

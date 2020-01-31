@@ -18,7 +18,9 @@
  */
 package org.beangle.sas.model
 
-import org.beangle.sas.util.Strings.{isEmpty, isNotBlank, isNotEmpty, toInt}
+import org.beangle.commons.lang.Numbers.toInt
+import org.beangle.commons.lang.Strings
+import org.beangle.commons.lang.Strings.{isEmpty, isNotBlank, isNotEmpty}
 
 object Container {
 
@@ -29,11 +31,15 @@ object Container {
       throw new RuntimeException("Sas missing version attribute")
     }
     conf.version = sasVersion
+    conf.proxy = new Proxy
 
     (xml \ "Repository") foreach { repoElem =>
       val local = (repoElem \ "@local").text
       val remote = (repoElem \ "@remote").text
       conf.repository = new Repository(if (isEmpty(local)) None else Some(local), if (isEmpty(remote)) None else Some(remote))
+    }
+    if (null == conf.repository) {
+      conf.repository = new Repository(None, None)
     }
 
     (xml \ "Engines" \ "Engine") foreach { engineElem =>
@@ -100,6 +106,12 @@ object Container {
       if (engine.isEmpty) throw new RuntimeException("Cannot find engine for" + (farmElem \ "@engine").text)
 
       val farm = new Farm((farmElem \ "@name").text, engine.get)
+      val host = (farmElem \ "@host").text
+      if (isNotEmpty(host)) farm.host = Host(host)
+
+      (farmElem \ "@enableAccessLog") foreach { n =>
+        farm.enableAccessLog = java.lang.Boolean.valueOf(n.text)
+      }
       val jvmopts = (farmElem \ "JvmArgs" \ "@opts").text
       farm.jvmopts = if (isEmpty(jvmopts)) None else Some(jvmopts)
 
@@ -120,9 +132,15 @@ object Container {
         val server = new Server(farm, (serverElem \ "@name").text)
         server.http = toInt((serverElem \ "@http").text)
         server.http2 = toInt((serverElem \ "@http2").text)
-        val host = (serverElem \ "@host").text
-        if (isNotEmpty(host)) server.host = Some(host)
         farm.servers += server
+
+        val accessEnabled = serverElem \ "@enableAccessLog"
+        accessEnabled foreach { n =>
+          server.enableAccessLog = java.lang.Boolean.valueOf(n.text)
+        }
+        if (accessEnabled.isEmpty) {
+          server.enableAccessLog = farm.enableAccessLog
+        }
       }
       conf.farms += farm
     }
@@ -155,10 +173,79 @@ object Container {
       conf.webapps += context
     }
 
-    (xml \ "Deployments" \ "Deployment") foreach { deployElem =>
-      conf.deployments += new Deployment((deployElem \ "@webapp").text, (deployElem \ "@on").text, (deployElem \ "@path").text)
+    (xml \ "Proxy") foreach { proxyElem =>
+      val proxy = conf.proxy
+      (proxyElem \ "@maxconn") foreach { e =>
+        proxy.maxconn = Integer.valueOf(e.text)
+      }
+      (proxyElem \ "@hostname") foreach { e =>
+        proxy.hostname = Some(e.text)
+      }
+      (proxyElem \ "@engine") foreach { e =>
+        proxy.engine = e.text
+      }
+
+      (proxyElem \ "Status") foreach { elem =>
+        val stat = new Proxy.Status
+        proxy.status = Some(stat)
+        (elem \ "@uri") foreach { e =>
+          stat.uri = e.text
+        }
+        (elem \ "@auth") foreach { e =>
+          stat.auth = e.text
+        }
+      }
+
+      (proxyElem \ "Https") foreach { elem =>
+        val https = new Proxy.Https
+        proxy.https = Some(https)
+        (elem \ "@ciphers") foreach { e =>
+          https.ciphers = e.text
+        }
+        (elem \ "@certificate") foreach { e =>
+          https.certificate = e.text
+        }
+        (elem \ "@certificateKey") foreach { e =>
+          https.certificateKey = e.text
+        }
+        (elem \ "@forceHttps") foreach { e =>
+          https.forceHttps = java.lang.Boolean.valueOf(e.text)
+        }
+      }
+      if (proxy.hostname.isEmpty && proxy.enableHttps) {
+        throw new RuntimeException("Cannot find hostname,when https enabled")
+      }
+
+      (proxyElem \ "Backend") foreach { elem =>
+        val backend = new Proxy.Backend((elem \ "@name").text)
+        (elem \ "@servers") foreach { servers =>
+          conf.getMatchedServers(servers.text) foreach { s =>
+            backend.addServer(s.qualifiedName)
+          }
+        }
+        (elem \ "Server") foreach { selem =>
+          val s = backend.addServer((selem \ "@name").text)
+          (selem \ "@options") foreach { e =>
+            s.options = Some(e.text)
+          }
+        }
+        (elem \ "Options") foreach { selem =>
+          backend.options = Some(trimlines(selem.text))
+        }
+        proxy.addBackend(backend)
+      }
     }
+
+    (xml \ "Deployments" \ "Deployment") foreach { deployElem =>
+      val deployment = new Deployment((deployElem \ "@webapp").text, (deployElem \ "@on").text, (deployElem \ "@path").text)
+      conf.deployments += deployment
+    }
+    conf.generateBackend()
     conf
+  }
+
+  private def trimlines(content: String): String = {
+    Strings.split(content, '\n').map(_.trim).mkString("\n")
   }
 
   private def readHttpConnector(elem: scala.xml.Node, http: HttpConnector): Unit = {
@@ -175,38 +262,6 @@ object Container {
     if ((elem \ "@compressionMimeType").nonEmpty) http.compressionMimeType = (elem \ "@compressionMimeType").text
   }
 
-  def applyDefault(conf: Container): Unit = {
-    if (null == conf.repository) {
-      conf.repository = new Repository(None, None)
-    }
-    conf.engines foreach { engine =>
-      if (engine.typ == EngineType.Tomcat) {
-        if (engine.listeners.isEmpty) {
-          engine.listeners += new Listener("org.apache.catalina.core.AprLifecycleListener").property("SSLEngine", "on")
-          engine.listeners += new Listener("org.apache.catalina.core.JreMemoryLeakPreventionListener")
-          engine.listeners += new Listener("org.apache.catalina.mbeans.GlobalResourcesLifecycleListener")
-          engine.listeners += new Listener("org.apache.catalina.core.ThreadLocalLeakPreventionListener")
-        }
-
-        if (null == engine.context) engine.context = new Context()
-
-        val context = engine.context
-        if (context.loader == null) {
-          context.loader = new Loader("org.apache.catalina.loader.RepositoryLoader")
-        }
-        if (context.jarScanner == null) {
-          val scanner = new JarScanner
-          scanner.properties.put("scanBootstrapClassPath", "false")
-          scanner.properties.put("scanAllDirectories", "false")
-          scanner.properties.put("scanAllFiles", "false")
-          scanner.properties.put("scanClassPath", "false")
-          context.jarScanner = scanner
-        }
-        //添加beangle-sas-core
-        engine.jars += Jar.gav("org.beangle.sas:beangle-sas-core:" + conf.version)
-      }
-    }
-  }
 }
 
 class Container {
@@ -214,6 +269,8 @@ class Container {
   var version: String = _
 
   var repository: Repository = _
+
+  var proxy: Proxy = _
 
   val engines = new collection.mutable.ListBuffer[Engine]
 
@@ -271,8 +328,40 @@ class Container {
     res.headOption
   }
 
-  def getDeployments(serverName: String): Seq[Deployment] = {
-    deployments.filter(_.matches(serverName)).toSeq
+  def getMatchedServers(pattern: String): List[Server] = {
+    val res = new collection.mutable.ArrayBuffer[Server]
+    val patterns = pattern.split(",")
+    farms foreach { x =>
+      x.servers foreach { server =>
+        val fullname = server.qualifiedName
+        val matched = patterns.exists(one => one == fullname || fullname.startsWith(one + "."))
+        if (matched) {
+          res += server
+        }
+      }
+    }
+    res.toList
+  }
+
+  def getDeployments(server: Server): Seq[Deployment] = {
+    deployments.filter(_.matches(this, server)).toSeq
+  }
+
+  def generateBackend(): Unit = {
+    deployments foreach { d =>
+      val backend = proxy.getBackend(d.on)
+      if (backend.servers.isEmpty) {
+        getMatchedServers(backend.name) foreach { s =>
+          backend.addServer(s.qualifiedName)
+        }
+      }
+      backend.servers foreach { server =>
+        getServer(server.name) match {
+          case Some(s) => server.host = s"${s.farm.host.ip}:${s.http}"
+          case None => throw new RuntimeException(s"Cannot find proxy server ${server.name}")
+        }
+      }
+    }
   }
 
   def hasExternHost: Boolean = {

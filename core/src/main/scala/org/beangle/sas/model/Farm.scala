@@ -18,7 +18,7 @@
  */
 package org.beangle.sas.model
 
-import org.beangle.sas.util.Strings
+import org.beangle.commons.lang.Strings
 
 object Farm {
   def build(name: String, engine: Engine, serverCount: Int): Farm = {
@@ -39,24 +39,33 @@ object Farm {
 
 class Farm(var name: String, var engine: Engine) {
 
+  /** 部署的主机 */
+  var host: Host = Host.Localhost
+
+  /** http连接配置 */
   var http = new HttpConnector
 
   var http2: Http2Connector = _
 
   var servers = new collection.mutable.ListBuffer[Server]
 
+  /** 是否启用访问日志 */
+  var enableAccessLog: Boolean = _
+
+  /** JVM参数 */
   var jvmopts: Option[String] = None
 }
 
 class Server(val farm: Farm, var name: String) {
 
-  /** http/1 端口*/
+  /** http/1 端口 */
   var http: Int = _
 
-  /** http/2 端口*/
+  /** http/2 端口 */
   var http2: Int = _
 
-  var host: Option[String] = None
+  /** 是否启用访问日志 */
+  var enableAccessLog: Boolean = _
 
   def qualifiedName: String = {
     if (Strings.isNotBlank(farm.name)) farm.name + "." + name

@@ -1,0 +1,40 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>org.beangle.sas</groupId>
+    <artifactId>beangle-sas-parent</artifactId>
+    <version>0.6.0</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>beangle-sas-juli</artifactId>
+  <packaging>jar</packaging>
+  <name>Beangle Sas JULI</name>
+
+  <properties>
+    <bundle.symbolicName>org.beangle.sas.juli</bundle.symbolicName>
+    <bundle.namespace>org.beangle.sas</bundle.namespace>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-core</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>tomcat-juli</artifactId>
+      <version>${tomcat.version}</version>
+    </dependency>
+  </dependencies>
+</project>
