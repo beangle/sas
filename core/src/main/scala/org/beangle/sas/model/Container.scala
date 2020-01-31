@@ -182,7 +182,7 @@ object Container {
         proxy.hostname = Some(e.text)
       }
       (proxyElem \ "@engine") foreach { e =>
-        proxy.engine =  e.text
+        proxy.engine = e.text
       }
 
       (proxyElem \ "Status") foreach { elem =>
@@ -217,9 +217,20 @@ object Container {
       }
 
       (proxyElem \ "Backend") foreach { elem =>
-        val backend = new Proxy.Backend((elem \ "@name").text, (elem \ "@servers").text)
-        if (Strings.isNotBlank(elem.text)) {
-          backend.options = Some(trimlines(elem.text))
+        val backend = new Proxy.Backend((elem \ "@name").text)
+        (elem \ "@servers") foreach { servers =>
+          conf.getMatchedServers(servers.text) foreach { s =>
+            backend.addServer(s.qualifiedName)
+          }
+        }
+        (elem \ "Server") foreach { selem =>
+          val s = backend.addServer((selem \ "@name").text)
+          (selem \ "@options") foreach { e =>
+            s.options = Some(e.text)
+          }
+        }
+        (elem \ "Options") foreach { selem =>
+          backend.options = Some(trimlines(selem.text))
         }
         proxy.addBackend(backend)
       }
@@ -338,7 +349,18 @@ class Container {
 
   def generateBackend(): Unit = {
     deployments foreach { d =>
-      proxy.getBackend(d.on)
+      val backend = proxy.getBackend(d.on)
+      if (backend.servers.isEmpty) {
+        getMatchedServers(backend.name) foreach { s =>
+          backend.addServer(s.qualifiedName)
+        }
+      }
+      backend.servers foreach { server =>
+        getServer(server.name) match {
+          case Some(s) => server.host = s"${s.farm.host.ip}:${s.http}"
+          case None => throw new RuntimeException(s"Cannot find proxy server ${server.name}")
+        }
+      }
     }
   }
 

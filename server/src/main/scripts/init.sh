@@ -10,9 +10,9 @@ export scala_ver=2.13.1
 export scalaxml_ver=2.0.0-M1
 export beangle_sas_ver=0.6.0
 export beangle_commons_ver=5.1.11
-export beangle_template_ver=0.0.24
+export beangle_template_ver=0.0.25
 export beangle_data_ver=5.3.2
-export beangle_repo_ver=0.0.12
+export beangle_repo_ver=0.0.13
 export slf4j_ver=2.0.0-alpha1
 export logback_ver=1.3.0-alpha5
 
@@ -20,7 +20,7 @@ export freemarker_ver=2.3.28
 export commons_compress_ver=1.18
 
 # download groupId artifactId version
-function download(){
+download(){
   local group_id=`echo "$1" | tr . /`
   local URL="$M2_REMOTE_REPO/$group_id/$2/$3/$2-$3.jar"
   local artifact_name="$2-$3.jar"

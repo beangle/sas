@@ -38,9 +38,9 @@
     <undertow.version>2.0.20.Final</undertow.version>
     <beangle.commons.version>5.1.11</beangle.commons.version>
     <beangle.cdi.version>0.2.1</beangle.cdi.version>
-    <beangle.repo.version>0.0.12</beangle.repo.version>
+    <beangle.repo.version>0.0.13</beangle.repo.version>
     <beangle.data.version>5.3.2</beangle.data.version>
-    <beangle.template.version>0.0.24</beangle.template.version>
+    <beangle.template.version>0.0.25</beangle.template.version>
   </properties>
 
 </project>

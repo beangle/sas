@@ -88,8 +88,8 @@ ${use_backend}
     [#assign backend=proxy.backends[name]/]
 backend ${name}
 ${addMargin(backend.options!"balance roundrobin")}
-    [#list backend.getServers(container) as server]
-    server ${server.farm.host.ip?replace('.','_')}_${server.http} ${server.farm.host.ip}:${server.http} check
+    [#list backend.servers as server]
+    server ${server.host?replace('.','_')?replace(':','_')} ${server.host} ${server.options!} check
     [/#list]
 
     [/#list]

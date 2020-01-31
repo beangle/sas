@@ -34,8 +34,8 @@ http {
     [#assign backend=proxy.backends[name]/]
     upstream ${name}{
 [#if backend.options??]${addMargin(backend.options)}[/#if][#t]
-    [#list backend.getServers(container) as server]
-        server ${server.farm.host.ip}:${server.http};
+    [#list backend.servers as server]
+        server ${server.host} ${server.options!};
     [/#list]
     }
     [/#list]
@@ -67,6 +67,11 @@ http {
         keepalive_timeout   70;
         [/#if]
         root         /usr/share/nginx/html;
+        access_log off;
+        proxy_set_header  X-Real-IP  $remote_addr;
+        proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header  X-Forwarded-Proto  $scheme;
+        proxy_set_header  Host $host:$server_port;
 
         include /etc/nginx/default.d/*.conf;
         [#if proxy.status??]
@@ -78,11 +83,6 @@ http {
     [#list container.deployments?sort_by('path') as deployment]
     [#if deployment.path?length>0]
         location ${deployment.path} {
-            access_log off;
-            proxy_set_header  X-Real-IP  $remote_addr;
-            proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header  X-Forwarded-Proto  $scheme;
-            proxy_set_header  Host $host:$server_port;
             proxy_pass http://${proxy.getBackend(deployment.on).name};
         }
     [/#if]

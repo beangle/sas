@@ -1,6 +1,23 @@
+/*
+ * Beangle, Agile Development Scaffold and Toolkits.
+ *
+ * Copyright © 2005, The Beangle Software.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.beangle.sas.model
 
-import org.beangle.commons.bean.Properties
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.lang.Strings
 import org.beangle.sas.model.Proxy.{Https, Status}
@@ -12,21 +29,39 @@ object Proxy {
     new Proxy
   }
 
-  class Backend(var name: String, var servers: String) {
-    var options: Option[String] = None
+  class Server(var name: String, var host: String, var options: Option[String])
 
-    def getServers(container: Container): List[Server] = {
-      container.getMatchedServers(servers)
+  class Backend(var name: String) {
+    var options: Option[String] = None
+    var servers: mutable.Buffer[Server] = Collections.newBuffer[Server]
+
+    def getServer(name: String): Option[Server] = {
+      servers.find(_.name == name)
     }
 
-    def contains(server: Server): Boolean = {
-      val sname = server.qualifiedName
-      if (sname == servers) {
-        true
-      } else {
-        val res = servers.split(",") find (one => one == sname || sname.startsWith(one + "."))
-        res.isDefined
+    def addServer(name: String): Server = {
+      getServer(name) match {
+        case None =>
+          val s = new Server(name, null, None)
+          servers += s
+          s
+        case Some(s) => s
       }
+    }
+
+    def addServer(name: String, host: String, options: Option[String]): Unit = {
+      getServer(name) match {
+        case None =>
+          servers += new Server(name, host, options)
+        case Some(s) =>
+          s.name = name
+          s.host = host
+          s.options = options
+      }
+    }
+
+    def contains(sname: String): Boolean = {
+      servers.exists(_.name == sname)
     }
   }
 
@@ -71,38 +106,14 @@ class Proxy {
     name = Strings.replace(name, ",", "_")
     name = Strings.replace(name, ".", "_")
     backends.get(name) match {
-      case None =>
-        val backend = new Backend(name, backendName)
-        backends.put(name, backend)
-        backend
+      case None => addBackend(new Backend(name))
       case Some(b) => b
     }
   }
 
-  def addBackend(backend: Backend): this.type = {
+  def addBackend(backend: Backend): Backend = {
     backends.put(backend.name, backend)
-    this
-  }
-
-  def process(template: String): String = {
-    if (template.contains("{")) {
-      var updates = template
-      var name = Strings.substringBetween(updates, "${", "}")
-      while (Strings.isNotBlank(name)) {
-        val value: Any = Properties.get(this, name)
-        val str = value match {
-          case Some(v) => String.valueOf(v)
-          case None => ""
-          case _ => String.valueOf(value)
-
-        }
-        updates = Strings.replace(updates, "${" + name + "}", str)
-        name = Strings.substringBetween(updates, "${", "}")
-      }
-      updates
-    } else {
-      template
-    }
+    backend
   }
 
   def enableHttps: Boolean = {
