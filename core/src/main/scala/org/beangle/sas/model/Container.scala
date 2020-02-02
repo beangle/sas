@@ -349,12 +349,7 @@ class Container {
 
   def generateBackend(): Unit = {
     deployments foreach { d =>
-      val backend = proxy.getBackend(d.on)
-      if (backend.servers.isEmpty) {
-        getMatchedServers(backend.name) foreach { s =>
-          backend.addServer(s.qualifiedName)
-        }
-      }
+      val backend = proxy.getOrCreateBackend(d.on,this)
       backend.servers foreach { server =>
         getServer(server.name) match {
           case Some(s) => server.host = s"${s.farm.host.ip}:${s.http}"

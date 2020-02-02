@@ -101,14 +101,26 @@ class Proxy {
     this.maxconn = proxy.maxconn
   }
 
-  def getBackend(backendName: String): Backend = {
-    var name = backendName
+  def getOrCreateBackend(pattern: String, container: Container): Backend = {
+    var name = pattern
     name = Strings.replace(name, ",", "_")
     name = Strings.replace(name, ".", "_")
     backends.get(name) match {
-      case None => addBackend(new Backend(name))
+      case None =>
+        val backend = new Backend(name)
+        container.getMatchedServers(pattern) foreach { s =>
+          backend.addServer(s.qualifiedName)
+        }
+        addBackend(backend)
       case Some(b) => b
     }
+  }
+
+  def getBackend(pattern: String): Backend = {
+    var name = pattern
+    name = Strings.replace(name, ",", "_")
+    name = Strings.replace(name, ".", "_")
+    backends(name)
   }
 
   def addBackend(backend: Backend): Backend = {
