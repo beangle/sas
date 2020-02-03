@@ -13,10 +13,6 @@ global
     ssl-default-server-ciphers PROFILE=SYSTEM
 [#if proxy.status??]
     stats socket /var/lib/haproxy/stats
-    stats refresh 30s
-    stats uri ${proxy.status.uri}
-    stats realm haproxy-user
-    stats auth ${proxy.status.auth}
 [/#if]
 
 defaults
@@ -36,6 +32,13 @@ defaults
     timeout http-keep-alive 60s
     timeout check           60s
     maxconn                 ${proxy.maxconn}
+
+[#if proxy.status??]
+    stats refresh 30s
+    stats uri ${proxy.status.uri}
+    stats realm haproxy-user
+    stats auth ${proxy.status.auth}
+[/#if]
 
 frontend main
     bind *:80
