@@ -24,7 +24,7 @@ import java.net.URL
 import org.beangle.commons.io.IOs
 import org.beangle.commons.lang.Strings.{isEmpty, isNotEmpty, split, substringAfterLast}
 import org.beangle.repo.artifact.{Artifact, ArtifactDownloader, BeangleResolver, Repo}
-import org.beangle.sas.model.{Container, EngineType, Repository}
+import org.beangle.sas.model.{Container, EngineType}
 import org.beangle.sas.tomcat.TomcatMaker
 
 object Resolve {
