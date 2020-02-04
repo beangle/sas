@@ -12,7 +12,7 @@ export CATALINA_PID="$CATALINA_BASE"/CATALINA_PID
 export CATALINA_OUT="$CATALINA_BASE"/logs/console.out
 export CATALINA_TMPDIR="$CATALINA_BASE"/temp
 
-export beangle_sas_ver=0.6.2
+export beangle_sas_ver=0.6.3
 export slf4j_ver=2.0.0-alpha1
 export logback_ver=1.3.0-alpha5
 
@@ -53,11 +53,8 @@ if [ -z "$_RUNJAVA" ]; then
   _RUNJAVA="$JRE_HOME"/bin/java
 fi
 
-CLASSPATH="$CATALINA_HOME"/bin/bootstrap.jar:$CATALINA_BASE/bin/tomcat-juli.jar
+CLASSPATH="$CATALINA_HOME"/bin/bootstrap.jar
 CLASSPATH="$CLASSPATH":"$SAS_HOME"/bin/lib/beangle-sas-juli-"$beangle_sas_ver".jar
-CLASSPATH="$CLASSPATH":"$SAS_HOME"/bin/lib/slf4j-api-"$slf4j_ver".jar
-CLASSPATH="$CLASSPATH":"$SAS_HOME"/bin/lib/logback-core-"$logback_ver".jar
-CLASSPATH="$CLASSPATH":"$SAS_HOME"/bin/lib/logback-classic-"$logback_ver".jar
 
 if [ -z "$JSSE_OPTS" ] ; then
   JSSE_OPTS="-Djdk.tls.ephemeralDHKeySize=2048"

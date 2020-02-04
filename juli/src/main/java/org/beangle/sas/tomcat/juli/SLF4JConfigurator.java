@@ -32,25 +32,6 @@ import java.net.URL;
 
 public class SLF4JConfigurator extends ContextAwareBase implements Configurator {
 
-  private static volatile boolean inited = false;
-
-  public static void init() {
-    synchronized (SLF4JDelegatingLog.class) {
-      if (!inited) {
-        String configFile = "logback.configurationFile";
-        String url = System.getProperty(configFile);
-        if (null != url) {
-          System.getProperties().remove(configFile);
-        }
-        LoggerFactory.getILoggerFactory();
-        if (null != url) {
-          System.setProperty(configFile, url);
-        }
-        inited = true;
-      }
-    }
-  }
-
   @Override
   public void configure(LoggerContext lc) {
     JoranConfigurator configurator = new JoranConfigurator();
@@ -82,6 +63,7 @@ public class SLF4JConfigurator extends ContextAwareBase implements Configurator 
       }
       lc.getStatusManager().add(new InfoStatus("Found resource [" + url.toString() + "]", this));
       lc.reset();
+      // for testing when launch log outer of tomcat
       if (catalinaBase == null) {
         System.setProperty("catalina.base", System.getProperty("java.io.tmpdir"));
       }
