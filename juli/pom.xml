@@ -1,9 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <groupId>org.beangle.sas</groupId>
     <artifactId>beangle-sas-parent</artifactId>
-    <version>0.6.2</version>
+    <version>0.6.3</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>beangle-sas-juli</artifactId>
@@ -22,6 +22,12 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+      <version>${slf4j.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <scope>compile</scope>
@@ -37,4 +43,109 @@
       <version>${tomcat.version}</version>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.2.1</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <createSourcesJar>false</createSourcesJar>
+              <shadeSourcesContent>false</shadeSourcesContent>
+              <artifactSet>
+                <includes>
+                  <include>org.apache.tomcat:tomcat-juli</include>
+                  <include>org.slf4j:jcl-over-slf4j</include>
+                  <include>org.slf4j:slf4j-api</include>
+                  <include>ch.qos.logback:logback-classic</include>
+                  <include>ch.qos.logback:logback-core</include>
+                </includes>
+              </artifactSet>
+              <filters>
+                <!--tomcat日志中仅仅包括这些-->
+                <filter>
+                  <artifact>org.apache.tomcat:tomcat-juli</artifact>
+                  <includes>
+                    <include>org/apache/juli/ClassLoaderLogManager**</include>
+                    <include>org/apache/juli/WebappProperties.class</include>
+                    <include>META-INF/NOTICE</include>
+                  </includes>
+                </filter>
+
+                <!-- jcl-over-slf4j实现tomcat-juli中的日志内容。排除原生服务-->
+                <!-- 防止加载其他实现org.apache.commons.logging.LogFactory的服务 -->
+                <filter>
+                  <artifact>org.slf4j:jcl-over-slf4j</artifact>
+                  <excludes>
+                    <exclude>META-INF/services/**</exclude>
+                    <exclude>META-INF/versions/**</exclude>
+                  </excludes>
+                </filter>
+
+                <!-- 从logback-classic排除ServletContainerInitializer,他会加载的类不再这个范围内-->
+                <filter>
+                  <artifact>ch.qos.logback:logback-classic</artifact>
+                  <excludes>
+                    <exclude>META-INF/services/javax.servlet.ServletContainerInitializer</exclude>
+                    <exclude>META-INF/versions/**</exclude>
+                  </excludes>
+                </filter>
+
+                <filter>
+                  <artifact>org.slf4j:slf4j-api</artifact>
+                  <excludes>
+                    <exclude>META-INF/versions/**</exclude>
+                  </excludes>
+                </filter>
+
+                <filter>
+                  <artifact>ch.qos.logback:logback-core</artifact>
+                  <excludes>
+                    <exclude>META-INF/versions/**</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+
+              <relocations>
+                <!--tomcat-juli中的内容正是在这个package中，由jcl-over-slf4j实现-->
+                <relocation>
+                  <pattern>org.apache.commons.logging</pattern>
+                  <shadedPattern>org.apache.juli.logging</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.slf4j</pattern>
+                  <shadedPattern>org.beangle.sas.slf4j</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>ch.qos.logback</pattern>
+                  <shadedPattern>org.beangle.sas.logback</shadedPattern>
+                </relocation>
+                <relocation>
+                  <!-- Located in org.apache.juli.ch.qos.logback.classic.util -->
+                  <pattern>logback.configurationFile</pattern>
+                  <shadedPattern>juli.logback.configurationFile</shadedPattern>
+                </relocation>
+                <relocation>
+                  <!-- Located in org.apache.juli.org.slf4j.MarkerFactory -->
+                  <pattern>logback.ContextSelector</pattern>
+                  <shadedPattern>juli.logback.ContextSelector</shadedPattern>
+                </relocation>
+              </relocations>
+              <!-- 转换ch.qos.logback.classic.spi.Configurator服务，实现加载logback-catalina.xml -->
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

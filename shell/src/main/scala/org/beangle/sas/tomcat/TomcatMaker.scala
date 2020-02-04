@@ -55,6 +55,7 @@ object TomcatMaker {
     //添加beangle-sas-tomcat and logback-access
     engine.jars += Jar.gav("org.beangle.sas:beangle-sas-tomcat:" + container.version)
     engine.jars += Jar.gav("ch.qos.logback:logback-access:1.3.0-alpha5")
+    engine.jars += Jar.gav("ch.qos.logback:logback-core:1.3.0-alpha5")
   }
 
   def makeEngine(sasHome: String, engine: Engine, remote: Repo.Remote, local: Repo.Local): Unit = {
@@ -97,6 +98,7 @@ object TomcatMaker {
     val dirs = Dirs.on(sasHome + "/servers/" + serverName)
     dirs.mkdirs()
     dirs.mkdirs("temp", "work", "conf")
+    //删除这些已有文件，创建一个新环境
     dirs.delete("webapps", "conf", "bin").mkdirs("webapps", "conf", "bin")
 
     val engineHome = sasHome + "/engines/" + engine.typ + "-" + engine.version
@@ -145,7 +147,7 @@ object TomcatMaker {
 
     //clean bin
     Dirs.on(engineDir, "bin").delete("startup.sh", "shutdown.sh", "configtest.sh", "version.sh",
-      "digest.sh", "tool-wrapper.sh", "catalina.sh", "setclasspath.sh", "makebase.sh", "ciphers.sh")
+      "digest.sh", "tool-wrapper.sh", "catalina.sh", "setclasspath.sh", "makebase.sh", "ciphers.sh", "tomcat-juli.jar")
 
     val bin = new File(engineDir, "bin")
     val binFiles = bin.list()
