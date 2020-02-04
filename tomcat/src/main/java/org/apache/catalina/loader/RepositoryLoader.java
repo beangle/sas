@@ -57,8 +57,7 @@ public class RepositoryLoader extends WebappLoader {
       }
       normalizeBase();
       List<Artifact> artifacts = DependencyResolver.resolve(resource);
-      StringBuilder sb = new StringBuilder("Append ");
-      sb.append(artifacts.size()).append(" jars:");
+      List<String> jarNames = new ArrayList<>(artifacts.size());
       Local local = new Local(base);
       List<Artifact> missings = new ArrayList<Artifact>();
       for (Artifact artifact : artifacts) {
@@ -67,13 +66,19 @@ public class RepositoryLoader extends WebappLoader {
           missings.add(artifact);
           continue;
         }
-        sb.append(file.getName());
-        sb.append("  ");
+        jarNames.add(file.getName());
         try {
           devCl.addURL(file.toURI().toURL());
         } catch (MalformedURLException e) {
           e.printStackTrace();
         }
+      }
+      StringBuilder sb = new StringBuilder("Append ");
+      sb.append(artifacts.size()).append(" jars:");
+      Collections.sort(jarNames);
+      for (String jarName : jarNames) {
+        sb.append(jarName);
+        sb.append("  ");
       }
       logger.info(sb.toString());
       if (missings.size() > 0) {
