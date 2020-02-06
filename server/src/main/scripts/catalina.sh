@@ -12,7 +12,7 @@ export CATALINA_PID="$CATALINA_BASE"/CATALINA_PID
 export CATALINA_OUT="$CATALINA_BASE"/logs/console.out
 export CATALINA_TMPDIR="$CATALINA_BASE"/temp
 
-export beangle_sas_ver=0.6.3
+export beangle_sas_ver=0.6.4
 export slf4j_ver=2.0.0-alpha1
 export logback_ver=1.3.0-alpha5
 
@@ -73,6 +73,7 @@ if [ "$CATALINA_CMD" = "run" ]; then
       -Dcatalina.base="\"$CATALINA_BASE\"" \
       -Djava.io.tmpdir="\"$CATALINA_TMPDIR\"" \
       -Dsas.home="\"$SAS_HOME\"" \
+      -Dsas.server="\"$CATALINA_SERVER\"" \
       org.apache.catalina.startup.Bootstrap start
 
 elif [ "$CATALINA_CMD" = "start" ] ; then
@@ -102,6 +103,8 @@ elif [ "$CATALINA_CMD" = "start" ] ; then
     -classpath "\"$CLASSPATH\"" \
     -Dcatalina.base="\"$CATALINA_BASE\"" \
     -Dcatalina.home="\"$CATALINA_HOME\"" \
+    -Dsas.home="\"$SAS_HOME\"" \
+    -Dsas.server="\"$CATALINA_SERVER\"" \
     -Djava.io.tmpdir="\"$CATALINA_TMPDIR\"" \
     org.apache.catalina.startup.Bootstrap start \
     >> "$CATALINA_OUT" 2>&1 "&"

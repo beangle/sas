@@ -103,11 +103,13 @@ object Resolve {
       if (farm.name == serverName || serverName == "all") {
         for (server <- farm.servers) {
           TomcatMaker.makeServer(container, farm, server, sasHome)
+          TomcatMaker.rollLog(container, server, sasHome)
         }
       } else {
         farm.servers foreach { server =>
           if (serverName == server.qualifiedName) {
             TomcatMaker.makeServer(container, farm, server, sasHome)
+            TomcatMaker.rollLog(container, server, sasHome)
           }
         }
       }

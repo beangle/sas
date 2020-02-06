@@ -77,8 +77,8 @@ public class RepositoryLoader extends WebappLoader {
       sb.append(artifacts.size()).append(" jars:");
       Collections.sort(jarNames);
       for (String jarName : jarNames) {
+        sb.append(" ");
         sb.append(jarName);
-        sb.append("  ");
       }
       logger.info(sb.toString());
       if (missings.size() > 0) {

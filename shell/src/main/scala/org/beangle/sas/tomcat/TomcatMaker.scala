@@ -18,14 +18,17 @@
  */
 package org.beangle.sas.tomcat
 
-import java.io.{File, FileOutputStream}
+import java.io.{File, FileInputStream, FileOutputStream}
 import java.net.URL
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 import org.beangle.commons.file.zip.Zipper
-import org.beangle.commons.io.{Dirs, IOs}
+import org.beangle.commons.io.{Dirs, Files, IOs}
 import org.beangle.commons.lang.Strings.substringAfterLast
 import org.beangle.commons.lang.{ClassLoaders, Strings}
 import org.beangle.repo.artifact.{Artifact, ArtifactDownloader, Repo}
+import org.beangle.sas.daemon.ServerStatus
 import org.beangle.sas.model._
 
 object TomcatMaker {
@@ -88,6 +91,48 @@ object TomcatMaker {
     }
   }
 
+  private def detectExecution(server: Server): Option[ServerStatus] = {
+    val p = new ProcessBuilder("lsof", "-i", ":" + server.http).start()
+    val res = IOs.readString(p.getInputStream)
+    if (Strings.isNotBlank(res)) {
+      val lines = Strings.split(res.trim(),"\n")
+      if (lines.length > 1) {
+        // java pid ....
+        val elems = Strings.split(lines(1)," ")
+        val pid = elems(1) //ps -f -p $PID
+        val ps = new ProcessBuilder("ps", "-f", "-p", pid.trim).start()
+        Some(new ServerStatus(pid.toInt, IOs.readString(ps.getInputStream)))
+      } else {
+        None
+      }
+    } else {
+      None
+    }
+  }
+
+  def rollLog(container: Container, server: Server, sasHome: String): Unit = {
+    val result = detectExecution(server)
+    result match {
+      case Some(e) =>
+        val dirs = Dirs.on(sasHome + "/servers/" + server.qualifiedName)
+        dirs.write("CATALINA_PID", e.processId.toString)
+      case None =>
+        val d = LocalDate.now()
+        val consoleOut = new File(sasHome + "/servers/" + server.qualifiedName + "/logs/console.out")
+        if (consoleOut.exists()) {
+          val archive = new File(sasHome + "/logs/archive/" + server.qualifiedName + s"-${d.format(DateTimeFormatter.ofPattern("yyyyMMdd"))}.out")
+          if (!archive.exists()) {
+            Files.touch(archive)
+          }
+          val os = Files.writeOpen(archive, true)
+          val is = new FileInputStream(consoleOut)
+          IOs.copy(is, os)
+          IOs.close(is, os)
+        }
+        consoleOut.delete()
+        Files.touch(consoleOut)
+    }
+  }
 
   def makeServer(container: Container, farm: Farm, server: Server, sasHome: String): Unit = {
     doMakeBase(sasHome, farm.engine, server.qualifiedName)
