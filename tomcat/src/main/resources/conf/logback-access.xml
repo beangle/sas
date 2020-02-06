@@ -2,7 +2,7 @@
 
 <configuration>
     <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
-    <property name="max.retention.days" value="60" />
+    <property name="max.retention.days" value="180" />
 
     <appender name="ACCESS-LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${catalina.base}/logs/access.log</file>
@@ -11,10 +11,10 @@
             <charset>utf-8</charset>
             <pattern>%h %l %u [%t] "%r" %s %b %D "%i{Referer}" "%i{User-Agent}"</pattern>
         </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${catalina.base}/logs/archive/access-%d{yyyyMMdd}-%i.log.tar.gz</fileNamePattern>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${sas.home}/logs/archive/${sas.server}-access-%d{yyyyMMdd}.log</fileNamePattern>
             <maxHistory>${max.retention.days}</maxHistory>
-            <maxFileSize>20MB</maxFileSize>
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
         </rollingPolicy>
     </appender>
 

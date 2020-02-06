@@ -73,6 +73,7 @@ if [ "$CATALINA_CMD" = "run" ]; then
       -Dcatalina.base="\"$CATALINA_BASE\"" \
       -Djava.io.tmpdir="\"$CATALINA_TMPDIR\"" \
       -Dsas.home="\"$SAS_HOME\"" \
+      -Dsas.server="\"$CATALINA_SERVER\"" \
       org.apache.catalina.startup.Bootstrap start
 
 elif [ "$CATALINA_CMD" = "start" ] ; then
@@ -102,6 +103,8 @@ elif [ "$CATALINA_CMD" = "start" ] ; then
     -classpath "\"$CLASSPATH\"" \
     -Dcatalina.base="\"$CATALINA_BASE\"" \
     -Dcatalina.home="\"$CATALINA_HOME\"" \
+    -Dsas.home="\"$SAS_HOME\"" \
+    -Dsas.server="\"$CATALINA_SERVER\"" \
     -Djava.io.tmpdir="\"$CATALINA_TMPDIR\"" \
     org.apache.catalina.startup.Bootstrap start \
     >> "$CATALINA_OUT" 2>&1 "&"
