@@ -108,11 +108,13 @@ class Proxy {
     backends.get(name) match {
       case None =>
         val backend = new Backend(name)
-        container.getMatchedServers(pattern) foreach { s =>
-          backend.addServer(s.qualifiedName)
-        }
+        container.getMatchedServers(pattern) foreach { s => backend.addServer(s.qualifiedName) }
         addBackend(backend)
-      case Some(b) => b
+      case Some(b) =>
+        if (b.servers.isEmpty) {
+          container.getMatchedServers(pattern) foreach { s => b.addServer(s.qualifiedName) }
+        }
+        b
     }
   }
 
