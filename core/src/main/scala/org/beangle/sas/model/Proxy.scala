@@ -29,7 +29,7 @@ object Proxy {
     new Proxy
   }
 
-  class Server(var name: String, var host: String, var options: Option[String])
+  class Server(var name: String, var host: String, var port: Int, var options: Option[String])
 
   class Backend(var name: String) {
     var options: Option[String] = None
@@ -42,20 +42,21 @@ object Proxy {
     def addServer(name: String): Server = {
       getServer(name) match {
         case None =>
-          val s = new Server(name, null, None)
+          val s = new Server(name, null, 0, None)
           servers += s
           s
         case Some(s) => s
       }
     }
 
-    def addServer(name: String, host: String, options: Option[String]): Unit = {
+    def addServer(name: String, host: String, port: Int, options: Option[String]): Unit = {
       getServer(name) match {
         case None =>
-          servers += new Server(name, host, options)
+          servers += new Server(name, host, port, options)
         case Some(s) =>
           s.name = name
           s.host = host
+          s.port = port
           s.options = options
       }
     }

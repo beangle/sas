@@ -356,7 +356,11 @@ class Container {
       val backend = proxy.getOrCreateBackend(d.on, this)
       backend.servers foreach { server =>
         getServer(server.name) match {
-          case Some(s) => server.host = s"${s.farm.host.ip}:${s.http}"
+          case Some(s) =>
+            server.host = s"${s.farm.host.ip}"
+            if (server.port == 0) {
+              server.port = s.http
+            }
           case None => throw new RuntimeException(s"Cannot find proxy server ${server.name}")
         }
       }
