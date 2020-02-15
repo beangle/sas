@@ -53,18 +53,27 @@ download(){
   fi
 }
 
-wget_avaliable=false
-unzip_avaliable=false
+commands_avaliable=true
+commands=(wget unzip lsof java)
+for cmd_name in ${commands[@]}; do
+  if ! command -v $cmd_name >/dev/null 2; then
+    echo "$cmd_name needed,install it first."
+    commands_avaliable=false
+  fi
+done
 
-if command -v wget >/dev/null 2; then
-  wget_avaliable=true
+if ! $commands_avaliable;  then
+  echo Installation was aborted.
+  exit 1;
 fi
 
-if command -v unzip >/dev/null 2; then
-  unzip_avaliable=true
+version=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
+if  [[ "$version" < "11" ]]; then
+  echo Find java version "$version",but at least 11 needed.
+  echo Installation was aborted.
+  exit 1;
 fi
 
-if $wget_avaliable && $unzip_avaliable; then
   echo "Downloading and link libraries..."
   download org.scala-lang scala-library $scala_ver
   download org.scala-lang scala-reflect $scala_ver
@@ -85,11 +94,3 @@ if $wget_avaliable && $unzip_avaliable; then
   download ch.qos.logback logback-classic $logback_ver
   download ch.qos.logback logback-access $logback_ver
   echo "Initialization Completed.You can custom conf/server.xml."
-else
-  if ! $wget_avaliable; then
-    echo "wget needed,install it first."
-  fi
-  if ! $unzip_avaliable; then
-    echo "unzip needed,install it first."
-  fi
-fi
