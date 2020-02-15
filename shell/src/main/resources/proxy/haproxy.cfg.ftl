@@ -92,7 +92,7 @@ ${use_backend}
 backend ${name}
 ${addMargin(backend.options!"balance roundrobin")}
     [#list backend.servers as server]
-    server ${server.host?replace('.','_')?replace(':','_')} ${server.host} ${server.options!} check
+    server ${server.host?replace('.','_')?replace(':','_')}_${server.port} ${server.host}:${server.port} ${server.options!} check
     [/#list]
 
     [/#list]

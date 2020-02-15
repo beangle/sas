@@ -19,8 +19,8 @@
 package org.beangle.sas.model
 
 import org.beangle.commons.lang.Numbers.toInt
-import org.beangle.commons.lang.Strings
 import org.beangle.commons.lang.Strings.{isEmpty, isNotBlank, isNotEmpty}
+import org.beangle.commons.lang.{Numbers, Strings}
 
 object Container {
 
@@ -228,6 +228,9 @@ object Container {
           (selem \ "@options") foreach { e =>
             s.options = Some(e.text)
           }
+          (selem \ "@port") foreach { e =>
+            s.port = Numbers.toInt(e.text)
+          }
         }
         (elem \ "Options") foreach { selem =>
           backend.options = Some(trimlines(selem.text))
@@ -237,7 +240,11 @@ object Container {
     }
 
     (xml \ "Deployments" \ "Deployment") foreach { deployElem =>
-      val deployment = new Deployment((deployElem \ "@webapp").text, (deployElem \ "@on").text, (deployElem \ "@path").text)
+      var path = (deployElem \ "@path").text
+      if (path == "/") {
+        path = ""
+      }
+      val deployment = new Deployment((deployElem \ "@webapp").text, (deployElem \ "@on").text, path)
       conf.deployments += deployment
     }
     conf.generateBackend()
@@ -349,10 +356,14 @@ class Container {
 
   def generateBackend(): Unit = {
     deployments foreach { d =>
-      val backend = proxy.getOrCreateBackend(d.on,this)
+      val backend = proxy.getOrCreateBackend(d.on, this)
       backend.servers foreach { server =>
         getServer(server.name) match {
-          case Some(s) => server.host = s"${s.farm.host.ip}:${s.http}"
+          case Some(s) =>
+            server.host = s"${s.farm.host.ip}"
+            if (server.port == 0) {
+              server.port = s.http
+            }
           case None => throw new RuntimeException(s"Cannot find proxy server ${server.name}")
         }
       }
