@@ -19,8 +19,8 @@
 package org.beangle.sas.model
 
 import org.beangle.commons.lang.Numbers.toInt
-import org.beangle.commons.lang.Strings
 import org.beangle.commons.lang.Strings.{isEmpty, isNotBlank, isNotEmpty}
+import org.beangle.commons.lang.{Numbers, Strings}
 
 object Container {
 
@@ -227,6 +227,9 @@ object Container {
           val s = backend.addServer((selem \ "@name").text)
           (selem \ "@options") foreach { e =>
             s.options = Some(e.text)
+          }
+          (selem \ "@port") foreach { e =>
+            s.port = Numbers.toInt(e.text)
           }
         }
         (elem \ "Options") foreach { selem =>
