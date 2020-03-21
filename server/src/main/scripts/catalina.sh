@@ -12,18 +12,13 @@ export CATALINA_PID="$CATALINA_BASE"/CATALINA_PID
 export CATALINA_OUT="$CATALINA_BASE"/logs/console.out
 export CATALINA_TMPDIR="$CATALINA_BASE"/temp
 
-export beangle_sas_ver=0.6.5
+export beangle_sas_ver=0.6.6
 export slf4j_ver=2.0.0-alpha1
 export logback_ver=1.3.0-alpha5
 
 LOGGING_CONFIG="-Dnop"
 LOGGING_MANAGER="-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager"
 
-function echoEnvs(){
-  echo "Using CATALINA_BASE:   $CATALINA_BASE"
-  echo "Using JRE_HOME:        $JRE_HOME"
-  echo "Using CATALINA_PID:    $CATALINA_PID"
-}
 CLASSPATH=
 
 if [ -r "$CATALINA_BASE/bin/setenv.sh" ]; then
@@ -65,30 +60,16 @@ JAVA_OPTS="$JAVA_OPTS $JSSE_OPTS"
 # Do this here so custom URL handles (specifically 'war:...') can be used in the security policy
 JAVA_OPTS="$JAVA_OPTS -Djava.protocol.handler.pkgs=org.apache.catalina.webresources"
 
-if [ "$CATALINA_CMD" = "run" ]; then
-    echoEnvs
-    eval exec "\"$_RUNJAVA\"" "\"$LOGGING_CONFIG\"" $LOGGING_MANAGER $JAVA_OPTS $CATALINA_OPTS \
-      -classpath "\"$CLASSPATH\"" \
-      -Dcatalina.home="\"$CATALINA_HOME\"" \
-      -Dcatalina.base="\"$CATALINA_BASE\"" \
-      -Djava.io.tmpdir="\"$CATALINA_TMPDIR\"" \
-      -Dsas.home="\"$SAS_HOME\"" \
-      -Dsas.server="\"$CATALINA_SERVER\"" \
-      org.apache.catalina.startup.Bootstrap start
-
-elif [ "$CATALINA_CMD" = "start" ] ; then
-  echoEnvs
+if [ "$CATALINA_CMD" = "start" ] ; then
 
   if [ -s "$CATALINA_PID" ]; then
-    echo "Existing PID file found during start."
       PID=`cat "$CATALINA_PID"`
       ps -p $PID >/dev/null 2>&1
       if [ $? -eq 0 ] ; then
-        echo "Tomcat appears to still be running with PID $PID. Start aborted."
-        ps -f -p $PID
+        ps  --no-headers -f -p $PID
+        echo "$CATALINA_SERVER appears to still be running with PID $PID. Start aborted."
         exit 1
       else
-        echo "Removing/clearing stale PID file."
         rm -f "$CATALINA_PID" >/dev/null 2>&1
         if [ $? != 0 ]; then
           cat /dev/null > "$CATALINA_PID"
@@ -110,7 +91,7 @@ elif [ "$CATALINA_CMD" = "start" ] ; then
     >> "$CATALINA_OUT" 2>&1 "&"
 
   echo $! > "$CATALINA_PID"
-  echo "Tomcat started."
+  echo "$CATALINA_SERVER started,see logs/$CATALINA_SERVER/console.out"
 
 elif [ "$CATALINA_CMD" = "stop" ] ; then
 
@@ -118,8 +99,6 @@ elif [ "$CATALINA_CMD" = "stop" ] ; then
   FORCE=1
 
   if [  -s "$CATALINA_PID" ]; then
-    echoEnvs
-
     PID=`cat "$CATALINA_PID"`
     kill -15 $PID >/dev/null 2>&1
   else
@@ -132,7 +111,7 @@ elif [ "$CATALINA_CMD" = "stop" ] ; then
     if [ $? -gt 0 ]; then
       rm -f "$CATALINA_PID" >/dev/null 2>&1
       FORCE=0
-      echo "Tomcat stopped."
+      echo "$CATALINA_SERVER stopped."
       break
     fi
     if [ $SLEEP -gt 0 ]; then
@@ -142,7 +121,7 @@ elif [ "$CATALINA_CMD" = "stop" ] ; then
   done
 
   if [ $FORCE -eq 1 ]; then
-      echo "Killing Tomcat with the PID: $PID"
+      echo "Killing $CATALINA_SERVER with the PID: $PID"
       kill -9 $PID
   fi
   rm -f "$CATALINA_PID"
@@ -150,9 +129,9 @@ else
 
   echo "Usage: catalina.sh ( commands ... )"
   echo "commands:"
-  echo "  run               Start Catalina in the current window"
   echo "  start             Start Catalina in a separate window"
   echo "  stop              Stop Catalina, waiting up to 5 seconds for the process to end"
   exit 1
 
 fi
+

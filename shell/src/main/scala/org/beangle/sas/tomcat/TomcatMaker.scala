@@ -33,6 +33,11 @@ import org.beangle.sas.model._
 
 object TomcatMaker {
 
+  /** 增加sas对tomcat的默认要求到配置模型中。
+   *
+   * @param container
+   * @param engine
+   */
   def applyEngineDefault(container: Container, engine: Engine): Unit = {
     if (engine.listeners.isEmpty) {
       engine.listeners += new Listener("org.apache.catalina.core.AprLifecycleListener").property("SSLEngine", "on")
@@ -95,10 +100,10 @@ object TomcatMaker {
     val p = new ProcessBuilder("lsof", "-i", ":" + server.http).start()
     val res = IOs.readString(p.getInputStream)
     if (Strings.isNotBlank(res)) {
-      val lines = Strings.split(res.trim(),"\n")
+      val lines = Strings.split(res.trim(), "\n")
       if (lines.length > 1) {
         // java pid ....
-        val elems = Strings.split(lines(1)," ")
+        val elems = Strings.split(lines(1), " ")
         val pid = elems(1) //ps -f -p $PID
         val ps = new ProcessBuilder("ps", "-f", "-p", pid.trim).start()
         Some(new ServerStatus(pid.toInt, IOs.readString(ps.getInputStream)))
@@ -111,32 +116,33 @@ object TomcatMaker {
   }
 
   def rollLog(container: Container, server: Server, sasHome: String): Unit = {
+    val d = LocalDate.now()
+    val consoleOut = new File(sasHome + "/servers/" + server.qualifiedName + "/logs/console.out")
+    if (consoleOut.exists()) {
+      val archive = new File(sasHome + "/logs/archive/" + server.qualifiedName + s"-${d.format(DateTimeFormatter.ofPattern("yyyyMMdd"))}.out")
+      if (!archive.exists()) {
+        Files.touch(archive)
+      }
+      val os = Files.writeOpen(archive, true)
+      val is = new FileInputStream(consoleOut)
+      IOs.copy(is, os)
+      IOs.close(is, os)
+      consoleOut.delete()
+    }
+    Files.touch(consoleOut)
+  }
+
+  def makeServer(container: Container, farm: Farm, server: Server, sasHome: String): Unit = {
     val result = detectExecution(server)
     result match {
       case Some(e) =>
         val dirs = Dirs.on(sasHome + "/servers/" + server.qualifiedName)
         dirs.write("CATALINA_PID", e.processId.toString)
       case None =>
-        val d = LocalDate.now()
-        val consoleOut = new File(sasHome + "/servers/" + server.qualifiedName + "/logs/console.out")
-        if (consoleOut.exists()) {
-          val archive = new File(sasHome + "/logs/archive/" + server.qualifiedName + s"-${d.format(DateTimeFormatter.ofPattern("yyyyMMdd"))}.out")
-          if (!archive.exists()) {
-            Files.touch(archive)
-          }
-          val os = Files.writeOpen(archive, true)
-          val is = new FileInputStream(consoleOut)
-          IOs.copy(is, os)
-          IOs.close(is, os)
-        }
-        consoleOut.delete()
-        Files.touch(consoleOut)
+        doMakeBase(sasHome, farm.engine, server.qualifiedName)
+        Gen.spawn(container, farm, server, sasHome)
+        rollLog(container, server, sasHome)
     }
-  }
-
-  def makeServer(container: Container, farm: Farm, server: Server, sasHome: String): Unit = {
-    doMakeBase(sasHome, farm.engine, server.qualifiedName)
-    Gen.spawn(container, farm, server, sasHome)
   }
 
   protected[tomcat] def doMakeBase(sasHome: String, engine: Engine, serverName: String): Unit = {

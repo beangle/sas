@@ -24,47 +24,29 @@ import java.net.URL
 import org.beangle.commons.io.IOs
 import org.beangle.commons.lang.Strings.{isEmpty, isNotEmpty, split, substringAfterLast}
 import org.beangle.repo.artifact.{Artifact, ArtifactDownloader, BeangleResolver, Repo}
-import org.beangle.sas.model.{Container, EngineType}
-import org.beangle.sas.tomcat.TomcatMaker
+import org.beangle.sas.model.Container
 
-object Resolve {
+object Resolver {
 
   def main(args: Array[String]): Unit = {
-    if (args.length < 2) {
-      println("Usage: Resolve /path/to/server.xml server_name")
+    if (args.length < 1) {
+      println("Usage: Resolve /path/to/server.xml")
       return
     }
     val configFile = new File(args(0))
     val container = Container(scala.xml.XML.load(new FileInputStream(configFile)))
-    container.engines foreach { engine =>
-      if (engine.typ == EngineType.Tomcat) {
-        TomcatMaker.applyEngineDefault(container, engine)
-      }
-    }
-    val server = args(1)
     val sasHome = configFile.getParentFile.getParentFile.getCanonicalPath
 
-    resolve(container, sasHome, server)
-  }
-
-  def resolve(container: Container, sasHome: String, serverName: String): Unit = {
     val repository = container.repository
-
     val remote =
       if (repository.remote.isEmpty) new Repo.Remote("remote", Repo.Remote.AliyunURL)
       else new Repo.Remote("remote", repository.remote.get)
 
     val local = new Repo.Local(repository.local.orNull)
+    resolve(sasHome, container, remote, local)
+  }
 
-    container.engines foreach { engine =>
-      if (engine.typ == "tomcat") {
-        TomcatMaker.makeEngine(sasHome, engine, remote, local)
-      } else {
-        System.err.println("Cannot recoganize engine type " + engine.typ)
-        System.exit(1)
-      }
-    }
-
+  def resolve(sasHome: String, container: Container, remote: Repo.Remote, local: Repo.Local): Unit = {
     container.webapps foreach { webapp =>
       if (isEmpty(webapp.docBase)) {
         if (isNotEmpty(webapp.url)) {
@@ -89,28 +71,13 @@ object Resolve {
       }
 
       //解析轻量级war
-      val libs = BeangleResolver.resolve(webapp.docBase)
-      new ArtifactDownloader(remote, local).download(libs)
-      val missing = libs filter (!local.exists(_))
-      if (missing.nonEmpty) {
-        System.err.println("Download error :" + missing)
-        System.err.println("Cannot launch webapp :" + webapp.docBase)
-      }
-    }
-
-    //last step
-    container.farms foreach { farm =>
-      if (farm.name == serverName || serverName == "all") {
-        for (server <- farm.servers) {
-          TomcatMaker.makeServer(container, farm, server, sasHome)
-          TomcatMaker.rollLog(container, server, sasHome)
-        }
-      } else {
-        farm.servers foreach { server =>
-          if (serverName == server.qualifiedName) {
-            TomcatMaker.makeServer(container, farm, server, sasHome)
-            TomcatMaker.rollLog(container, server, sasHome)
-          }
+      if (new File(webapp.docBase).exists()) {
+        val libs = BeangleResolver.resolve(webapp.docBase)
+        new ArtifactDownloader(remote, local).download(libs)
+        val missing = libs filter (!local.exists(_))
+        if (missing.nonEmpty) {
+          System.err.println("Download error :" + missing)
+          System.err.println("Cannot launch webapp :" + webapp.docBase)
         }
       }
     }
