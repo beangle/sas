@@ -25,8 +25,6 @@ if [ -d servers ]; then
     echo "Cannot find server with name $TARGET"
   elif (( stopped > 1 )); then
     echo "$stopped servers stopped."
-  else
-    echo "One server stopped."
   fi
 else
   echo "Cannot find any server."

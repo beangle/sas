@@ -10,7 +10,7 @@ fi
 
 cd $SAS_HOME
 
-java -cp "$SAS_HOME/lib/*:$SAS_HOME/bin/lib/*" org.beangle.sas.shell.Resolve $SAS_HOME/conf/server.xml $TARGET
+java -cp "$SAS_HOME/lib/*:$SAS_HOME/bin/lib/*" org.beangle.sas.shell.Maker $SAS_HOME/conf/server.xml $TARGET
 
 shopt -s nullglob
 if [ -d servers ]; then
@@ -26,8 +26,6 @@ if [ -d servers ]; then
     echo "Cannot find server with name $TARGET"
   elif (( started > 1 )); then
     echo "$started servers started."
-  else
-    echo "One server started."
   fi
 else
   echo "Cannot find any server."
