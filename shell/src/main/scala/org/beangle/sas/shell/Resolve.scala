@@ -21,10 +21,11 @@ package org.beangle.sas.shell
 import java.io.{File, FileInputStream, FileOutputStream}
 import java.net.URL
 
+import org.beangle.commons.collection.Collections
 import org.beangle.commons.io.IOs
 import org.beangle.commons.lang.Strings.{isEmpty, isNotEmpty, split, substringAfterLast}
 import org.beangle.repo.artifact.{Artifact, ArtifactDownloader, BeangleResolver, Repo}
-import org.beangle.sas.model.{Container, EngineType}
+import org.beangle.sas.model.{Container, EngineType, Farm, Server}
 import org.beangle.sas.tomcat.TomcatMaker
 
 object Resolve {
@@ -102,16 +103,36 @@ object Resolve {
     container.farms foreach { farm =>
       if (farm.name == serverName || serverName == "all") {
         for (server <- farm.servers) {
-          TomcatMaker.makeServer(container, farm, server, sasHome)
-          TomcatMaker.rollLog(container, server, sasHome)
+          makeServer(container, farm, server, sasHome)
         }
       } else {
         farm.servers foreach { server =>
           if (serverName == server.qualifiedName) {
-            TomcatMaker.makeServer(container, farm, server, sasHome)
-            TomcatMaker.rollLog(container, server, sasHome)
+            makeServer(container, farm, server, sasHome)
           }
         }
+      }
+    }
+  }
+
+  private def makeServer(container: Container, farm: Farm, server: Server, sasHome: String): Unit = {
+    val deployments = container.getDeployments(server)
+    if (deployments.isEmpty) {
+      println(s"Due to zero deployments,${server.qualifiedName}'s launch was aborted.")
+    } else {
+      val missingWars = Collections.newBuffer[String]
+      val appDocBases = container.webapps.map { x => x.name -> x.docBase }.toMap
+      deployments foreach { deployment =>
+        val docBase = appDocBases(deployment.webapp)
+        if (!new File(docBase).exists()) {
+          missingWars += docBase
+        }
+      }
+      if (missingWars.nonEmpty) {
+        println(s"Due to missing wars ${missingWars},${server.qualifiedName}'s launch was aborted.")
+      } else {
+        TomcatMaker.makeServer(container, farm, server, sasHome)
+        TomcatMaker.rollLog(container, server, sasHome)
       }
     }
   }
