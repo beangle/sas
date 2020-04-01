@@ -46,10 +46,14 @@ object Container {
       val name = (engineElem \ "@name").text
       val version = (engineElem \ "@version").text
       val typ = (engineElem \ "@type").text
-      val jspSupport = (engineElem \ "@jspSupport").text
 
       val engine = new Engine(name, typ, version)
-      engine.jspSupport = jspSupport == "true"
+      (engineElem \ "@jspSupport") foreach { j =>
+        engine.jspSupport = j.text == "true"
+      }
+      (engineElem \ "@websocketSupport") foreach { j =>
+        engine.websocketSupport = j.text == "true"
+      }
 
       (engineElem \ "Listener").foreach { lsnElem =>
         val listener = new Listener((lsnElem \ "@className").text)
@@ -155,7 +159,6 @@ object Container {
 
     (xml \ "Webapps" \ "Webapp").foreach { webappElem =>
       val context = new Webapp((webappElem \ "@name").text)
-      if ((webappElem \ "@reloadable").nonEmpty) context.reloadable = (webappElem \ "@reloadable").text == "true"
       if ((webappElem \ "@docBase").nonEmpty) context.docBase = (webappElem \ "@docBase").text
       if ((webappElem \ "@url").nonEmpty) context.url = (webappElem \ "@url").text
       if ((webappElem \ "@gav").nonEmpty) context.gav = (webappElem \ "@gav").text
@@ -245,6 +248,12 @@ object Container {
         path = ""
       }
       val deployment = new Deployment((deployElem \ "@webapp").text, (deployElem \ "@on").text, path)
+      (deployElem \ "@unpack") foreach { u =>
+        deployment.unpack = u.text.toBoolean
+      }
+      (deployElem \ "@reloadable") foreach { u =>
+        deployment.reloadable = u.text.toBoolean
+      }
       conf.deployments += deployment
     }
     conf.generateBackend()

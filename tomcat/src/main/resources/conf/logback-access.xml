@@ -9,7 +9,7 @@
         <append>true</append>
         <encoder class="ch.qos.logback.access.PatternLayoutEncoder">
             <charset>utf-8</charset>
-            <pattern>%h %l %u [%t] "%r" %s %b %D "%i{Referer}" "%i{User-Agent}"</pattern>
+            <pattern>%h %l %u [%t{ISO8601}] "%r" %s %b %D "%i{Referer}" "%i{User-Agent}"</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${sas.home}/logs/archive/${sas.server}-access-%d{yyyyMMdd}.log</fileNamePattern>

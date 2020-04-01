@@ -20,7 +20,11 @@ package org.beangle.sas.model
 
 class Deployment(var webapp: String, var on: String, var path: String) {
 
-  def matches(container: Container,server: Server): Boolean = {
+  var unpack: Boolean = true
+
+  var reloadable: Boolean = false
+
+  def matches(container: Container, server: Server): Boolean = {
     container.proxy.getBackend(on).contains(server.qualifiedName)
   }
 }

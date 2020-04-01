@@ -24,8 +24,6 @@ class Webapp(var name: String) {
 
   def resourceNames: Set[String] = resources.map(d => d.name).toSet
 
-  var reloadable = false
-
   var docBase: String = _
 
   var url: String = _
