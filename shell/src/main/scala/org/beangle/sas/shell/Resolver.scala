@@ -23,7 +23,7 @@ import java.net.URL
 
 import org.beangle.commons.io.IOs
 import org.beangle.commons.lang.Strings.{isEmpty, isNotEmpty, split, substringAfterLast}
-import org.beangle.repo.artifact.{Artifact, ArtifactDownloader, BeangleResolver, Repo}
+import org.beangle.repo.artifact._
 import org.beangle.sas.model.Container
 
 object Resolver {
@@ -78,6 +78,8 @@ object Resolver {
         if (missing.nonEmpty) {
           System.err.println("Download error :" + missing)
           System.err.println("Cannot launch webapp :" + webapp.docBase)
+        } else {
+          webapp.hasEmptyLib = War.isLibEmpty(webapp.docBase)
         }
       }
     }

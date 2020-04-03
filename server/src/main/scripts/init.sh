@@ -8,15 +8,15 @@ export M2_REPO="$HOME/.m2/repository"
 
 export scala_ver=2.13.1
 export scalaxml_ver=2.0.0-M1
-export beangle_sas_ver=0.6.6
-export beangle_commons_ver=5.1.12
+export beangle_sas_ver=0.6.7
+export beangle_commons_ver=5.1.13
 export beangle_template_ver=0.0.26
 export beangle_data_ver=5.3.4
-export beangle_repo_ver=0.0.15
+export beangle_repo_ver=0.0.16
 export slf4j_ver=2.0.0-alpha1
 export logback_ver=1.3.0-alpha5
 
-export freemarker_ver=2.3.28
+export freemarker_ver=2.3.29
 export commons_compress_ver=1.18
 
 # download groupId artifactId version

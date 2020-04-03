@@ -33,6 +33,8 @@ class Engine(var name: String, var typ: String, var version: String) {
 
   var jspSupport = false
 
+  var websocketSupport = false
+
   val listeners = new collection.mutable.ListBuffer[Listener]
 
   val jars = new collection.mutable.ListBuffer[Jar]

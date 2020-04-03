@@ -34,7 +34,6 @@ import org.beangle.sas.model._
 object TomcatMaker {
 
   /** 增加sas对tomcat的默认要求到配置模型中。
-   *
    * @param container
    * @param engine
    */
@@ -58,6 +57,7 @@ object TomcatMaker {
       scanner.properties.put("scanAllDirectories", "false")
       scanner.properties.put("scanAllFiles", "false")
       scanner.properties.put("scanClassPath", "false")
+      scanner.properties.put("scanManifest", "false")
       context.jarScanner = scanner
     }
     //添加beangle-sas-tomcat and logback-access
@@ -218,6 +218,9 @@ object TomcatMaker {
     if (!engine.jspSupport) {
       Dirs.on(engineDir, "lib").delete("jsp-api.jar", "el-api.jar", "ecj-4.6.3.jar",
         "ecj-4.7.3a.jar", "jasper.jar", "jasper-el.jar")
+    }
+    if (!engine.websocketSupport) {
+      Dirs.on(engineDir, "lib").delete("websocket-api.jar", "tomcat-websocket.jar")
     }
     Gen.spawn(engine, engineDir.getAbsolutePath)
   }
