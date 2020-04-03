@@ -34,4 +34,9 @@ class Webapp(var name: String) {
 
   var realms: String = _
 
+  var jspSupport: Boolean = false
+
+  var websocketSupport: Boolean = false
+
+  var hasEmptyLib: Boolean = false
 }

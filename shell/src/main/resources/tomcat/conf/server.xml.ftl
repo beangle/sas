@@ -75,7 +75,21 @@
 
       [#list container.webapps as webapp]
       [#if webapp.name == deployment.webapp]
-      <Context path="${deployment.path}" [#if !deployment.unpack]unpackWAR="false"[/#if] [#if deployment.reloadable]reloadable="true"[/#if] [#rt/]
+      [#assign containerSciFilter=""/]
+      [#if !webapp.jspSupport && !webapp.websocketSupport]
+        [#assign containerSciFilter="apache"/]
+      [#elseif !webapp.jspSupport]
+        [#assign containerSciFilter="JasperInitializer"/]
+      [#elseif !webapp.websocketSupport]
+        [#assign containerSciFilter="WsSci"/]
+      [/#if]
+      [#if deployment.unpack??]
+        [#assign unpack=deployment.unpack/]
+      [#else]
+        [#assign unpack=!webapp.hasEmptyLib/]
+      [/#if]
+
+      <Context path="${deployment.path}" [#if containerSciFilter?length>0]containerSciFilter="${containerSciFilter}"[/#if]  [#if !unpack]unpackWAR="false"[/#if] [#if deployment.reloadable]reloadable="true"[/#if] [#rt/]
       [#lt/] docBase="${webapp.docBase}"[#rt/]
       [#lt/][#list webapp.properties?keys as p] ${p}="${webapp.properties[p]}"[/#list]>
         [#list webapp.resources as resource]

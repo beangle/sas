@@ -249,7 +249,7 @@ object Container {
       }
       val deployment = new Deployment((deployElem \ "@webapp").text, (deployElem \ "@on").text, path)
       (deployElem \ "@unpack") foreach { u =>
-        deployment.unpack = u.text.toBoolean
+        deployment.unpack = Some(u.text.toBoolean)
       }
       (deployElem \ "@reloadable") foreach { u =>
         deployment.reloadable = u.text.toBoolean

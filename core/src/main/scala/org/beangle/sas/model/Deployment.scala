@@ -20,7 +20,7 @@ package org.beangle.sas.model
 
 class Deployment(var webapp: String, var on: String, var path: String) {
 
-  var unpack: Boolean = true
+  var unpack: Option[Boolean] = None
 
   var reloadable: Boolean = false
 
