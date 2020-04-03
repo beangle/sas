@@ -40,7 +40,7 @@
     <beangle.cdi.version>0.2.1</beangle.cdi.version>
     <beangle.repo.version>0.0.16</beangle.repo.version>
     <beangle.data.version>5.3.4</beangle.data.version>
-    <beangle.template.version>0.0.25</beangle.template.version>
+    <beangle.template.version>0.0.26</beangle.template.version>
   </properties>
 
 </project>
