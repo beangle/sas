@@ -37,6 +37,4 @@ class Webapp(var name: String) {
   var jspSupport: Boolean = false
 
   var websocketSupport: Boolean = false
-
-  var hasEmptyLib: Boolean = false
 }

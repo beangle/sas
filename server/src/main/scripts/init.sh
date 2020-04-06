@@ -8,7 +8,7 @@ export M2_REPO="$HOME/.m2/repository"
 
 export scala_ver=2.13.1
 export scalaxml_ver=2.0.0-M1
-export beangle_sas_ver=0.6.7
+export beangle_sas_ver=0.6.8
 export beangle_commons_ver=5.1.13
 export beangle_template_ver=0.0.26
 export beangle_data_ver=5.3.4
@@ -53,26 +53,43 @@ download(){
   fi
 }
 
-commands_avaliable=true
-commands=(wget unzip lsof java)
-for cmd_name in ${commands[@]}; do
-  if ! command -v $cmd_name >/dev/null 2; then
-    echo "$cmd_name needed,install it first."
-    commands_avaliable=false
+checkEnv() {
+  commands_avaliable=true
+  commands=(wget unzip lsof java)
+  for cmd_name in "${commands[@]}"; do
+    if ! command -v $cmd_name >/dev/null 2; then
+      echo "$cmd_name needed,install it first."
+      commands_avaliable=false
+    fi
+  done
+
+  if ! $commands_avaliable;  then
+    abort;
   fi
-done
 
-if ! $commands_avaliable;  then
-  echo Installation was aborted.
-  exit 1;
-fi
+  version=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
+  if  [[ "$version" < "11" ]]; then
+    abort "Find java version $version,but at least 11 needed."
+  fi
 
-version=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
-if  [[ "$version" < "11" ]]; then
-  echo Find java version "$version",but at least 11 needed.
-  echo Installation was aborted.
+  if [ ! -f "/usr/lib64/libapr-1.so.0" ]; then
+    abort "Install apr first."
+  fi
+
+  if [ ! -f "/usr/lib64/libtcnative-1.so" ]; then
+    abort "Install tomcat-native first."
+  fi
+}
+
+abort(){
+  if [ "$1" != "" ]; then
+    echo "$1"
+  fi
+  echo "Installation was aborted."
   exit 1;
-fi
+}
+
+  checkEnv
 
   echo "Downloading and link libraries..."
   download org.scala-lang scala-library $scala_ver

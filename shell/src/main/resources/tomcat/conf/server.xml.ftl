@@ -83,13 +83,8 @@
       [#elseif !webapp.websocketSupport]
         [#assign containerSciFilter="WsSci"/]
       [/#if]
-      [#if deployment.unpack??]
-        [#assign unpack=deployment.unpack/]
-      [#else]
-        [#assign unpack=!webapp.hasEmptyLib/]
-      [/#if]
 
-      <Context path="${deployment.path}" [#if containerSciFilter?length>0]containerSciFilter="${containerSciFilter}"[/#if]  [#if !unpack]unpackWAR="false"[/#if] [#if deployment.reloadable]reloadable="true"[/#if] [#rt/]
+      <Context path="${deployment.path}" [#if containerSciFilter?length>0]containerSciFilter="${containerSciFilter}"[/#if]  [#if !((deployment.unpack)!true)]unpackWAR="false"[/#if] [#if deployment.reloadable]reloadable="true"[/#if] [#rt/]
       [#lt/] docBase="${webapp.docBase}"[#rt/]
       [#lt/][#list webapp.properties?keys as p] ${p}="${webapp.properties[p]}"[/#list]>
         [#list webapp.resources as resource]

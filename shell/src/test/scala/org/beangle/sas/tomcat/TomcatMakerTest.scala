@@ -20,10 +20,10 @@ package org.beangle.sas.tomcat
 
 import java.io.File
 
-import org.beangle.sas.model.Engine
+import org.beangle.sas.model.{Container, Engine, Farm, Server}
 import org.junit.runner.RunWith
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
@@ -32,13 +32,15 @@ class TomcatMakerTest extends AnyFunSpec with Matchers {
     it("make catalina engine") {
       val sasHome = "/tmp/sas"
       val engine = new Engine("tomcat85", "tomcat", "8.5.15")
+      val farm = new Farm("farm", engine)
+      val server = new Server(farm, "server1")
+      val container = new Container
+      container.farms += farm
       engine.jspSupport = true
       val file = new File("/tmp/apache-tomcat-8.5.15.zip")
       if (file.exists()) {
-        TomcatMaker.doMakeEngine("/tmp/sas", file, engine)
-        TomcatMaker.doMakeBase(sasHome, engine, "farm.server1")
-
-        Gen.spawn(engine, "/tmp/sas/engines/tomcat-8.5.15")
+        TomcatMaker.doMakeEngine("/tmp/sas", engine, file)
+        TomcatMaker.doMakeBase(sasHome, container, farm, server)
       }
     }
   }

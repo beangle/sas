@@ -359,6 +359,10 @@ class Container {
     res.toList
   }
 
+  def getWebapp(name: String): Option[Webapp] = {
+    webapps.find(_.name == name)
+  }
+
   def getDeployments(server: Server): Seq[Deployment] = {
     deployments.filter(_.matches(this, server)).toSeq
   }
