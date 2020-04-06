@@ -26,6 +26,10 @@ import org.beangle.commons.lang.Strings.{isEmpty, isNotEmpty, split, substringAf
 import org.beangle.repo.artifact._
 import org.beangle.sas.model.Container
 
+/**
+ * 解析下载war包中的依赖。
+ * 可以单独运行也可以调用
+ */
 object Resolver {
 
   def main(args: Array[String]): Unit = {
@@ -78,8 +82,6 @@ object Resolver {
         if (missing.nonEmpty) {
           System.err.println("Download error :" + missing)
           System.err.println("Cannot launch webapp :" + webapp.docBase)
-        } else {
-          webapp.hasEmptyLib = War.isLibEmpty(webapp.docBase)
         }
       }
     }

@@ -64,24 +64,29 @@ checkEnv() {
   done
 
   if ! $commands_avaliable;  then
-    echo Installation was aborted.
-    exit 1;
+    abort;
   fi
 
   version=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
-  if  [[ "$version" -lt "11" ]]; then
-    echo Find java version "$version",but at least 11 needed.
-    echo Installation was aborted.
-    exit 1;
+  if  [[ "$version" < "11" ]]; then
+    abort "Find java version $version,but at least 11 needed."
   fi
 
   if [ ! -f "/usr/lib64/libapr-1.so.0" ]; then
-    echo Install apr first.
+    abort "Install apr first."
   fi
 
   if [ ! -f "/usr/lib64/libtcnative-1.so" ]; then
-    echo Install tomcat-native first.
+    abort "Install tomcat-native first."
   fi
+}
+
+abort(){
+  if [ "$1" != "" ]; then
+    echo "$1"
+  fi
+  echo "Installation was aborted."
+  exit 1;
 }
 
   checkEnv

@@ -60,19 +60,19 @@ object Maker {
     container.farms foreach { farm =>
       for (server <- farm.servers) {
         if (serverPattern == "all" || serverPattern == farm.name || serverPattern == server.qualifiedName) {
-          makeServer(container, farm, server, sasHome)
+          makeServer(sasHome, container, farm, server)
         }
       }
     }
   }
 
   /** 检查部署在server上的应用是否都已经存在了，如果存在则生成Server。
+   * @param sasHome
    * @param container
    * @param farm
    * @param server
-   * @param sasHome
    */
-  private def makeServer(container: Container, farm: Farm, server: Server, sasHome: String): Unit = {
+  private def makeServer(sasHome: String, container: Container, farm: Farm, server: Server): Unit = {
     val deployments = container.getDeployments(server)
     if (deployments.isEmpty) {
       println(s"Due to zero deployments,${server.qualifiedName}'s launch was aborted.")
@@ -95,7 +95,7 @@ object Maker {
           println(s"""Due to missing ${missingWars.size} wars,${server.qualifiedName}'s launch was aborted.""")
         }
       } else {
-        TomcatMaker.makeServer(container, farm, server, sasHome)
+        TomcatMaker.makeServer(sasHome, container, farm, server)
       }
     }
   }

@@ -18,20 +18,30 @@
  */
 package org.beangle.sas.tomcat
 
-import java.io.{File, FileInputStream, FileOutputStream}
+import java.io.{File, FileInputStream, FileOutputStream, StringWriter}
 import java.net.URL
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+import freemarker.template.Configuration
+import org.beangle.commons.activation.MediaTypes
+import org.beangle.commons.config.Resources
 import org.beangle.commons.file.zip.Zipper
 import org.beangle.commons.io.{Dirs, Files, IOs}
+import org.beangle.commons.lang.ClassLoaders.getResource
 import org.beangle.commons.lang.Strings.substringAfterLast
 import org.beangle.commons.lang.{ClassLoaders, Strings}
-import org.beangle.repo.artifact.{Artifact, ArtifactDownloader, Repo}
+import org.beangle.repo.artifact.{Artifact, ArtifactDownloader, Repo, War}
 import org.beangle.sas.daemon.ServerStatus
 import org.beangle.sas.model._
+import org.beangle.template.freemarker.Configurer
 
 object TomcatMaker {
+
+  private val cfg = Configurer.newConfig
+  cfg.setTagSyntax(Configuration.SQUARE_BRACKET_TAG_SYNTAX)
+  cfg.setDefaultEncoding("UTF-8")
+  cfg.setNumberFormat("0.##")
 
   /** 增加sas对tomcat的默认要求到配置模型中。
    * @param container
@@ -74,7 +84,7 @@ object TomcatMaker {
       new ArtifactDownloader(remote, local).download(List(artifact))
       val tomcatZip = new File(local.url(artifact))
       if (tomcatZip.exists()) {
-        doMakeEngine(sasHome, tomcatZip, engine)
+        doMakeEngine(sasHome, engine, tomcatZip)
       } else {
         System.out.println("Cannot download " + artifact)
       }
@@ -115,7 +125,7 @@ object TomcatMaker {
     }
   }
 
-  def rollLog(container: Container, server: Server, sasHome: String): Unit = {
+  def rollLog(sasHome: String, container: Container, server: Server): Unit = {
     val d = LocalDate.now()
     val consoleOut = new File(sasHome + "/servers/" + server.qualifiedName + "/logs/console.out")
     if (consoleOut.exists()) {
@@ -132,46 +142,105 @@ object TomcatMaker {
     Files.touch(consoleOut)
   }
 
-  def makeServer(container: Container, farm: Farm, server: Server, sasHome: String): Unit = {
+  def makeServer(sasHome: String, container: Container, farm: Farm, server: Server): Unit = {
     val result = detectExecution(server)
     result match {
       case Some(e) =>
         val dirs = Dirs.on(sasHome + "/servers/" + server.qualifiedName)
         dirs.write("CATALINA_PID", e.processId.toString)
       case None =>
-        doMakeBase(sasHome, farm.engine, server.qualifiedName)
-        Gen.spawn(container, farm, server, sasHome)
-        rollLog(container, server, sasHome)
+        doMakeBase(sasHome, container, farm, server)
+        rollLog(sasHome, container, server)
     }
   }
 
-  protected[tomcat] def doMakeBase(sasHome: String, engine: Engine, serverName: String): Unit = {
-    val dirs = Dirs.on(sasHome + "/servers/" + serverName)
-    dirs.mkdirs()
-    dirs.mkdirs("temp", "work", "conf")
+  /** 生成一个base的目录结构和配置文件
+   * @param sasHome
+   * @param container
+   * @param farm
+   * @param server
+   */
+  protected[tomcat] def doMakeBase(sasHome: String, container: Container, farm: Farm, server: Server): Unit = {
+    val engine = farm.engine
+    val serverName = server.qualifiedName
+    val base = Dirs.on(sasHome + "/servers/" + serverName)
+    base.mkdirs()
+    base.mkdirs("temp", "work", "conf")
+    //这个文件夹可能是只读，不好删除，先设置可写
+    FileUtils.setWriteable(base.cd("webapps").pwd)
     //删除这些已有文件，创建一个新环境
-    dirs.delete("webapps", "conf", "bin").mkdirs("webapps", "conf", "bin")
+    base.delete("webapps", "conf", "bin").mkdirs("webapps", "conf", "bin")
 
     val engineHome = sasHome + "/engines/" + engine.typ + "-" + engine.version
     if (new File(engineHome).exists()) {
-      dirs.ln(engineHome + "/lib")
+      base.ln(engineHome + "/lib")
 
-      val conf = dirs.cd("conf")
+      val conf = base.cd("conf")
       Dirs.on(engineHome + "/conf").ls() foreach { cf =>
         conf.ln(engineHome + "/conf/" + cf)
       }
 
-      val bin = dirs.cd("bin")
+      val bin = base.cd("bin")
       Dirs.on(engineHome + "/bin").ls() foreach { f =>
         bin.ln(engineHome + "/bin/" + f)
       }
     }
     val logs = Dirs.on(sasHome + "/logs/" + serverName)
     logs.mkdirs()
-    dirs.ln(new File(sasHome + "/logs/" + serverName), "logs")
+    base.ln(new File(sasHome + "/logs/" + serverName), "logs")
+
+    container.getDeployments(server) foreach { d =>
+      container.getWebapp(d.webapp) foreach { w =>
+        d.unpack match {
+          case Some(unpack) => if (unpack) unzipWar(base, w, d)
+          case None =>
+            d.unpack = Some(!War.isLibEmpty(w.docBase))
+            if (d.unpack.get) {
+              unzipWar(base, w, d)
+            }
+        }
+      }
+    }
+    //这个文件夹设置成只读
+    FileUtils.setReadOnly(base.cd("webapps").pwd)
+    genBaseConfig(container, farm, server, sasHome)
   }
 
-  protected[tomcat] def doMakeEngine(sasHome: String, tomcatZip: File, engine: Engine): Unit = {
+  protected[tomcat] def unzipWar(base: Dirs, webapp: Webapp, deployment: Deployment): Unit = {
+    var path = deployment.path
+    if (path.startsWith("/")) path = path.substring(1)
+    if (path.endsWith("/")) path = path.substring(0, path.length - 1)
+    path = path.replace("/", "#")
+    if (Strings.isBlank(path)) path = "ROOT"
+    val docBase = base.cd("webapps").mkdirs(path).cd(path).pwd
+    Zipper.unzip(new File(webapp.docBase), docBase)
+    webapp.docBase = docBase.getAbsolutePath
+  }
+
+  protected[tomcat] def genBaseConfig(container: Container, farm: Farm, server: Server, targetDir: String): Unit = {
+    val data = new collection.mutable.HashMap[String, Any]()
+    data.put("container", container)
+    data.put("farm", farm)
+    data.put("server", server)
+    val sw = new StringWriter()
+    val freemarkerTemplate = cfg.getTemplate(s"${farm.engine.typ}/conf/server.xml.ftl")
+    freemarkerTemplate.process(data, sw)
+    val serverDir = targetDir + "/servers/" + server.qualifiedName
+    new File(serverDir).mkdirs()
+    Files.writeString(new File(serverDir + "/conf/server.xml"), sw.toString)
+
+    if (farm.jvmopts.isDefined) {
+      val envTemplate = cfg.getTemplate(s"${farm.engine.typ}/bin/setenv.sh.ftl")
+      val nsw = new StringWriter()
+      envTemplate.process(data, nsw)
+      new File(serverDir + "/bin").mkdirs()
+      val target = new File(serverDir + "/bin/setenv.sh")
+      Files.writeString(target, nsw.toString)
+      target.setExecutable(true)
+    }
+  }
+
+  protected[tomcat] def doMakeEngine(sasHome: String, engine: Engine, tomcatZip: File): Unit = {
     val engineHome = new File(sasHome + "/engines")
     engineHome.mkdirs()
     val tomcatDirname = tomcatZip.getName.replace(".zip", "")
@@ -222,9 +291,20 @@ object TomcatMaker {
     if (!engine.websocketSupport) {
       Dirs.on(engineDir, "lib").delete("websocket-api.jar", "tomcat-websocket.jar")
     }
-    Gen.spawn(engine, engineDir.getAbsolutePath)
+    genEngineConfig(engine, engineDir.getAbsolutePath)
   }
 
+  protected[tomcat] def genEngineConfig(engine: Engine, engineDir: String): Unit = {
+    val data = new collection.mutable.HashMap[String, Any]()
+    data.put("engine", engine)
+    val mimetypes = MediaTypes.buildTypes(new Resources(None,
+      List.empty, getResource("sas/mime.types")))
+    data.put("mimetypes", mimetypes)
+    val envTemplate = cfg.getTemplate(s"${engine.typ}/conf/web.xml.ftl")
+    val nsw = new StringWriter()
+    envTemplate.process(data, nsw)
+    Files.writeString(new File(engineDir + "/conf/web.xml"), nsw.toString)
+  }
 
   private def download(url: String, dir: String): String = {
     val fileName = substringAfterLast(url, "/")
