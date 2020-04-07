@@ -191,13 +191,16 @@ object TomcatMaker {
 
     container.getDeployments(server) foreach { d =>
       container.getWebapp(d.webapp) foreach { w =>
-        d.unpack match {
-          case Some(unpack) => if (unpack) unzipWar(base, w, d)
-          case None =>
-            d.unpack = Some(!War.isLibEmpty(w.docBase))
-            if (d.unpack.get) {
-              unzipWar(base, w, d)
-            }
+        val docBase = new File(w.docBase)
+        if (docBase.exists() && docBase.isFile) {
+          d.unpack match {
+            case Some(unpack) => if (unpack) unzipWar(base, w, d)
+            case None =>
+              d.unpack = Some(!War.isLibEmpty(w.docBase))
+              if (d.unpack.get) {
+                unzipWar(base, w, d)
+              }
+          }
         }
       }
     }
