@@ -20,7 +20,7 @@ package org.beangle.sas
 
 object Version {
 
-  val version = "0.6.9"
+  val version = "0.6.10"
 
   def logo:String={
     s"""|   _____

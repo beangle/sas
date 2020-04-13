@@ -37,4 +37,21 @@ class Webapp(var name: String) {
   var jspSupport: Boolean = false
 
   var websocketSupport: Boolean = false
+
+  def getContainerSciFilter(engine: Engine): Option[String] = {
+    engine.typ match {
+      case "tomcat" =>
+        if (!jspSupport && !websocketSupport) {
+          Some("apache")
+        } else if (!jspSupport) {
+          Some("JasperInitializer")
+        } else if (!websocketSupport) {
+          Some("WsSci")
+        } else {
+          None
+        }
+      case _ => None
+    }
+  }
+
 }
