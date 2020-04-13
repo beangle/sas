@@ -65,16 +65,13 @@
     [/#if]
 
     <Engine name="Catalina" defaultHost="localhost">
-      <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="false" errorReportValveClass="org.beangle.sas.tomcat.SwallowErrorValve">
-    [#list container.deployments as deployment]
-     [#if deployment.matches(container,server)]
-
+      <Host name="localhost" appBase="webapps" unpackWARs="true" startStopThreads="0" autoDeploy="false" errorReportValveClass="org.beangle.sas.tomcat.SwallowErrorValve">
       [#if server.enableAccessLog]
         <Valve className="ch.qos.logback.access.tomcat.LogbackValve" quiet="true" filename="conf/logback-access.xml"/>
       [/#if]
 
-      [#list container.webapps as webapp]
-      [#if webapp.name == deployment.webapp]
+    [#list container.getDeployments(server) as deployment]
+      [#assign webapp=container.getWebapp(deployment.webapp)/]
       [#assign containerSciFilter=""/]
       [#if !webapp.jspSupport && !webapp.websocketSupport]
         [#assign containerSciFilter="apache"/]
@@ -97,9 +94,6 @@
         [/#if]
         ${webapp.realms!}
       </Context>
-      [/#if]
-      [/#list]
-     [/#if]
     [/#list]
       </Host>
     </Engine>
