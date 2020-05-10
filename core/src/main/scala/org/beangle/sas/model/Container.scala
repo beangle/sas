@@ -377,7 +377,13 @@ class Container {
             if (server.port == 0) {
               server.port = s.http
             }
-          case None => throw new RuntimeException(s"Cannot find proxy server ${server.name}")
+          case None =>
+            if (null == server.host) {
+              server.host = "localhost"
+            }
+            if (server.port == 0) {
+              throw new RuntimeException(s"Cannot find proxy server ${server.name}")
+            }
         }
       }
     }
