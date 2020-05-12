@@ -18,8 +18,9 @@
  */
 package org.beangle.sas.model
 
+import org.beangle.commons.collection.Collections
 import org.beangle.commons.lang.Numbers.toInt
-import org.beangle.commons.lang.Strings.{isEmpty, isNotBlank, isNotEmpty}
+import org.beangle.commons.lang.Strings.{isEmpty, isNotBlank}
 import org.beangle.commons.lang.{Numbers, Strings}
 
 object Container {
@@ -105,19 +106,29 @@ object Container {
       conf.hosts += host
     }
 
+    if (conf.hosts.isEmpty) {
+      conf.hosts.addOne(Host.Localhost)
+    }
+
     (xml \ "Farms" \ "Farm").foreach { farmElem =>
       val engine = conf.engine((farmElem \ "@engine").text)
       if (engine.isEmpty) throw new RuntimeException("Cannot find engine for" + (farmElem \ "@engine").text)
 
       val farm = new Farm((farmElem \ "@name").text, engine.get)
-      val host = (farmElem \ "@host").text
-      if (isNotEmpty(host)) farm.host = Host(host)
-
+      require(!farm.name.contains("."), s"farm name ${farm.name} cannot contains .")
+      val hosts = (farmElem \ "@hosts").text
+      if (isEmpty(hosts)) {
+        farm.hosts += Host.Localhost
+      } else {
+        Strings.split(hosts) foreach { host =>
+          farm.hosts += conf.getHost(host)
+        }
+      }
       (farmElem \ "@enableAccessLog") foreach { n =>
         farm.enableAccessLog = java.lang.Boolean.valueOf(n.text)
       }
-      val jvmopts = (farmElem \ "JvmArgs" \ "@opts").text
-      farm.jvmopts = if (isEmpty(jvmopts)) None else Some(jvmopts)
+      val opts = (farmElem \ "Opts").text
+      farm.opts = if (isEmpty(opts)) None else Some(opts)
 
       (farmElem \ "Http") foreach { httpElem =>
         val http = new HttpConnector
@@ -173,9 +184,13 @@ object Container {
       (webappElem \ "Realm").foreach { realmElem =>
         context.realms = realmElem.toString()
       }
+      (webappElem \ "resolveSupport").foreach { resolveElem =>
+        context.resolveSupport = resolveElem.toString().toBoolean
+      }
       conf.webapps += context
     }
 
+    //generate proxy and backends
     (xml \ "Proxy") foreach { proxyElem =>
       val proxy = conf.proxy
       (proxyElem \ "@maxconn") foreach { e =>
@@ -221,18 +236,41 @@ object Container {
 
       (proxyElem \ "Backend") foreach { elem =>
         val backend = new Proxy.Backend((elem \ "@name").text)
-        (elem \ "@servers") foreach { servers =>
-          conf.getMatchedServers(servers.text) foreach { s =>
-            backend.addServer(s.qualifiedName)
+        (elem \ "@servers") foreach { serversElem =>
+          val patterns = Strings.split(serversElem.text)
+          patterns foreach { pattern =>
+            proxy.getOrCreateBackend(pattern, conf)
           }
         }
+        //添加或更新主机
         (elem \ "Server") foreach { selem =>
-          val s = backend.addServer((selem \ "@name").text)
+          val serverName = (selem \ "@name").text
+          val serverHost = (selem \ "@host").text
+          val serverList = Collections.newBuffer[Proxy.Server]
+          conf.getServer(serverName) match {
+            case Some(s) =>
+              if (Strings.isNotEmpty(serverHost)) {
+                if (!s.farm.hosts.exists(_.name == serverHost)) {
+                  throw new RuntimeException(s"Cannot find server host ${serverHost} in ${s.farm.name}'s hosts.")
+                }
+              }
+              s.farm.hosts foreach { h =>
+                if (Strings.isEmpty(serverHost) || serverHost == h.name) {
+                  backend.addServer(serverName, h.ip, s.http, None)
+                }
+              }
+            case None => throw new RuntimeException(s"Cannot find server ${serverName},Server name's pattern is {farm}.{server}.")
+          }
           (selem \ "@options") foreach { e =>
-            s.options = Some(e.text)
+            serverList foreach { s =>
+              s.options = Some(e.text)
+            }
           }
           (selem \ "@port") foreach { e =>
-            s.port = Numbers.toInt(e.text)
+            val p = Numbers.toInt(e.text)
+            serverList foreach { s =>
+              s.port = p
+            }
           }
         }
         (elem \ "Options") foreach { selem =>
@@ -247,16 +285,19 @@ object Container {
       if (path == "/") {
         path = ""
       }
-      val deployment = new Deployment((deployElem \ "@webapp").text, (deployElem \ "@on").text, path)
+      val backend = (deployElem \ "@on").text
+      val deployment = new Deployment((deployElem \ "@webapp").text, backend, path)
+
       (deployElem \ "@unpack") foreach { u =>
         deployment.unpack = Some(u.text.toBoolean)
       }
       (deployElem \ "@reloadable") foreach { u =>
         deployment.reloadable = u.text.toBoolean
       }
+      conf.proxy.getOrCreateBackend(backend, conf)
       conf.deployments += deployment
     }
-    conf.generateBackend()
+
     conf
   }
 
@@ -359,28 +400,20 @@ class Container {
     res.toList
   }
 
+  def getHost(name: String): Host = {
+    hosts.find(_.name == name).get
+  }
+
   def getWebapp(name: String): Option[Webapp] = {
     webapps.find(_.name == name)
   }
 
-  def getDeployments(server: Server): Seq[Deployment] = {
-    deployments.filter(_.matches(this, server)).toSeq
-  }
-
-  def generateBackend(): Unit = {
-    deployments foreach { d =>
-      val backend = proxy.getOrCreateBackend(d.on, this)
-      backend.servers foreach { server =>
-        getServer(server.name) match {
-          case Some(s) =>
-            server.host = s"${s.farm.host.ip}"
-            if (server.port == 0) {
-              server.port = s.http
-            }
-          case None => throw new RuntimeException(s"Cannot find proxy server ${server.name}")
-        }
+  def getDeployments(server: Server, ips: collection.Set[String]): Seq[Deployment] = {
+    deployments.filter { d =>
+      ips.exists { ip =>
+        proxy.getBackend(d.on).contains(server.qualifiedName, ip)
       }
-    }
+    }.toSeq
   }
 
   def hasExternHost: Boolean = {

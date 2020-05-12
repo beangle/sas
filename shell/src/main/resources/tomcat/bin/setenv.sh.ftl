@@ -1,2 +1,2 @@
 [#ftl/]
-JAVA_OPTS="${farm.jvmopts}"
+JAVA_OPTS="${farm.opts}"

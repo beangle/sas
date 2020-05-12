@@ -27,7 +27,7 @@ import io.undertow.servlet.api.{ServletContainer, ServletStackTraces}
 import io.undertow.{Handlers, Undertow}
 import org.beangle.sas.model.Container
 
-class Server(name: String, container: Container) extends org.beangle.sas.Server {
+class Server(name: String, ips: Set[String], container: Container) extends org.beangle.sas.Server {
 
   val logger: Logger = Logger.getLogger(classOf[Server].toString)
 
@@ -101,7 +101,11 @@ class Server(name: String, container: Container) extends org.beangle.sas.Server 
     //      customizer.customize(builder);
     //    }
     container.getServer(name) foreach { s =>
-      builder.addHttpListener(s.http, s.farm.host.ip)
+      ips foreach { ip =>
+        if (s.farm.hosts.exists(_.ip == ip)) {
+          builder.addHttpListener(s.http, ip)
+        }
+      }
     }
     val sc = Servlets.newContainer()
     builder.setHandler(createDeployments(sc))
@@ -111,7 +115,7 @@ class Server(name: String, container: Container) extends org.beangle.sas.Server 
   private def createDeployments(sc: ServletContainer): HttpHandler = {
     var httpHandler: HttpHandler = null
     val server = container.getServer(name).orNull
-    container.getDeployments(server) foreach { deploy =>
+    container.getDeployments(server,ips) foreach { deploy =>
       val deployment = Servlets.deployment()
       //deployment.setClassLoader(getServletClassLoader());
       deployment.setContextPath(deploy.path)

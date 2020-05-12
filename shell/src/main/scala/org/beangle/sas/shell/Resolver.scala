@@ -60,9 +60,13 @@ object Resolver {
           val gavinfo = split(webapp.gav, ":")
           if (gavinfo.length < 3) throw new RuntimeException(s"Invalid gav ${webapp.gav},Using groupId:artifactId:version format.")
           val old = Artifact(webapp.gav)
-          val war = Artifact(old.groupId, old.artifactId, old.version, old.classifier, "war")
-          new ArtifactDownloader(remote, local).download(List(war))
-          webapp.docBase = local.url(war)
+          if (old.packaging == "jar") {
+            val war = Artifact(old.groupId, old.artifactId, old.version, old.classifier, "war")
+            new ArtifactDownloader(remote, local).download(List(war))
+            webapp.docBase = local.url(war)
+          } else {
+            webapp.docBase = local.url(old)
+          }
         } else {
           throw new RuntimeException(s"Invalid Webapp definition ${webapp.name},one of (docBase,url,gav) properties needed.")
         }
@@ -75,7 +79,7 @@ object Resolver {
       }
 
       //解析轻量级war
-      if (new File(webapp.docBase).exists()) {
+      if (webapp.resolveSupport && new File(webapp.docBase).exists() && resolvable(webapp.docBase)) {
         val libs = BeangleResolver.resolve(webapp.docBase)
         new ArtifactDownloader(remote, local).download(libs)
         val missing = libs filter (!local.exists(_))
@@ -85,6 +89,10 @@ object Resolver {
         }
       }
     }
+  }
+
+  private def resolvable(path: String): Boolean = {
+    path.endsWith(".jar") || path.endsWith(".war") || new File(path).isDirectory
   }
 
   private def download(url: String, dir: String): String = {

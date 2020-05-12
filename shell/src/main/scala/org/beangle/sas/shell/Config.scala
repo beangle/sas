@@ -48,7 +48,7 @@ object Config extends ShellEnv {
         |  remove ref        remove a resource reference
         |  create deploy     create a deployment
         |  remove deploy     remove a deployment
-        |  jvmopts           set jvm options
+        |  opts              set process options
         |  help              print this help conent""".stripMargin)
   }
 
@@ -80,7 +80,7 @@ object Config extends ShellEnv {
         case "remove ref" => removeResourceRef()
         case "create deploy" => createDeployment()
         case "remove deploy" => removeDeployment()
-        case "jvmopts" => setJvmOpts()
+        case "opts" => setOpts()
         case "save" =>
           println("Writing to " + workdir + configFile)
           Files.writeString(new File(workdir + configFile), toXml)
@@ -268,16 +268,16 @@ object Config extends ShellEnv {
     Files.writeString(target, toXml)
   }
 
-  def setJvmOpts(): Unit = {
+  def setOpts(): Unit = {
     if (container.farmNames.isEmpty) {
       println("farm is empty,create first.")
     } else {
       currentFarm match {
-        case Some(farm) => farm.jvmopts = Some(prompt("jvm opts:"))
+        case Some(farm) => farm.opts = Some(prompt("process opts:"))
         case None => {
           val farmName = prompt("choose farm name?", null, name => container.farmNames.contains(name))
           container.farms.find(f => f.name == farmName).foreach { f =>
-            f.jvmopts = Some(prompt("jvm opts:"))
+            f.opts = Some(prompt("process opts:"))
           }
         }
       }

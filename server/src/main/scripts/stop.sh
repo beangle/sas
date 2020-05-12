@@ -17,7 +17,7 @@ if [ -d servers ]; then
   for dir in * ; do
     if [ "$dir" = "$TARGET" ] || [ "${dir%.*}" = "$TARGET" ] || [ "all" = "$TARGET" ]; then
       stopped=$((stopped+1))
-      $SAS_HOME/bin/catalina.sh stop $dir
+      $SAS_HOME/bin/engine/catalina.sh stop $dir
     fi
   done
 

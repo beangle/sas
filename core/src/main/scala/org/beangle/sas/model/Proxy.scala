@@ -29,40 +29,42 @@ object Proxy {
     new Proxy
   }
 
-  class Server(var name: String, var host: String, var port: Int, var options: Option[String])
+  class Server(var name: String, var ip: String, var port: Int, var options: Option[String])
 
   class Backend(var name: String) {
     var options: Option[String] = None
     var servers: mutable.Buffer[Server] = Collections.newBuffer[Server]
 
-    def getServer(name: String): Option[Server] = {
-      servers.find(_.name == name)
+    def getServer(name: String, ip: String): Option[Server] = {
+      servers.find(x => x.name == name && x.ip == ip)
     }
 
-    def addServer(name: String): Server = {
-      getServer(name) match {
+    def addServer(name: String, ip: String, port: Int, options: Option[String]): Server = {
+      require(port > 0, s"wrong port:${name} ${port}")
+      getServer(name, ip) match {
         case None =>
-          val s = new Server(name, null, 0, None)
-          servers += s
-          s
-        case Some(s) => s
-      }
-    }
-
-    def addServer(name: String, host: String, port: Int, options: Option[String]): Unit = {
-      getServer(name) match {
-        case None =>
-          servers += new Server(name, host, port, options)
+          val newServer = new Server(name, ip, port, options)
+          servers += newServer
+          newServer
         case Some(s) =>
-          s.name = name
-          s.host = host
           s.port = port
           s.options = options
+          s
       }
     }
 
-    def contains(sname: String): Boolean = {
-      servers.exists(_.name == sname)
+    def addServers(pattern: String, host: String, container: Container): Unit = {
+      container.getMatchedServers(pattern) foreach { s =>
+        s.farm.hosts foreach { h =>
+          if (host == "*" || host == h.name) {
+            this.addServer(s.qualifiedName, h.ip, s.http, None)
+          }
+        }
+      }
+    }
+
+    def contains(sname: String, ip: String): Boolean = {
+      servers.exists(x => x.name == sname && x.ip == ip)
     }
   }
 
@@ -103,25 +105,30 @@ class Proxy {
   }
 
   def getOrCreateBackend(pattern: String, container: Container): Backend = {
-    var name = pattern
-    name = Strings.replace(name, ",", "_")
-    name = Strings.replace(name, ".", "_")
-    backends.get(name) match {
+    var serverName = pattern
+    var host = "*"
+    if (pattern.contains("@")) {
+      host = Strings.substringAfterLast(pattern, "@")
+      serverName = Strings.substringBeforeLast(pattern, "@")
+    }
+    val backendName = Strings.replace(serverName, ".", "_")
+
+    backends.get(backendName) match {
       case None =>
-        val backend = new Backend(name)
-        container.getMatchedServers(pattern) foreach { s => backend.addServer(s.qualifiedName) }
+        val backend = new Backend(backendName)
+        backend.addServers(serverName, host, container)
         addBackend(backend)
       case Some(b) =>
         if (b.servers.isEmpty) {
-          container.getMatchedServers(pattern) foreach { s => b.addServer(s.qualifiedName) }
+          b.addServers(serverName, host, container)
         }
         b
     }
   }
 
+
   def getBackend(pattern: String): Backend = {
     var name = pattern
-    name = Strings.replace(name, ",", "_")
     name = Strings.replace(name, ".", "_")
     backends(name)
   }

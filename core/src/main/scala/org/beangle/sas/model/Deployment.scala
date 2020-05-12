@@ -24,7 +24,4 @@ class Deployment(var webapp: String, var on: String, var path: String) {
 
   var reloadable: Boolean = false
 
-  def matches(container: Container, server: Server): Boolean = {
-    container.proxy.getBackend(on).contains(server.qualifiedName)
-  }
 }

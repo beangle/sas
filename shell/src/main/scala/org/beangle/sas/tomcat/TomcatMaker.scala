@@ -18,10 +18,7 @@
  */
 package org.beangle.sas.tomcat
 
-import java.io.{File, FileInputStream, FileOutputStream, StringWriter}
-import java.net.URL
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import java.io.{File, StringWriter}
 
 import freemarker.template.Configuration
 import org.beangle.commons.activation.MediaTypes
@@ -29,19 +26,14 @@ import org.beangle.commons.config.Resources
 import org.beangle.commons.file.zip.Zipper
 import org.beangle.commons.io.{Dirs, Files, IOs}
 import org.beangle.commons.lang.ClassLoaders.getResource
-import org.beangle.commons.lang.Strings.substringAfterLast
 import org.beangle.commons.lang.{ClassLoaders, Strings}
 import org.beangle.repo.artifact.{Artifact, ArtifactDownloader, Repo, War}
-import org.beangle.sas.daemon.ServerStatus
 import org.beangle.sas.model._
+import org.beangle.sas.server.SasTool
 import org.beangle.template.freemarker.Configurer
 
 object TomcatMaker {
 
-  private val cfg = Configurer.newConfig
-  cfg.setTagSyntax(Configuration.SQUARE_BRACKET_TAG_SYNTAX)
-  cfg.setDefaultEncoding("UTF-8")
-  cfg.setNumberFormat("0.##")
 
   /** 增加sas对tomcat的默认要求到配置模型中。
    * @param container
@@ -94,7 +86,7 @@ object TomcatMaker {
       val jarName = jar.name
       if (!new File(tomcat, "/lib/" + jarName).exists()) {
         if (jar.url.isDefined) {
-          download(jar.url.get, tomcat.getAbsolutePath + "/lib")
+          SasTool.download(jar.url.get, tomcat.getAbsolutePath + "/lib")
         } else if (jar.gav.isDefined) {
           val artifact = Artifact(jar.gav.get)
           new ArtifactDownloader(remote, local).download(List(artifact))
@@ -106,51 +98,15 @@ object TomcatMaker {
     }
   }
 
-  private def detectExecution(server: Server): Option[ServerStatus] = {
-    val p = new ProcessBuilder("lsof", "-i", ":" + server.http).start()
-    val res = IOs.readString(p.getInputStream)
-    if (Strings.isNotBlank(res)) {
-      val lines = Strings.split(res.trim(), "\n")
-      if (lines.length > 1) {
-        // java pid ....
-        val elems = Strings.split(lines(1), " ")
-        val pid = elems(1) //ps -f -p $PID
-        val ps = new ProcessBuilder("ps", "-f", "-p", pid.trim).start()
-        Some(new ServerStatus(pid.toInt, IOs.readString(ps.getInputStream)))
-      } else {
-        None
-      }
-    } else {
-      None
-    }
-  }
-
-  def rollLog(sasHome: String, container: Container, server: Server): Unit = {
-    val d = LocalDate.now()
-    val consoleOut = new File(sasHome + "/servers/" + server.qualifiedName + "/logs/console.out")
-    if (consoleOut.exists()) {
-      val archive = new File(sasHome + "/logs/archive/" + server.qualifiedName + s"-${d.format(DateTimeFormatter.ofPattern("yyyyMMdd"))}.out")
-      if (!archive.exists()) {
-        Files.touch(archive)
-      }
-      val os = Files.writeOpen(archive, true)
-      val is = new FileInputStream(consoleOut)
-      IOs.copy(is, os)
-      IOs.close(is, os)
-      consoleOut.delete()
-    }
-    Files.touch(consoleOut)
-  }
-
-  def makeServer(sasHome: String, container: Container, farm: Farm, server: Server): Unit = {
-    val result = detectExecution(server)
+  def makeServer(sasHome: String, container: Container, farm: Farm, server: Server, ips: Set[String]): Unit = {
+    val result = SasTool.detectExecution(server)
     result match {
       case Some(e) =>
         val dirs = Dirs.on(sasHome + "/servers/" + server.qualifiedName)
-        dirs.write("CATALINA_PID", e.processId.toString)
+        dirs.write("SERVER_PID", e.processId.toString)
       case None =>
-        doMakeBase(sasHome, container, farm, server)
-        rollLog(sasHome, container, server)
+        doMakeBase(sasHome, container, farm, server, ips)
+        SasTool.rollLog(sasHome, container, server)
     }
   }
 
@@ -160,14 +116,14 @@ object TomcatMaker {
    * @param farm
    * @param server
    */
-  protected[tomcat] def doMakeBase(sasHome: String, container: Container, farm: Farm, server: Server): Unit = {
+  protected[tomcat] def doMakeBase(sasHome: String, container: Container, farm: Farm, server: Server, ips: Set[String]): Unit = {
     val engine = farm.engine
     val serverName = server.qualifiedName
     val base = Dirs.on(sasHome + "/servers/" + serverName)
     base.mkdirs()
     base.mkdirs("temp", "work", "conf")
     //这个文件夹可能是只读，不好删除，先设置可写
-    FileUtils.setWriteable(base.cd("webapps").pwd)
+    base.cd("webapps").setWriteable()
     //删除这些已有文件，创建一个新环境
     base.delete("webapps", "conf", "bin").mkdirs("webapps", "conf", "bin")
 
@@ -189,7 +145,7 @@ object TomcatMaker {
     logs.mkdirs()
     base.ln(new File(sasHome + "/logs/" + serverName), "logs")
 
-    container.getDeployments(server) foreach { d =>
+    container.getDeployments(server, ips) foreach { d =>
       container.getWebapp(d.webapp) foreach { w =>
         val docBase = new File(w.docBase)
         if (docBase.exists() && docBase.isFile) {
@@ -205,8 +161,8 @@ object TomcatMaker {
       }
     }
     //这个文件夹设置成只读
-    FileUtils.setReadOnly(base.cd("webapps").pwd)
-    genBaseConfig(container, farm, server, sasHome)
+     base.cd("webapps").setReadOnly()
+    genBaseConfig(container, farm, server, sasHome, ips)
   }
 
   protected[tomcat] def unzipWar(base: Dirs, webapp: Webapp, deployment: Deployment): Unit = {
@@ -220,20 +176,22 @@ object TomcatMaker {
     webapp.docBase = docBase.getAbsolutePath
   }
 
-  protected[tomcat] def genBaseConfig(container: Container, farm: Farm, server: Server, targetDir: String): Unit = {
+  protected[tomcat] def genBaseConfig(container: Container, farm: Farm, server: Server, targetDir: String, ips: Set[String]): Unit = {
     val data = new collection.mutable.HashMap[String, Any]()
     data.put("container", container)
     data.put("farm", farm)
     data.put("server", server)
+    data.put("ips", ips)
+    data.put("deployments",container.getDeployments(server,ips))
     val sw = new StringWriter()
-    val freemarkerTemplate = cfg.getTemplate(s"${farm.engine.typ}/conf/server.xml.ftl")
+    val freemarkerTemplate = SasTool.templateCfg.getTemplate(s"${farm.engine.typ}/conf/server.xml.ftl")
     freemarkerTemplate.process(data, sw)
     val serverDir = targetDir + "/servers/" + server.qualifiedName
     new File(serverDir).mkdirs()
     Files.writeString(new File(serverDir + "/conf/server.xml"), sw.toString)
 
-    if (farm.jvmopts.isDefined) {
-      val envTemplate = cfg.getTemplate(s"${farm.engine.typ}/bin/setenv.sh.ftl")
+    if (farm.opts.isDefined) {
+      val envTemplate = SasTool.templateCfg.getTemplate(s"${farm.engine.typ}/bin/setenv.sh.ftl")
       val nsw = new StringWriter()
       envTemplate.process(data, nsw)
       new File(serverDir + "/bin").mkdirs()
@@ -303,21 +261,11 @@ object TomcatMaker {
     val mimetypes = MediaTypes.buildTypes(new Resources(None,
       List.empty, getResource("sas/mime.types")))
     data.put("mimetypes", mimetypes)
-    val envTemplate = cfg.getTemplate(s"${engine.typ}/conf/web.xml.ftl")
+    val envTemplate = SasTool.templateCfg.getTemplate(s"${engine.typ}/conf/web.xml.ftl")
     val nsw = new StringWriter()
     envTemplate.process(data, nsw)
     Files.writeString(new File(engineDir + "/conf/web.xml"), nsw.toString)
   }
 
-  private def download(url: String, dir: String): String = {
-    val fileName = substringAfterLast(url, "/")
-    val destFile = new File(dir + fileName)
-    if (!destFile.exists) {
-      val destOs = new FileOutputStream(destFile)
-      val warurl = new URL(url)
-      IOs.copy(warurl.openStream(), destOs)
-      destOs.close()
-    }
-    fileName
-  }
+
 }

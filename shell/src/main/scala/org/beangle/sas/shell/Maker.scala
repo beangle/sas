@@ -22,8 +22,10 @@ import java.io.{File, FileInputStream}
 
 import org.beangle.commons.collection.Collections
 import org.beangle.repo.artifact.Repo
-import org.beangle.sas.model.{Container, Farm, Server}
+import org.beangle.sas.model.{Container, EngineType, Farm, Server}
+import org.beangle.sas.server.SasTool
 import org.beangle.sas.tomcat.TomcatMaker
+import org.beangle.sas.vibed.VibedMaker
 
 object Maker {
 
@@ -48,19 +50,23 @@ object Maker {
 
     Resolver.resolve(sasHome, container, remote, local)
     container.engines foreach { engine =>
-      if (engine.typ == "tomcat") {
-        TomcatMaker.applyEngineDefault(container, engine)
-        TomcatMaker.makeEngine(sasHome, engine, remote, local)
-      } else {
-        System.err.println("Cannot recoganize engine type " + engine.typ)
-        System.exit(1)
+      engine.typ match {
+        case EngineType.Tomcat =>
+          TomcatMaker.applyEngineDefault(container, engine)
+          TomcatMaker.makeEngine(sasHome, engine, remote, local)
+        case EngineType.Vibed =>
+          VibedMaker.makeEngine(sasHome, engine, remote, local)
+        case _ =>
+          System.err.println("Cannot recoganize engine type " + engine.typ)
+          System.exit(1)
       }
     }
+    val ips = SasTool.getLocalIPs()
     //last step
     container.farms foreach { farm =>
       for (server <- farm.servers) {
         if (serverPattern == "all" || serverPattern == farm.name || serverPattern == server.qualifiedName) {
-          makeServer(sasHome, container, farm, server)
+          makeServer(sasHome, container, farm, server,ips)
         }
       }
     }
@@ -72,8 +78,8 @@ object Maker {
    * @param farm
    * @param server
    */
-  private def makeServer(sasHome: String, container: Container, farm: Farm, server: Server): Unit = {
-    val deployments = container.getDeployments(server)
+  private def makeServer(sasHome: String, container: Container, farm: Farm, server: Server,ips:Set[String]): Unit = {
+    val deployments = container.getDeployments(server,ips)
     if (deployments.isEmpty) {
       println(s"Due to zero deployments,${server.qualifiedName}'s launch was aborted.")
     } else {
@@ -90,12 +96,16 @@ object Maker {
           println(s"Missing ${mw}")
         }
         if (missingWars.size == 1) {
-          println(s"""Due to missing a war,${server.qualifiedName}'s launch was aborted.""")
+          println(s"""Due to missing a webapp,${server.qualifiedName}'s launch was aborted.""")
         } else {
-          println(s"""Due to missing ${missingWars.size} wars,${server.qualifiedName}'s launch was aborted.""")
+          println(s"""Due to missing ${missingWars.size} webapps,${server.qualifiedName}'s launch was aborted.""")
         }
       } else {
-        TomcatMaker.makeServer(sasHome, container, farm, server)
+        farm.engine.typ match {
+          case EngineType.Tomcat => TomcatMaker.makeServer(sasHome, container, farm, server,ips)
+          case EngineType.Vibed => VibedMaker.makeServer(sasHome, container, farm, server,ips)
+          case _ =>
+        }
       }
     }
   }

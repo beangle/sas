@@ -35,7 +35,7 @@ http {
     upstream ${name}{
 [#if backend.options??]${addMargin(backend.options)}[/#if][#t]
     [#list backend.servers as server]
-        server ${server.host}:${server.port} ${server.options!};
+        server ${server.ip}:${server.port} ${server.options!};
     [/#list]
     }
     [/#list]
