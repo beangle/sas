@@ -9,7 +9,7 @@
   <artifactId>beangle-sas-parent</artifactId>
   <packaging>pom</packaging>
   <name>Beangle Simple Application Server Parent</name>
-  <version>0.6.11</version>
+  <version>0.7.0</version>
 
   <url>https://github.com/beangle/sas</url>
 
@@ -36,7 +36,7 @@
   <properties>
     <tomcat.version>9.0.33</tomcat.version>
     <undertow.version>2.0.20.Final</undertow.version>
-    <beangle.commons.version>5.1.13</beangle.commons.version>
+    <beangle.commons.version>5.1.15</beangle.commons.version>
     <beangle.cdi.version>0.2.1</beangle.cdi.version>
     <beangle.repo.version>0.0.16</beangle.repo.version>
     <beangle.data.version>5.3.4</beangle.data.version>

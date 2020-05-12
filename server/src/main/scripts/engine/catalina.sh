@@ -1,18 +1,18 @@
 #!/bin/sh
 
 PRGDIR=`dirname "$0"`
-export SAS_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
+export SAS_HOME=`cd "$PRGDIR/../../" >/dev/null; pwd`
 
 CATALINA_CMD="$1"
 CATALINA_SERVER="$2"
 
 export CATALINA_BASE="$SAS_HOME"/servers/$CATALINA_SERVER
 export CATALINA_HOME=$CATALINA_BASE
-export CATALINA_PID="$CATALINA_BASE"/CATALINA_PID
+export SERVER_PID="$CATALINA_BASE"/SERVER_PID
 export CATALINA_OUT="$CATALINA_BASE"/logs/console.out
 export CATALINA_TMPDIR="$CATALINA_BASE"/temp
 
-export beangle_sas_ver=0.6.11
+export beangle_sas_ver=0.7.0
 export slf4j_ver=2.0.0-alpha1
 export logback_ver=1.3.0-alpha5
 
@@ -62,21 +62,21 @@ JAVA_OPTS="$JAVA_OPTS -Djava.protocol.handler.pkgs=org.apache.catalina.webresour
 
 if [ "$CATALINA_CMD" = "start" ] ; then
 
-  if [ -s "$CATALINA_PID" ]; then
-      PID=`cat "$CATALINA_PID"`
+  if [ -s "$SERVER_PID" ]; then
+      PID=`cat "$SERVER_PID"`
       ps -p $PID >/dev/null 2>&1
       if [ $? -eq 0 ] ; then
         ps  --no-headers -f -p $PID
         echo "$CATALINA_SERVER appears to still be running with PID $PID. Start aborted."
         exit 1
       else
-        rm -f "$CATALINA_PID" >/dev/null 2>&1
+        rm -f "$SERVER_PID" >/dev/null 2>&1
         if [ $? != 0 ]; then
-          cat /dev/null > "$CATALINA_PID"
+          cat /dev/null > "$SERVER_PID"
         fi
       fi
   else
-    rm -f "$CATALINA_PID" >/dev/null 2>&1
+    rm -f "$SERVER_PID" >/dev/null 2>&1
   fi
 
   touch "$CATALINA_OUT"
@@ -90,7 +90,7 @@ if [ "$CATALINA_CMD" = "start" ] ; then
     org.apache.catalina.startup.Bootstrap start \
     >> "$CATALINA_OUT" 2>&1 "&"
 
-  echo $! > "$CATALINA_PID"
+  echo $! > "$SERVER_PID"
   echo "$CATALINA_SERVER started,see logs/$CATALINA_SERVER/console.out"
 
 elif [ "$CATALINA_CMD" = "stop" ] ; then
@@ -98,8 +98,8 @@ elif [ "$CATALINA_CMD" = "stop" ] ; then
   SLEEP=5
   FORCE=1
 
-  if [  -s "$CATALINA_PID" ]; then
-    PID=`cat "$CATALINA_PID"`
+  if [  -s "$SERVER_PID" ]; then
+    PID=`cat "$SERVER_PID"`
     kill -15 $PID >/dev/null 2>&1
   else
     echo "PID file is empty,Stop aborted."
@@ -109,7 +109,7 @@ elif [ "$CATALINA_CMD" = "stop" ] ; then
   while [ $SLEEP -ge 0 ]; do
     kill -0 $PID >/dev/null 2>&1
     if [ $? -gt 0 ]; then
-      rm -f "$CATALINA_PID" >/dev/null 2>&1
+      rm -f "$SERVER_PID" >/dev/null 2>&1
       FORCE=0
       echo "$CATALINA_SERVER stopped."
       break
@@ -124,7 +124,7 @@ elif [ "$CATALINA_CMD" = "stop" ] ; then
       echo "Killing $CATALINA_SERVER with the PID: $PID"
       kill -9 $PID
   fi
-  rm -f "$CATALINA_PID"
+  rm -f "$SERVER_PID"
 else
 
   echo "Usage: catalina.sh ( commands ... )"
@@ -134,4 +134,3 @@ else
   exit 1
 
 fi
-

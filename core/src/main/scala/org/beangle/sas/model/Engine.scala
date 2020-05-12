@@ -26,6 +26,8 @@ object EngineType {
   val Tomcat = "tomcat"
   val Undertow = "undertow"
   val Jetty = "jetty"
+  val Vibed ="vibed"
+  val Any="any"
 }
 
 class Engine(var name: String, var typ: String, var version: String) {

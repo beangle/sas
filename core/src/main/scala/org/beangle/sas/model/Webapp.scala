@@ -20,6 +20,8 @@ package org.beangle.sas.model
 
 class Webapp(var name: String) {
 
+  var resolveSupport:Boolean=true
+
   val resources = new collection.mutable.ListBuffer[Resource]
 
   def resourceNames: Set[String] = resources.map(d => d.name).toSet

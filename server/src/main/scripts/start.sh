@@ -4,7 +4,7 @@ export SAS_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
 export TARGET="$1"
 
 if [ ! -d $SAS_HOME/bin/lib ]; then
-  echo "Please init beangle tomcat server first."
+  echo "Please init beangle sas server first."
   exit 1
 fi
 
@@ -18,7 +18,11 @@ if [ -d servers ]; then
   started=0
   for dir in *; do
     if [ "$dir" = "$TARGET" ] ||  [ "all" = "$TARGET" ] || [ "${dir%.*}" = "$TARGET" ]; then
-      $SAS_HOME/bin/catalina.sh start $dir
+      if [ -f $dir/bin/bootstrap.jar ]; then
+        $SAS_HOME/bin/engine/catalina.sh start $dir
+      else
+        $SAS_HOME/bin/engine/vibed.sh start $dir
+      fi
       started=$((started+1))
     fi
   done

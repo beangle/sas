@@ -18,7 +18,10 @@
  */
 package org.beangle.sas.model
 
+import org.beangle.commons.collection.Collections
 import org.beangle.commons.lang.Strings
+
+import scala.collection.mutable
 
 object Farm {
   def build(name: String, engine: Engine, serverCount: Int): Farm = {
@@ -32,28 +35,32 @@ object Farm {
       farm.servers += server1
     }
     if (1 == serverCount) farm.servers.head.name = "server"
-    farm.jvmopts = Some("-noverify -Xmx1G -Xms1G")
+    import EngineType._
+    engine.typ match {
+      case Jetty | Undertow | Tomcat => Some("-noverify -Xmx1G -Xms1G")
+      case _ => None
+    }
     farm
   }
 }
 
 class Farm(var name: String, var engine: Engine) {
 
-  /** 部署的主机 */
-  var host: Host = Host.Localhost
+  /** 部署的主机列表 */
+  var hosts: mutable.Buffer[Host] = Collections.newBuffer[Host]
 
   /** http连接配置 */
   var http = new HttpConnector
 
   var http2: Http2Connector = _
 
-  var servers = new collection.mutable.ListBuffer[Server]
+  var servers: mutable.Buffer[Server] = Collections.newBuffer[Server]
 
   /** 是否启用访问日志 */
   var enableAccessLog: Boolean = _
 
-  /** JVM参数 */
-  var jvmopts: Option[String] = None
+  /** 进程参数 */
+  var opts: Option[String] = None
 }
 
 class Server(val farm: Farm, var name: String) {

@@ -49,7 +49,7 @@
         <Valve className="ch.qos.logback.access.tomcat.LogbackValve" quiet="true" filename="conf/logback-access.xml"/>
       [/#if]
 [#t/]
-      [#list container.getDeployments(server) as deployment]
+      [#list deployments as deployment]
         [#assign webapp=container.getWebapp(deployment.webapp)/]
 [#t/]
         [#assign containerSciFilter=webapp.getContainerSciFilter(farm.engine)!""/]
