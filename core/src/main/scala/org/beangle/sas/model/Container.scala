@@ -34,6 +34,7 @@ object Container {
     conf.version = sasVersion
     conf.proxy = new Proxy
 
+    // 1. resolve repository first
     (xml \ "Repository") foreach { repoElem =>
       val local = (repoElem \ "@local").text
       val remote = (repoElem \ "@remote").text
@@ -43,6 +44,7 @@ object Container {
       conf.repository = new Repository(None, None)
     }
 
+    //2. identify engines
     (xml \ "Engines" \ "Engine") foreach { engineElem =>
       val name = (engineElem \ "@name").text
       val version = (engineElem \ "@version").text
@@ -97,6 +99,7 @@ object Container {
       conf.engines += engine
     }
 
+    // 3. collect hosts
     (xml \ "Hosts" \ "Host") foreach { hostElem =>
       val name = (hostElem \ "@name").text
       val ip = (hostElem \ "@ip").text
@@ -105,11 +108,20 @@ object Container {
       if (isNotBlank(comment)) host.comment = Some(comment)
       conf.hosts += host
     }
-
     if (conf.hosts.isEmpty) {
       conf.hosts.addOne(Host.Localhost)
     }
 
+    // 4. register resources
+    (xml \ "Resources" \ "Resource") foreach { resourceElem =>
+      val ds = new Resource((resourceElem \ "@name").text)
+      for ((k, v) <- resourceElem.attributes.asAttrMap -- Set("name")) {
+        ds.properties.put(k, v)
+      }
+      conf.resources.put(ds.name, ds)
+    }
+
+    // 5. build all farms
     (xml \ "Farms" \ "Farm").foreach { farmElem =>
       val engine = conf.engine((farmElem \ "@engine").text)
       if (engine.isEmpty) throw new RuntimeException("Cannot find engine for" + (farmElem \ "@engine").text)
@@ -127,7 +139,7 @@ object Container {
       (farmElem \ "@enableAccessLog") foreach { n =>
         farm.enableAccessLog = java.lang.Boolean.valueOf(n.text)
       }
-      val opts = (farmElem \ "Opts").text
+      val opts = (farmElem \ "Options").text
       farm.opts = if (isEmpty(opts)) None else Some(opts)
 
       (farmElem \ "Http") foreach { httpElem =>
@@ -160,14 +172,7 @@ object Container {
       conf.farms += farm
     }
 
-    (xml \ "Resources" \ "Resource") foreach { resourceElem =>
-      val ds = new Resource((resourceElem \ "@name").text)
-      for ((k, v) <- resourceElem.attributes.asAttrMap -- Set("name")) {
-        ds.properties.put(k, v)
-      }
-      conf.resources.put(ds.name, ds)
-    }
-
+    // 6. register webapps
     (xml \ "Webapps" \ "Webapp").foreach { webappElem =>
       val context = new Webapp((webappElem \ "@name").text)
       if ((webappElem \ "@docBase").nonEmpty) context.docBase = (webappElem \ "@docBase").text
@@ -190,7 +195,7 @@ object Container {
       conf.webapps += context
     }
 
-    //generate proxy and backends
+    //7. generate proxy and backends
     (xml \ "Proxy") foreach { proxyElem =>
       val proxy = conf.proxy
       (proxyElem \ "@maxconn") foreach { e =>
@@ -239,7 +244,7 @@ object Container {
         (elem \ "@servers") foreach { serversElem =>
           val patterns = Strings.split(serversElem.text)
           patterns foreach { pattern =>
-            proxy.getOrCreateBackend(pattern, conf)
+            backend.addServers(pattern,conf)
           }
         }
         //添加或更新主机
@@ -256,7 +261,7 @@ object Container {
               }
               s.farm.hosts foreach { h =>
                 if (Strings.isEmpty(serverHost) || serverHost == h.name) {
-                  backend.addServer(serverName, h.ip, s.http, None)
+                  serverList += backend.addServer(serverName, h.ip, s.http, None)
                 }
               }
             case None => throw new RuntimeException(s"Cannot find server ${serverName},Server name's pattern is {farm}.{server}.")
@@ -280,6 +285,7 @@ object Container {
       }
     }
 
+    //8. scan all deployments
     (xml \ "Deployments" \ "Deployment") foreach { deployElem =>
       var path = (deployElem \ "@path").text
       if (path == "/") {
