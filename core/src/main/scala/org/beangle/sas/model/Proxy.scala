@@ -25,10 +25,6 @@ import org.beangle.sas.model.Proxy.{Https, Status}
 import scala.collection.mutable
 
 object Proxy {
-  def getDefault: Proxy = {
-    new Proxy
-  }
-
   class Server(var name: String, var ip: String, var port: Int, var options: Option[String])
 
   class Backend(var name: String) {
@@ -53,8 +49,14 @@ object Proxy {
       }
     }
 
-    def addServers(pattern: String, host: String, container: Container): Unit = {
-      container.getMatchedServers(pattern) foreach { s =>
+    def addServers(pattern: String, container: Container): Unit = {
+      var host = "*"
+      var serverName = pattern
+      if (pattern.contains("@")) {
+        host = Strings.substringAfterLast(pattern, "@")
+        serverName = Strings.substringBeforeLast(pattern, "@")
+      }
+      container.getMatchedServers(serverName) foreach { s =>
         s.farm.hosts foreach { h =>
           if (host == "*" || host == h.name) {
             this.addServer(s.qualifiedName, h.ip, s.http, None)
@@ -104,28 +106,27 @@ class Proxy {
     this.maxconn = proxy.maxconn
   }
 
-  def getOrCreateBackend(pattern: String, container: Container): Backend = {
-    var serverName = pattern
-    var host = "*"
-    if (pattern.contains("@")) {
-      host = Strings.substringAfterLast(pattern, "@")
-      serverName = Strings.substringBeforeLast(pattern, "@")
-    }
+  /**
+   * Get or Create backend by server name or farm name
+   * @param serverName
+   * @param container
+   * @return
+   */
+  def getOrCreateBackend(serverName: String, container: Container): Backend = {
+    require(!(serverName.contains(",") || serverName.contains("@")), "Cannot contains , and @,Using explicit backend")
     val backendName = Strings.replace(serverName, ".", "_")
-
     backends.get(backendName) match {
       case None =>
         val backend = new Backend(backendName)
-        backend.addServers(serverName, host, container)
+        backend.addServers(serverName, container)
         addBackend(backend)
       case Some(b) =>
         if (b.servers.isEmpty) {
-          b.addServers(serverName, host, container)
+          b.addServers(serverName, container)
         }
         b
     }
   }
-
 
   def getBackend(pattern: String): Backend = {
     var name = pattern
