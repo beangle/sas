@@ -21,6 +21,7 @@ package org.beangle.sas.shell
 import java.io.{File, FileInputStream}
 
 import org.beangle.commons.collection.Collections
+import org.beangle.commons.io.Dirs
 import org.beangle.repo.artifact.Repo
 import org.beangle.sas.model.{Container, EngineType, Farm, Server}
 import org.beangle.sas.server.SasTool
@@ -66,7 +67,7 @@ object Maker {
     container.farms foreach { farm =>
       for (server <- farm.servers) {
         if (serverPattern == "all" || serverPattern == farm.name || serverPattern == server.qualifiedName) {
-          makeServer(sasHome, container, farm, server,ips)
+          makeServer(sasHome, container, farm, server, ips)
         }
       }
     }
@@ -78,10 +79,17 @@ object Maker {
    * @param farm
    * @param server
    */
-  private def makeServer(sasHome: String, container: Container, farm: Farm, server: Server,ips:Set[String]): Unit = {
-    val deployments = container.getDeployments(server,ips)
+  private def makeServer(sasHome: String, container: Container, farm: Farm, server: Server, ips: Set[String]): Unit = {
+    val deployments = container.getDeployments(server, ips)
+
     if (deployments.isEmpty) {
-      println(s"Due to zero deployments,${server.qualifiedName}'s launch was aborted.")
+      //如果发现没有对应部署的，并且没有运行的server，则进行删除。
+      if (new File(sasHome + "/servers/" + server.qualifiedName).exists() &&
+        SasTool.detectExecution(server).isEmpty) {
+        val base = Dirs.on(sasHome + "/servers")
+        base.cd(server.qualifiedName + "/webapps").setWriteable()
+        base.delete(server.qualifiedName)
+      }
     } else {
       val missingWars = Collections.newBuffer[String]
       val appDocBases = container.webapps.map { x => x.name -> x.docBase }.toMap
@@ -102,8 +110,8 @@ object Maker {
         }
       } else {
         farm.engine.typ match {
-          case EngineType.Tomcat => TomcatMaker.makeServer(sasHome, container, farm, server,ips)
-          case EngineType.Vibed => VibedMaker.makeServer(sasHome, container, farm, server,ips)
+          case EngineType.Tomcat => TomcatMaker.makeServer(sasHome, container, farm, server, ips)
+          case EngineType.Vibed => VibedMaker.makeServer(sasHome, container, farm, server, ips)
           case _ =>
         }
       }

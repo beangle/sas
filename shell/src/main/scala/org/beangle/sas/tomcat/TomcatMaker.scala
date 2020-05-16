@@ -20,7 +20,6 @@ package org.beangle.sas.tomcat
 
 import java.io.{File, StringWriter}
 
-import freemarker.template.Configuration
 import org.beangle.commons.activation.MediaTypes
 import org.beangle.commons.config.Resources
 import org.beangle.commons.file.zip.Zipper
@@ -30,7 +29,6 @@ import org.beangle.commons.lang.{ClassLoaders, Strings}
 import org.beangle.repo.artifact.{Artifact, ArtifactDownloader, Repo, War}
 import org.beangle.sas.model._
 import org.beangle.sas.server.SasTool
-import org.beangle.template.freemarker.Configurer
 
 object TomcatMaker {
 
@@ -161,7 +159,7 @@ object TomcatMaker {
       }
     }
     //这个文件夹设置成只读
-     base.cd("webapps").setReadOnly()
+    base.cd("webapps").setReadOnly()
     genBaseConfig(container, farm, server, sasHome, ips)
   }
 
@@ -182,7 +180,7 @@ object TomcatMaker {
     data.put("farm", farm)
     data.put("server", server)
     data.put("ips", ips)
-    data.put("deployments",container.getDeployments(server,ips))
+    data.put("deployments", container.getDeployments(server, ips))
     val sw = new StringWriter()
     val freemarkerTemplate = SasTool.templateCfg.getTemplate(s"${farm.engine.typ}/conf/server.xml.ftl")
     freemarkerTemplate.process(data, sw)

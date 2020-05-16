@@ -59,14 +59,12 @@ object Resolver {
         } else if (isNotEmpty(webapp.gav)) {
           val gavinfo = split(webapp.gav, ":")
           if (gavinfo.length < 3) throw new RuntimeException(s"Invalid gav ${webapp.gav},Using groupId:artifactId:version format.")
-          val old = Artifact(webapp.gav)
-          if (old.packaging == "jar") {
-            val war = Artifact(old.groupId, old.artifactId, old.version, old.classifier, "war")
-            new ArtifactDownloader(remote, local).download(List(war))
-            webapp.docBase = local.url(war)
-          } else {
-            webapp.docBase = local.url(old)
+          var gav = Artifact(webapp.gav)
+          if (gav.packaging == "jar") {
+            gav = Artifact(gav.groupId, gav.artifactId, gav.version, gav.classifier, "war")
           }
+          new ArtifactDownloader(remote, local).download(List(gav))
+          webapp.docBase = local.url(gav)
         } else {
           throw new RuntimeException(s"Invalid Webapp definition ${webapp.name},one of (docBase,url,gav) properties needed.")
         }
