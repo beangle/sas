@@ -12,7 +12,7 @@ export SERVER_PID="$CATALINA_BASE"/SERVER_PID
 export CATALINA_OUT="$CATALINA_BASE"/logs/console.out
 export CATALINA_TMPDIR="$CATALINA_BASE"/temp
 
-export beangle_sas_ver=0.7.1
+export beangle_sas_ver=0.7.2
 export slf4j_ver=2.0.0-alpha1
 export logback_ver=1.3.0-alpha5
 

@@ -81,8 +81,16 @@ object Maker {
    */
   private def makeServer(sasHome: String, container: Container, farm: Farm, server: Server, ips: Set[String]): Unit = {
     val deployments = container.getDeployments(server, ips)
-    Dirs.delete(new File(sasHome + "/servers/" + server.qualifiedName))
-    if (deployments.nonEmpty) {
+
+    if (deployments.isEmpty) {
+      //如果发现没有对应部署的，并且没有运行的server，则进行删除。
+      if (new File(sasHome + "/servers/" + server.qualifiedName).exists() &&
+        SasTool.detectExecution(server).isEmpty) {
+        val base = Dirs.on(sasHome + "/servers")
+        base.cd(server.qualifiedName + "/webapps").setWriteable()
+        base.delete(server.qualifiedName)
+      }
+    } else {
       val missingWars = Collections.newBuffer[String]
       val appDocBases = container.webapps.map { x => x.name -> x.docBase }.toMap
       deployments foreach { deployment =>
