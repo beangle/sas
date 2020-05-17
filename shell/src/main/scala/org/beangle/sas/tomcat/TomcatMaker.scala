@@ -19,6 +19,7 @@
 package org.beangle.sas.tomcat
 
 import java.io.{File, StringWriter}
+import java.nio.file.Paths
 
 import org.beangle.commons.activation.MediaTypes
 import org.beangle.commons.config.Resources
@@ -123,7 +124,7 @@ object TomcatMaker {
     //这个文件夹可能是只读，不好删除，先设置可写
     base.cd("webapps").setWriteable()
     //删除这些已有文件，创建一个新环境
-    base.delete("webapps", "conf", "bin").mkdirs("webapps", "conf", "bin")
+    base.delete("webapps", "conf", "bin" ,"logs","lib").mkdirs("webapps", "conf", "bin")
 
     val engineHome = sasHome + "/engines/" + engine.typ + "-" + engine.version
     if (new File(engineHome).exists()) {
