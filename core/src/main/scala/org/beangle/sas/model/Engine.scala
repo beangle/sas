@@ -20,14 +20,15 @@ package org.beangle.sas.model
 
 import java.io.File
 import java.net.URL
+
 import org.beangle.commons.lang.Strings
 
 object EngineType {
   val Tomcat = "tomcat"
   val Undertow = "undertow"
   val Jetty = "jetty"
-  val Vibed ="vibed"
-  val Any="any"
+  val Vibed = "vibed"
+  val Any = "any"
 }
 
 class Engine(var name: String, var typ: String, var version: String) {
@@ -40,6 +41,21 @@ class Engine(var name: String, var typ: String, var version: String) {
   val listeners = new collection.mutable.ListBuffer[Listener]
 
   val jars = new collection.mutable.ListBuffer[Jar]
+
+  override def toString: String = {
+    name
+  }
+
+  override def hashCode(): Int = {
+    name.hashCode
+  }
+
+  override def equals(obj: Any): Boolean = {
+    obj match {
+      case e: Engine => e.name == this.name
+      case _ => false
+    }
+  }
 }
 
 class Listener(val className: String) {

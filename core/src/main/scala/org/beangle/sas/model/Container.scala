@@ -244,7 +244,7 @@ object Container {
         (elem \ "@servers") foreach { serversElem =>
           val patterns = Strings.split(serversElem.text)
           patterns foreach { pattern =>
-            backend.addServers(pattern,conf)
+            backend.addServers(pattern, conf)
           }
         }
         //添加或更新主机
@@ -420,6 +420,22 @@ class Container {
         proxy.getBackend(d.on).contains(server.qualifiedName, ip)
       }
     }.toSeq
+  }
+
+  def getWebapps(server: Server, ips: collection.Set[String]): Seq[Webapp] = {
+    val webappMap = webapps.map(x => (x.name, x)).toMap
+    val serverApps = Collections.newBuffer[Webapp]
+    deployments.foreach { d =>
+      val suitable = ips.exists { ip =>
+        proxy.getBackend(d.on).contains(server.qualifiedName, ip)
+      }
+      if (suitable) {
+        webappMap.get(d.webapp) foreach { w =>
+          serverApps += w
+        }
+      }
+    }
+    serverApps.toSeq
   }
 
   def hasExternHost: Boolean = {
