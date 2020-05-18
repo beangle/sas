@@ -2,7 +2,7 @@
 PRGDIR=`dirname "$0"`
 SAS_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
 
-beangle_sas_version="0.7.3"
+beangle_sas_version="0.8.0"
 if [ "$1" == "" ]; then
   echo "Usage: update.sh which_version"
   exit 1;
