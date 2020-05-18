@@ -40,7 +40,7 @@ class TomcatMakerTest extends AnyFunSpec with Matchers {
       val file = new File("/tmp/apache-tomcat-8.5.15.zip")
       if (file.exists()) {
         TomcatMaker.doMakeEngine("/tmp/sas", engine, file)
-        TomcatMaker.doMakeBase(sasHome, container, farm, server,Set(Host.Localhost.ip))
+        TomcatMaker.doMakeBase(sasHome, container, server,Set(Host.Localhost.ip))
       }
     }
   }

@@ -23,7 +23,7 @@ import java.io.{File, FileInputStream}
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.io.Dirs
 import org.beangle.repo.artifact.Repo
-import org.beangle.sas.model.{Container, EngineType, Farm, Server}
+import org.beangle.sas.model.{Container, Engine, EngineType, Server}
 import org.beangle.sas.server.SasTool
 import org.beangle.sas.tomcat.TomcatMaker
 import org.beangle.sas.vibed.VibedMaker
@@ -49,8 +49,25 @@ object Maker {
       else new Repo.Remote("remote", repository.remote.get)
     val local = new Repo.Local(repository.local.orNull)
 
-    Resolver.resolve(sasHome, container, remote, local)
-    container.engines foreach { engine =>
+    //1. catch ips servers and engines
+    val ips = SasTool.getLocalIPs()
+    val engines = Collections.newSet[Engine]
+    val servers = Collections.newBuffer[Server]
+    container.farms foreach { farm =>
+      for (server <- farm.servers) {
+        if (serverPattern == "all" || serverPattern == farm.name || serverPattern == server.qualifiedName) {
+          servers += server
+          engines += farm.engine
+        }
+      }
+    }
+    //2. resolve server webapps
+    servers foreach { server =>
+      Resolver.resolve(sasHome, container, remote, local, container.getWebapps(server, ips))
+    }
+
+    //make engine and servers
+    engines foreach { engine =>
       engine.typ match {
         case EngineType.Tomcat =>
           TomcatMaker.applyEngineDefault(container, engine)
@@ -62,24 +79,18 @@ object Maker {
           System.exit(1)
       }
     }
-    val ips = SasTool.getLocalIPs()
     //last step
-    container.farms foreach { farm =>
-      for (server <- farm.servers) {
-        if (serverPattern == "all" || serverPattern == farm.name || serverPattern == server.qualifiedName) {
-          makeServer(sasHome, container, farm, server, ips)
-        }
-      }
+    servers foreach { server =>
+      makeServer(sasHome, container, server, ips)
     }
   }
 
   /** 检查部署在server上的应用是否都已经存在了，如果存在则生成Server。
    * @param sasHome
    * @param container
-   * @param farm
    * @param server
    */
-  private def makeServer(sasHome: String, container: Container, farm: Farm, server: Server, ips: Set[String]): Unit = {
+  private def makeServer(sasHome: String, container: Container, server: Server, ips: Set[String]): Unit = {
     val deployments = container.getDeployments(server, ips)
 
     if (deployments.isEmpty) {
@@ -109,9 +120,9 @@ object Maker {
           println(s"""Due to missing ${missingWars.size} webapps,${server.qualifiedName}'s launch was aborted.""")
         }
       } else {
-        farm.engine.typ match {
-          case EngineType.Tomcat => TomcatMaker.makeServer(sasHome, container, farm, server, ips)
-          case EngineType.Vibed => VibedMaker.makeServer(sasHome, container, farm, server, ips)
+        server.farm.engine.typ match {
+          case EngineType.Tomcat => TomcatMaker.makeServer(sasHome, container, server, ips)
+          case EngineType.Vibed => VibedMaker.makeServer(sasHome, container, server, ips)
           case _ =>
         }
       }

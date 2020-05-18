@@ -19,7 +19,6 @@
 package org.beangle.sas.tomcat
 
 import java.io.{File, StringWriter}
-import java.nio.file.Paths
 
 import org.beangle.commons.activation.MediaTypes
 import org.beangle.commons.config.Resources
@@ -97,14 +96,14 @@ object TomcatMaker {
     }
   }
 
-  def makeServer(sasHome: String, container: Container, farm: Farm, server: Server, ips: Set[String]): Unit = {
+  def makeServer(sasHome: String, container: Container, server: Server, ips: Set[String]): Unit = {
     val result = SasTool.detectExecution(server)
     result match {
       case Some(e) =>
         val dirs = Dirs.on(sasHome + "/servers/" + server.qualifiedName)
         dirs.write("SERVER_PID", e.processId.toString)
       case None =>
-        doMakeBase(sasHome, container, farm, server, ips)
+        doMakeBase(sasHome, container, server, ips)
         SasTool.rollLog(sasHome, container, server)
     }
   }
@@ -112,11 +111,10 @@ object TomcatMaker {
   /** 生成一个base的目录结构和配置文件
    * @param sasHome
    * @param container
-   * @param farm
    * @param server
    */
-  protected[tomcat] def doMakeBase(sasHome: String, container: Container, farm: Farm, server: Server, ips: Set[String]): Unit = {
-    val engine = farm.engine
+  protected[tomcat] def doMakeBase(sasHome: String, container: Container, server: Server, ips: Set[String]): Unit = {
+    val engine = server.farm.engine
     val serverName = server.qualifiedName
     val base = Dirs.on(sasHome + "/servers/" + serverName)
     base.mkdirs()
@@ -124,7 +122,7 @@ object TomcatMaker {
     //这个文件夹可能是只读，不好删除，先设置可写
     base.cd("webapps").setWriteable()
     //删除这些已有文件，创建一个新环境
-    base.delete("webapps", "conf", "bin" ,"logs","lib").mkdirs("webapps", "conf", "bin")
+    base.delete("webapps", "conf", "bin", "logs", "lib").mkdirs("webapps", "conf", "bin")
 
     val engineHome = sasHome + "/engines/" + engine.typ + "-" + engine.version
     if (new File(engineHome).exists()) {
@@ -161,7 +159,7 @@ object TomcatMaker {
     }
     //这个文件夹设置成只读
     base.cd("webapps").setReadOnly()
-    genBaseConfig(container, farm, server, sasHome, ips)
+    genBaseConfig(container, server, sasHome, ips)
   }
 
   protected[tomcat] def unzipWar(base: Dirs, webapp: Webapp, deployment: Deployment): Unit = {
@@ -175,7 +173,8 @@ object TomcatMaker {
     webapp.docBase = docBase.getAbsolutePath
   }
 
-  protected[tomcat] def genBaseConfig(container: Container, farm: Farm, server: Server, targetDir: String, ips: Set[String]): Unit = {
+  protected[tomcat] def genBaseConfig(container: Container, server: Server, targetDir: String, ips: Set[String]): Unit = {
+    val farm = server.farm
     val data = new collection.mutable.HashMap[String, Any]()
     data.put("container", container)
     data.put("farm", farm)
@@ -190,7 +189,7 @@ object TomcatMaker {
     Files.writeString(new File(serverDir + "/conf/server.xml"), sw.toString)
 
     if (farm.opts.isDefined) {
-      val envTemplate = SasTool.templateCfg.getTemplate(s"${farm.engine.typ}/bin/setenv.sh.ftl")
+      val envTemplate = SasTool.templateCfg.getTemplate(s"sas/setenv.sh.ftl")
       val nsw = new StringWriter()
       envTemplate.process(data, nsw)
       new File(serverDir + "/bin").mkdirs()
