@@ -56,4 +56,18 @@ class Webapp(var name: String) {
     }
   }
 
+  override def toString: String = {
+    name
+  }
+
+  override def hashCode(): Int = {
+    name.hashCode
+  }
+
+  override def equals(obj: Any): Boolean = {
+    obj match {
+      case e: Webapp => e.name == this.name
+      case _ => false
+    }
+  }
 }

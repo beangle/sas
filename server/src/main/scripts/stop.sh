@@ -1,12 +1,49 @@
 #!/bin/sh
 PRGDIR=`dirname "$0"`
 SAS_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
-export TARGET="$1"
+export SAS_HOME
 
-if [ "$TARGET" = "" ]; then
+if [ $# -eq 0 ]; then
   echo "Usage:stop.sh server_name or farm_name"
   exit
 fi
+
+stop(){
+  SERVER_NAME="$1"
+  SERVER_BASE="$SAS_HOME"/servers/$SERVER_NAME
+  SERVER_PID="$SERVER_BASE"/SERVER_PID
+
+  SLEEP=5
+  FORCE=1
+
+  if [  -s "$SERVER_PID" ]; then
+    PID=`cat "$SERVER_PID"`
+    kill -15 $PID >/dev/null 2>&1
+  else
+    return 1
+  fi
+
+  while [ $SLEEP -ge 0 ]; do
+    kill -0 $PID >/dev/null 2>&1
+    if [ $? -gt 0 ]; then
+      rm -f "$SERVER_PID" >/dev/null 2>&1
+      FORCE=0
+      echo "$SERVER_NAME stopped."
+      break
+    fi
+    if [ $SLEEP -gt 0 ]; then
+      sleep 1
+    fi
+    SLEEP=`expr $SLEEP - 1 `
+  done
+
+  if [ $FORCE -eq 1 ]; then
+      echo "$SERVER_NAME stopped(killing $PID)"
+      kill -9 $PID
+  fi
+  rm -f "$SERVER_PID"
+  return 0
+}
 
 cd $SAS_HOME
 
@@ -15,17 +52,16 @@ if [ -d servers ]; then
   cd $SAS_HOME/servers
   stopped=0
   for dir in * ; do
-    if [ "$dir" = "$TARGET" ] || [ "${dir%.*}" = "$TARGET" ] || [ "all" = "$TARGET" ]; then
-      stopped=$((stopped+1))
-      $SAS_HOME/bin/engine/catalina.sh stop $dir
-    fi
+    for target in "$@"; do
+      if [ "$dir" = "$target" ] || [ "${dir%.*}" = "$target" ] || [ "all" = "$target" ]; then
+        if  stop $dir; then
+          stopped=$((stopped+1))
+        fi
+      fi
+    done
   done
 
-  if [ $stopped == 0 ];then
-    echo "Cannot find server with name $TARGET"
-  elif (( stopped > 1 )); then
-    echo "$stopped servers stopped."
-  fi
+  echo "$stopped servers stopped."
 else
   echo "Cannot find any server."
   exit 1

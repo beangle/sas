@@ -1,14 +1,21 @@
 #!/bin/sh
 PRGDIR=`dirname "$0"`
-SAS_HOME=`cd "$PRGDIR/.." >/dev/null; pwd`
+export SAS_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
 
 cd $PRGDIR
-export M2_REMOTE_REPO="https://maven.aliyun.com/nexus/content/groups/public"
-export M2_REPO="$HOME/.m2/repository"
+if [ -r "$SAS_HOME/bin/setenv.sh" ]; then
+  . "$SAS_HOME/bin/setenv.sh"
+fi
+if [ -z "$M2_REMOTE_REPO" ]; then
+  export M2_REMOTE_REPO="https://maven.aliyun.com/nexus/content/groups/public"
+fi
+if [ -z "$M2_REPO" ]; then
+  export M2_REPO="$HOME/.m2/repository"
+fi
 
 export scala_ver=2.13.1
 export scalaxml_ver=2.0.0-M1
-export beangle_sas_ver=0.8.0
+export beangle_sas_ver=0.7.4
 export beangle_commons_ver=5.1.16
 export beangle_template_ver=0.0.26
 export beangle_data_ver=5.3.4
@@ -26,7 +33,6 @@ download(){
   local artifact_name="$2-$3.jar"
   local local_file="$M2_REPO/$group_id/$2/$3/$2-$3.jar"
   local target="$SAS_HOME/bin/lib"
-
   mkdir -p $target
   cd $target
   if [ ! -f $artifact_name ]; then
@@ -52,7 +58,7 @@ download(){
     fi
   fi
 }
-
+# check evn commands and java version
 checkEnv() {
   commands_avaliable=true
   commands=(wget unzip lsof java)

@@ -24,7 +24,7 @@ import java.net.URL
 import org.beangle.commons.io.IOs
 import org.beangle.commons.lang.Strings.{isEmpty, isNotEmpty, split, substringAfterLast}
 import org.beangle.repo.artifact._
-import org.beangle.sas.model.Container
+import org.beangle.sas.model.{Container, Webapp}
 
 /**
  * 解析下载war包中的依赖。
@@ -47,11 +47,13 @@ object Resolver {
       else new Repo.Remote("remote", repository.remote.get)
 
     val local = new Repo.Local(repository.local.orNull)
-    resolve(sasHome, container, remote, local)
+    resolve(sasHome, container, remote, local, container.webapps)
   }
 
-  def resolve(sasHome: String, container: Container, remote: Repo.Remote, local: Repo.Local): Unit = {
-    container.webapps foreach { webapp =>
+
+  def resolve(sasHome: String, container: Container, remote: Repo.Remote, local: Repo.Local, webapps: collection.Seq[Webapp]): Unit = {
+    webapps foreach { webapp =>
+      //1. download and translate gav/url to docBase
       if (isEmpty(webapp.docBase)) {
         if (isNotEmpty(webapp.url)) {
           val fileName = download(webapp.url, sasHome + "/webapps/")
@@ -75,15 +77,14 @@ object Resolver {
           webapp.docBase = webapp.docBase.replace("../../..", sasHome)
         }
       }
-
-      //解析轻量级war
+      //2.resolve war
       if (webapp.resolveSupport && new File(webapp.docBase).exists() && resolvable(webapp.docBase)) {
         val libs = BeangleResolver.resolve(webapp.docBase)
         new ArtifactDownloader(remote, local).download(libs)
         val missing = libs filter (!local.exists(_))
         if (missing.nonEmpty) {
-          System.err.println("Download error :" + missing)
-          System.err.println("Cannot launch webapp :" + webapp.docBase)
+          println("Download error :" + missing)
+          println("Cannot launch webapp :" + webapp.docBase)
         }
       }
     }

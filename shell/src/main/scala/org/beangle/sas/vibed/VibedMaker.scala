@@ -22,7 +22,7 @@ import java.io.{File, StringWriter}
 
 import org.beangle.commons.io.{Dirs, Files}
 import org.beangle.repo.artifact.Repo
-import org.beangle.sas.model.{Container, Engine, Farm, Server}
+import org.beangle.sas.model.{Container, Engine, Server}
 import org.beangle.sas.server.SasTool
 
 object VibedMaker {
@@ -31,24 +31,25 @@ object VibedMaker {
 
   }
 
-  def makeServer(sasHome: String, container: Container, farm: Farm, server: Server, ips: Set[String]): Unit = {
+  def makeServer(sasHome: String, container: Container, server: Server, ips: Set[String]): Unit = {
     val result = SasTool.detectExecution(server)
     result match {
       case Some(e) =>
         val dirs = Dirs.on(sasHome + "/servers/" + server.qualifiedName)
         dirs.write("SERVER_PID", e.processId.toString)
       case None =>
-        doMakeBase(sasHome, container, farm, server, ips)
+        doMakeBase(sasHome, container, server, ips)
         SasTool.rollLog(sasHome, container, server)
     }
   }
 
-  private def doMakeBase(sasHome: String, container: Container, farm: Farm, server: Server, ips: Set[String]): Unit = {
+  private def doMakeBase(sasHome: String, container: Container, server: Server, ips: Set[String]): Unit = {
+    val farm=server.farm
     val serverName = server.qualifiedName
     val serverDir = sasHome + "/servers/" + serverName
     val base = Dirs.on(sasHome + "/servers/" + serverName)
     base.mkdirs()
-    base.delete("bin","conf","logs")
+    base.delete("bin", "conf", "logs")
     base.mkdirs("bin", "conf")
     val logs = Dirs.on(sasHome + "/logs/" + serverName)
     logs.mkdirs()
@@ -56,10 +57,10 @@ object VibedMaker {
 
     val data = new collection.mutable.HashMap[String, Any]()
     data.put("container", container)
-    data.put("farm", farm)
+    data.put("farm", server.farm)
     data.put("server", server)
     data.put("ips", ips)
-    data.put("deployments",container.getDeployments(server,ips))
+    data.put("deployments", container.getDeployments(server, ips))
     val sw = new StringWriter()
     val freemarkerTemplate = SasTool.templateCfg.getTemplate(s"${farm.engine.typ}/conf/server.xml.ftl")
     freemarkerTemplate.process(data, sw)
@@ -67,13 +68,12 @@ object VibedMaker {
 
     container.getDeployments(server, ips) foreach { d =>
       container.getWebapp(d.webapp) foreach { w =>
-        base.cd("bin").ln(new File(w.docBase),"start")
-        new File(serverDir+"/bin/start").setExecutable(true)
+        base.cd("bin").write("command.txt", w.docBase)
       }
     }
 
     if (farm.opts.isDefined) {
-      val envTemplate = SasTool.templateCfg.getTemplate(s"${farm.engine.typ}/bin/setenv.sh.ftl")
+      val envTemplate = SasTool.templateCfg.getTemplate(s"sas/setenv.sh.ftl")
       val nsw = new StringWriter()
       envTemplate.process(data, nsw)
       new File(serverDir + "/bin").mkdirs()
