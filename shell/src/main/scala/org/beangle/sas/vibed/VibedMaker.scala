@@ -69,6 +69,7 @@ object VibedMaker {
     container.getDeployments(server, ips) foreach { d =>
       container.getWebapp(d.webapp) foreach { w =>
         base.cd("bin").write("command.txt", w.docBase)
+        Files.setExecutable(new File(w.docBase))
       }
     }
 

@@ -37,15 +37,13 @@ start(){
     rm -f "$SERVER_PID" >/dev/null 2>&1
   fi
 
-  java -cp "$SAS_HOME/lib/*:$SAS_HOME/bin/lib/*" org.beangle.sas.shell.Maker $SAS_HOME/conf/server.xml $SERVER_NAME
-
   if [ -r "$SERVER_BASE/bin/setenv.sh" ]; then
     . "$SERVER_BASE/bin/setenv.sh"
   fi
 
   touch "$SERVER_OUT"
   if [ -f $dir/bin/bootstrap.jar ]; then
-    export beangle_sas_ver=0.7.4
+    export beangle_sas_ver=0.7.5
     export slf4j_ver=2.0.0-alpha1
     export logback_ver=1.3.0-alpha5
 
@@ -93,6 +91,11 @@ cd $SAS_HOME
 shopt -s nullglob
 if [ -d servers ]; then
   cd $SAS_HOME/servers
+
+  for target in "$@"; do
+    java -cp "$SAS_HOME/lib/*:$SAS_HOME/bin/lib/*" org.beangle.sas.shell.Maker $SAS_HOME/conf/server.xml $target
+  done
+
   started=0
   for dir in *; do
     for target in "$@"; do
