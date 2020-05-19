@@ -32,7 +32,6 @@ object Version {
         |  \\___ \\  / _` |/ __|
         |  ____) || (_| |\\__ \\
         | |_____/  \\__,_||___/
-        | version ${version}
-        |""".stripMargin
+        | version ${version}""".stripMargin
   }
 }

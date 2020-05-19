@@ -37,8 +37,6 @@ start(){
     rm -f "$SERVER_PID" >/dev/null 2>&1
   fi
 
-  java -cp "$SAS_HOME/lib/*:$SAS_HOME/bin/lib/*" org.beangle.sas.shell.Maker $SAS_HOME/conf/server.xml $SERVER_NAME
-
   if [ -r "$SERVER_BASE/bin/setenv.sh" ]; then
     . "$SERVER_BASE/bin/setenv.sh"
   fi
@@ -93,6 +91,11 @@ cd $SAS_HOME
 shopt -s nullglob
 if [ -d servers ]; then
   cd $SAS_HOME/servers
+
+  for target in "$@"; do
+    java -cp "$SAS_HOME/lib/*:$SAS_HOME/bin/lib/*" org.beangle.sas.shell.Maker $SAS_HOME/conf/server.xml $target
+  done
+
   started=0
   for dir in *; do
     for target in "$@"; do

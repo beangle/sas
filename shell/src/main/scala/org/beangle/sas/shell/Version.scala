@@ -18,8 +18,11 @@
  */
 package org.beangle.sas.shell
 
+import org.beangle.sas.server.SasTool
+
 object Version {
   def main(args: Array[String]): Unit = {
     println(org.beangle.sas.Version.logo)
+    println(" hosts:" + SasTool.getLocalIPs().toBuffer.sorted.mkString(","))
   }
 }
