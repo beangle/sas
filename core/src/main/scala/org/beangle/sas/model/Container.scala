@@ -231,6 +231,9 @@ object Container {
         (elem \ "@certificateKey") foreach { e =>
           https.certificateKey = e.text
         }
+        (elem \ "@protocols") foreach { e =>
+          https.protocols = e.text
+        }
         (elem \ "@forceHttps") foreach { e =>
           https.forceHttps = java.lang.Boolean.valueOf(e.text)
         }
