@@ -43,7 +43,7 @@ start(){
 
   touch "$SERVER_OUT"
   if [ -f $dir/bin/bootstrap.jar ]; then
-    export beangle_sas_ver=0.7.6
+    export beangle_sas_ver=0.8.0
     export slf4j_ver=2.0.0-alpha1
     export logback_ver=1.3.0-alpha5
 
