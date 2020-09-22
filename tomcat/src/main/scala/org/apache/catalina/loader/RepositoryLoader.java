@@ -35,14 +35,6 @@ public class RepositoryLoader extends WebappLoader {
   private static final Log logger = LogFactory.getLog(RepositoryLoader.class);
   String base;
 
-  public RepositoryLoader() {
-    this(null);
-  }
-
-  public RepositoryLoader(ClassLoader parent) {
-    super(parent);
-  }
-
   @Override
   public void startInternal() throws LifecycleException {
     super.startInternal();
