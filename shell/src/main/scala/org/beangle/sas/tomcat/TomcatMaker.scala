@@ -203,7 +203,7 @@ object TomcatMaker {
     val engineHome = new File(sasHome + "/engines")
     engineHome.mkdirs()
     val tomcatDirname = tomcatZip.getName.replace(".zip", "")
-    val version = Strings.substringAfterLast(tomcatDirname, "-")
+    val version = Strings.substringAfter(tomcatDirname, "-")
     val engineDir = new File(engineHome.getPath + "/tomcat-" + version)
     if (engineDir.exists()) {
       Dirs.delete(engineDir)
@@ -264,6 +264,5 @@ object TomcatMaker {
     envTemplate.process(data, nsw)
     Files.writeString(new File(engineDir + "/conf/web.xml"), nsw.toString)
   }
-
 
 }

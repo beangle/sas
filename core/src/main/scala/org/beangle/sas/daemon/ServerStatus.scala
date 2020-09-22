@@ -22,7 +22,7 @@ class ServerStatus {
   var processId: Int = _
   var processDesc: String = _
 
-  def this(pid: Int, desc: String) {
+  def this(pid: Int, desc: String) = {
     this()
     processId = pid
     processDesc = desc

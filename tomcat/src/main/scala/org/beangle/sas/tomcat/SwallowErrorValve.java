@@ -24,10 +24,11 @@ import org.apache.catalina.valves.Constants;
 import org.apache.catalina.valves.ErrorReportValve;
 import org.apache.coyote.ActionCode;
 import org.apache.tomcat.util.ExceptionUtils;
+import org.apache.tomcat.util.http.ServerCookie;
+import org.apache.tomcat.util.http.ServerCookies;
 import org.apache.tomcat.util.res.StringManager;
 import org.apache.tomcat.util.security.Escape;
 
-import javax.servlet.http.Cookie;
 import java.io.Writer;
 import java.util.Collections;
 import java.util.Locale;
@@ -44,13 +45,19 @@ public class SwallowErrorValve extends ErrorReportValve {
   @Override
   protected void report(Request request, Response response, Throwable throwable) {
     int statusCode = response.getStatus();
-    if (statusCode < 400 || response.getContentWritten() > 0 || !response.setErrorReported()) { return; }
+    if (statusCode < 400 || response.getContentWritten() > 0 || !response.setErrorReported()) {
+      return;
+    }
 
     AtomicBoolean result = new AtomicBoolean(false);
     response.getCoyoteResponse().action(ActionCode.IS_IO_ALLOWED, result);
-    if (!result.get()) { return; }
+    if (!result.get()) {
+      return;
+    }
 
-    if (null == getCookie(request, "devMode")) {
+    if (isDevModeEnabled(request)) {
+      reportTrace(request, response, throwable);
+    } else {
       StringBuilder sb = new StringBuilder();
       sb.append("HTTP Status ").append(statusCode);
       try {
@@ -61,8 +68,6 @@ public class SwallowErrorValve extends ErrorReportValve {
         }
       } catch (Exception e) {
       }
-    } else {
-      reportTrace(request, response, throwable);
     }
   }
 
@@ -84,7 +89,7 @@ public class SwallowErrorValve extends ErrorReportValve {
     String reason = null;
     String description = null;
     StringManager smClient = StringManager.getManager(Constants.Package,
-        Collections.enumeration(Collections.singletonList(Locale.ENGLISH)));
+      Collections.enumeration(Collections.singletonList(Locale.ENGLISH)));
     response.setLocale(Locale.ENGLISH);
     try {
       reason = smClient.getString("http." + statusCode + ".reason");
@@ -104,7 +109,7 @@ public class SwallowErrorValve extends ErrorReportValve {
     StringBuilder sb = new StringBuilder();
     sb.append("<h1>");
     sb.append(smClient.getString("errorReportValve.statusHeader", String.valueOf(statusCode), reason))
-        .append("</h1>");
+      .append("</h1>");
     if (isShowReport()) {
       sb.append("<hr/>");
 
@@ -156,17 +161,15 @@ public class SwallowErrorValve extends ErrorReportValve {
 
   }
 
-  private static Cookie getCookie(Request request, String name) {
-    Cookie[] cookies = request.getCookies();
-    Cookie returnCookie = null;
-    if (cookies == null) { return null; }
-    for (Cookie thisCookie : cookies) {
-      if (thisCookie.getName().equals(name) && !thisCookie.getValue().equals("")) {
-        returnCookie = thisCookie;
-        break;
+  private static boolean isDevModeEnabled(Request request) {
+    ServerCookies cookies = request.getServerCookies();
+    for (int i = 0; i < cookies.getCookieCount(); i++) {
+      ServerCookie sc = cookies.getCookie(i);
+      if (sc.getName().equals("devMode")) {
+        return true;
       }
     }
-    return returnCookie;
+    return false;
   }
 
 }
