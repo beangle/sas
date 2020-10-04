@@ -15,7 +15,7 @@ fi
 
 export scala_ver=2.13.3
 export scalaxml_ver=2.0.0-M1
-export beangle_sas_ver=0.8.0
+export beangle_sas_ver=0.8.1
 export beangle_commons_ver=5.2.0
 export beangle_template_ver=0.0.28
 export beangle_data_ver=5.3.11
