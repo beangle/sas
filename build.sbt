@@ -2,7 +2,7 @@ import org.beangle.parent.Dependencies._
 import org.beangle.parent.Settings._
 
 ThisBuild / organization := "org.beangle.sas"
-ThisBuild / version := "0.9.0"
+ThisBuild / version := "0.9.1-SNAPSHOT"
 
 ThisBuild / scmInfo := Some(
   ScmInfo(
@@ -103,7 +103,7 @@ lazy val server = (project in file("server"))
     name := "beangle-sas",
     common,
     crossPaths := false,
-    artifact := Artifact(moduleName.value, "zip", "zip")
+    packageBin / artifact  := Artifact(moduleName.value, "zip", "zip")
   )
 
 lazy val tomcat = (project in file("tomcat"))
