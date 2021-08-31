@@ -1,21 +1,20 @@
 /*
- * Beangle, Agile Development Scaffold and Toolkits.
- *
- * Copyright © 2005, The Beangle Software.
+ * Copyright (C) 2005, The Beangle Software.
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * it under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.beangle.sas.tomcat
 
 import org.beangle.commons.activation.MediaTypes
@@ -24,14 +23,14 @@ import org.beangle.commons.file.zip.Zipper
 import org.beangle.commons.io.{Dirs, Files, IOs}
 import org.beangle.commons.lang.ClassLoaders.getResource
 import org.beangle.commons.lang.{ClassLoaders, Strings}
-import org.beangle.repo.artifact.{Artifact, ArtifactDownloader, Repo, War}
+import org.beangle.boot.artifact.{Artifact, Repo, War}
+import org.beangle.boot.artifact.ArtifactDownloader
 import org.beangle.sas.model._
 import org.beangle.sas.server.SasTool
 
 import java.io.{File, StringWriter}
 
 object TomcatMaker {
-
 
   /** 增加sas对tomcat的默认要求到配置模型中。
    *
@@ -72,7 +71,7 @@ object TomcatMaker {
     // tomcat not exists or empty dir
     if (!tomcat.exists() || tomcat.list().length == 0) {
       val artifact = Artifact("org.apache.tomcat:tomcat:zip:" + engine.version)
-      new ArtifactDownloader(remote, local).download(List(artifact))
+      new ArtifactDownloader(remote, local,true).download(List(artifact))
       val tomcatZip = new File(local.url(artifact))
       if (tomcatZip.exists()) {
         doMakeEngine(sasHome, engine, tomcatZip)
@@ -88,7 +87,7 @@ object TomcatMaker {
           SasTool.download(jar.uri, tomcat.getAbsolutePath + "/lib")
         } else if (ArchiveURI.isGav(jar.uri)) {
           val artifact = ArchiveURI.toArtifact(jar.uri)
-          new ArtifactDownloader(remote, local).download(List(artifact))
+          new ArtifactDownloader(remote, local,true).download(List(artifact))
           Dirs.on(tomcat, "lib").ln(local.url(artifact))
         } else {
           Dirs.on(tomcat, "lib").copyFrom(jar.uri)
