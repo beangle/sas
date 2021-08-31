@@ -18,10 +18,10 @@
  */
 package org.beangle.sas.model
 
+import org.beangle.commons.lang.Strings
+
 import java.io.File
 import java.net.URL
-
-import org.beangle.commons.lang.Strings
 
 object EngineType {
   val Tomcat = "tomcat"
@@ -83,63 +83,20 @@ class JarScanner {
 
 object Jar {
   def gav(str: String): Jar = {
-    val j = new Jar
-    j.gav = Some(str)
-    j
+    if (str.startsWith(ArchiveURI.GavProtocal)) new Jar(str) else new Jar(ArchiveURI.GavProtocal + str)
   }
 }
 
-class Jar {
-  var gav: Option[String] = None
-  var url: Option[String] = None
-  var path: Option[String] = None
-
+class Jar(val uri: String) {
   def name: String = {
-    if (gav.isDefined) {
-      val a = Artifact(gav.get)
+    if (ArchiveURI.isGav(uri)) {
+      val a = ArchiveURI.toArtifact(uri)
       a.artifactId + "-" + a.version + "." + a.packaging
-    } else if (url.isDefined) {
-      val f = new URL(url.get).getFile
+    } else if (ArchiveURI.isRemote(uri)) {
+      val f = new URL(uri).getFile
       Strings.substringAfterLast(f, "/")
-    } else if (path.isDefined) {
-      new File(path.get).getName
     } else {
-      throw new RuntimeException("Invalid jar format")
+      new File(uri).getName
     }
   }
 }
-
-object Artifact {
-  val packagings: Set[String] = Set("jar", "war", "pom", "zip", "ear", "rar", "ejb", "ejb3", "tar", "tar.gz")
-
-  /**
-   * Resolve gav string
-   * net.sf.json-lib:json-lib:jar:jdk15:2.4
-   * net.sf.json-lib:json-lib:jar:jdk15:2.4
-   */
-  def apply(gav: String): Artifact = {
-    val infos = gav.split(":")
-    if (infos.length == 4) {
-      val cOp = infos(2)
-      var classifier: Option[String] = None
-      var packaging = ""
-      if (packagings.contains(cOp)) {
-        classifier = None
-        packaging = cOp
-      } else {
-        classifier = Some(cOp)
-        packaging = "jar"
-      }
-      val version = infos(infos.length - 1)
-
-      new Artifact(infos(0), infos(1), version, classifier, packaging)
-    } else if (infos.length == 5) {
-      new Artifact(infos(0), infos(1), infos(4), Some(infos(3)), infos(2))
-    } else {
-      new Artifact(infos(0), infos(1), infos(2), None, "jar")
-    }
-  }
-}
-
-case class Artifact(groupId: String, artifactId: String,
-                    version: String, classifier: Option[String] = None, packaging: String = "jar")

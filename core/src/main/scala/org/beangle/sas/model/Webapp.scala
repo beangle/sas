@@ -26,11 +26,9 @@ class Webapp(var name: String) {
 
   def resourceNames: Set[String] = resources.map(d => d.name).toSet
 
-  var docBase: String = _
+  var uri: String = _
 
-  var url: String = _
-
-  var gav: String = _
+  var docBase:String =_
 
   val properties = new java.util.Properties
 

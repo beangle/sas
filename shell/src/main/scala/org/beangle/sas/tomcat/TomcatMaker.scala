@@ -18,8 +18,6 @@
  */
 package org.beangle.sas.tomcat
 
-import java.io.{File, StringWriter}
-
 import org.beangle.commons.activation.MediaTypes
 import org.beangle.commons.config.Resources
 import org.beangle.commons.file.zip.Zipper
@@ -30,10 +28,13 @@ import org.beangle.repo.artifact.{Artifact, ArtifactDownloader, Repo, War}
 import org.beangle.sas.model._
 import org.beangle.sas.server.SasTool
 
+import java.io.{File, StringWriter}
+
 object TomcatMaker {
 
 
   /** 增加sas对tomcat的默认要求到配置模型中。
+   *
    * @param container
    * @param engine
    */
@@ -83,14 +84,14 @@ object TomcatMaker {
     engine.jars foreach { jar =>
       val jarName = jar.name
       if (!new File(tomcat, "/lib/" + jarName).exists()) {
-        if (jar.url.isDefined) {
-          SasTool.download(jar.url.get, tomcat.getAbsolutePath + "/lib")
-        } else if (jar.gav.isDefined) {
-          val artifact = Artifact(jar.gav.get)
+        if (ArchiveURI.isRemote(jar.uri)) {
+          SasTool.download(jar.uri, tomcat.getAbsolutePath + "/lib")
+        } else if (ArchiveURI.isGav(jar.uri)) {
+          val artifact = ArchiveURI.toArtifact(jar.uri)
           new ArtifactDownloader(remote, local).download(List(artifact))
           Dirs.on(tomcat, "lib").ln(local.url(artifact))
-        } else if (jar.path.isDefined) {
-          Dirs.on(tomcat, "lib").copyFrom(jar.path.get)
+        } else {
+          Dirs.on(tomcat, "lib").copyFrom(jar.uri)
         }
       }
     }
@@ -109,6 +110,7 @@ object TomcatMaker {
   }
 
   /** 生成一个base的目录结构和配置文件
+   *
    * @param sasHome
    * @param container
    * @param server

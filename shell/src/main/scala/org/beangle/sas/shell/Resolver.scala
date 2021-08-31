@@ -18,13 +18,13 @@
  */
 package org.beangle.sas.shell
 
+import org.beangle.commons.io.IOs
+import org.beangle.commons.lang.Strings.substringAfterLast
+import org.beangle.repo.artifact._
+import org.beangle.sas.model.{ArchiveURI, Container, Webapp}
+
 import java.io.{File, FileInputStream, FileOutputStream}
 import java.net.URL
-
-import org.beangle.commons.io.IOs
-import org.beangle.commons.lang.Strings.{isEmpty, isNotEmpty, split, substringAfterLast}
-import org.beangle.repo.artifact._
-import org.beangle.sas.model.{Container, Webapp}
 
 /**
  * 解析下载war包中的依赖。
@@ -54,29 +54,24 @@ object Resolver {
   def resolve(sasHome: String, container: Container, remote: Repo.Remote, local: Repo.Local, webapps: collection.Seq[Webapp]): Unit = {
     webapps foreach { webapp =>
       //1. download and translate gav/url to docBase
-      if (isEmpty(webapp.docBase)) {
-        if (isNotEmpty(webapp.url)) {
-          val fileName = download(webapp.url, sasHome + "/webapps/")
-          webapp.docBase = sasHome + "/webapps/" + fileName
-        } else if (isNotEmpty(webapp.gav)) {
-          val gavinfo = split(webapp.gav, ":")
-          if (gavinfo.length < 3) throw new RuntimeException(s"Invalid gav ${webapp.gav},Using groupId:artifactId:version format.")
-          var gav = Artifact(webapp.gav)
-          if (gav.packaging == "jar") {
-            gav = Artifact(gav.groupId, gav.artifactId, gav.version, gav.classifier, "war")
-          }
-          new ArtifactDownloader(remote, local).download(List(gav))
-          webapp.docBase = local.url(gav)
-        } else {
-          throw new RuntimeException(s"Invalid Webapp definition ${webapp.name},one of (docBase,url,gav) properties needed.")
+      if (ArchiveURI.isGav(webapp.uri)) {
+        var gav = ArchiveURI.toArtifact(webapp.uri)
+        if (gav.packaging == "jar") {
+          gav = Artifact(gav.groupId, gav.artifactId, gav.version, gav.classifier, "war")
         }
+        new ArtifactDownloader(remote, local).download(List(gav))
+        webapp.docBase = local.url(gav)
+      } else if (ArchiveURI.isRemote(webapp.uri)) {
+        val fileName = download(webapp.uri, sasHome + "/webapps/")
+        webapp.docBase = sasHome + "/webapps/" + fileName
       } else {
-        if (webapp.docBase.contains("${sas.home}")) {
-          webapp.docBase = webapp.docBase.replace("${sas.home}", sasHome)
-        } else if (webapp.docBase.startsWith("../../..")) {
-          webapp.docBase = webapp.docBase.replace("../../..", sasHome)
+        if (webapp.uri.contains("${sas.home}")) {
+          webapp.docBase = webapp.uri.replace("${sas.home}", sasHome)
+        } else if (webapp.uri.startsWith("../../..")) {
+          webapp.docBase = webapp.uri.replace("../../..", sasHome)
         }
       }
+
       //2.resolve war
       if (webapp.resolveSupport && new File(webapp.docBase).exists() && resolvable(webapp.docBase)) {
         val libs = BeangleResolver.resolve(webapp.docBase)

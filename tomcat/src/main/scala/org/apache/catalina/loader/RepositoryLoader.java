@@ -58,6 +58,7 @@ public class RepositoryLoader extends WebappLoader {
           missings.add(artifact);
           continue;
         }
+        if (artifact.groupId.equals("jakarta.servlet")) continue;
         jarNames.add(file.getName());
         try {
           devCl.addURL(file.toURI().toURL());

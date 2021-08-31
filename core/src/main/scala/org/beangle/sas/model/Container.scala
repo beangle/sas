@@ -86,14 +86,7 @@ object Container {
       }
 
       (engineElem \ "Jar").foreach { jarElem =>
-        val jar = new Jar
-        val gav = (jarElem \ "@gav").text
-        val url = (jarElem \ "@url").text
-        val path = (jarElem \ "@path").text
-
-        if (isNotBlank(gav)) jar.gav = Some(gav)
-        if (isNotBlank(url)) jar.url = Some(url)
-        if (isNotBlank(path)) jar.path = Some(path)
+        val jar = new Jar((jarElem \ "@uri").text)
         engine.jars += jar
       }
       conf.engines += engine
@@ -175,9 +168,7 @@ object Container {
     // 6. register webapps
     (xml \ "Webapps" \ "Webapp").foreach { webappElem =>
       val context = new Webapp((webappElem \ "@name").text)
-      if ((webappElem \ "@docBase").nonEmpty) context.docBase = (webappElem \ "@docBase").text
-      if ((webappElem \ "@url").nonEmpty) context.url = (webappElem \ "@url").text
-      if ((webappElem \ "@gav").nonEmpty) context.gav = (webappElem \ "@gav").text
+      context.uri = (webappElem \ "@uri").text
 
       for ((k, v) <- webappElem.attributes.asAttrMap -- Set("name", "docBase", "reloadable", "url", "gav")) {
         context.properties.put(k, v)
@@ -259,7 +250,7 @@ object Container {
             case Some(s) =>
               if (Strings.isNotEmpty(serverHost)) {
                 if (!s.farm.hosts.exists(_.name == serverHost)) {
-                  throw new RuntimeException(s"Cannot find server host ${serverHost} in ${s.farm.name}'s hosts.")
+                  throw new RuntimeException(s"Cannot find server host $serverHost in ${s.farm.name}'s hosts.")
                 }
               }
               s.farm.hosts foreach { h =>
@@ -267,7 +258,7 @@ object Container {
                   serverList += backend.addServer(serverName, h.ip, s.http, None)
                 }
               }
-            case None => throw new RuntimeException(s"Cannot find server ${serverName},Server name's pattern is {farm}.{server}.")
+            case None => throw new RuntimeException(s"Cannot find server $serverName,Server name's pattern is {farm}.{server}.")
           }
           (selem \ "@options") foreach { e =>
             serverList foreach { s =>
