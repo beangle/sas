@@ -103,7 +103,7 @@ lazy val server = (project in file("server"))
     name := "beangle-sas",
     common,
     crossPaths := false,
-    artifact := Artifact(moduleName.value, "zip", "zip")
+    packageBin / artifact  := Artifact(moduleName.value, "zip", "zip")
   )
 
 lazy val tomcat = (project in file("tomcat"))
