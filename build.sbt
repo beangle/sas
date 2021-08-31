@@ -86,6 +86,8 @@ lazy val juli = (project in file("juli"))
           case "maven" :: xs =>  MergeStrategy.discard
           case "services" :: "javax.servlet.servletcontainerinitializer"::Nil  => MergeStrategy.discard
           case "services" :: "org.apache.commons.logging.logfactory"::Nil  => MergeStrategy.discard
+          case "services" :: "ch.qos.logback.classic.spi.configurator"::Nil  => MergeStrategy.discard
+          case "services" :: "org.slf4j.spi.slf4jserviceprovider"::Nil  => MergeStrategy.discard
           case _ => MergeStrategy.first
         }
       case _ =>
