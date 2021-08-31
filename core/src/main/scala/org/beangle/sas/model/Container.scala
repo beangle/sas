@@ -167,23 +167,26 @@ object Container {
 
     // 6. register webapps
     (xml \ "Webapps" \ "Webapp").foreach { webappElem =>
-      val context = new Webapp((webappElem \ "@name").text)
-      context.uri = (webappElem \ "@uri").text
+      val app = new Webapp((webappElem \ "@name").text)
+      app.uri = (webappElem \ "@uri").text
+      if (ArchiveURI.isGav(app.uri) && app.uri.contains("SNAPSHOT")) {
+        throw new RuntimeException("Cannot accept gav with SNAPSHOT")
+      }
 
-      for ((k, v) <- webappElem.attributes.asAttrMap -- Set("name", "docBase", "reloadable", "url", "gav")) {
-        context.properties.put(k, v)
+      for ((k, v) <- webappElem.attributes.asAttrMap -- Set("name", "uri", "reloadable")) {
+        app.properties.put(k, v)
       }
 
       (webappElem \ "ResourceRef").foreach { dsElem =>
-        context.resources += conf.resources((dsElem \ "@ref").text)
+        app.resources += conf.resources((dsElem \ "@ref").text)
       }
       (webappElem \ "Realm").foreach { realmElem =>
-        context.realms = realmElem.toString()
+        app.realms = realmElem.toString()
       }
       (webappElem \ "resolveSupport").foreach { resolveElem =>
-        context.resolveSupport = resolveElem.toString().toBoolean
+        app.resolveSupport = resolveElem.toString().toBoolean
       }
-      conf.webapps += context
+      conf.webapps += app
     }
 
     //7. generate proxy and backends
