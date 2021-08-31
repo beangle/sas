@@ -90,8 +90,8 @@ lazy val juli = (project in file("juli"))
           case "services" :: "org.slf4j.spi.slf4jserviceprovider"::Nil  => MergeStrategy.discard
           case _ => MergeStrategy.first
         }
-      case _ =>
-        MergeStrategy.first
+      case PathList("module-info.class") =>MergeStrategy.discard
+      case _ => MergeStrategy.first
     }
   )
 
