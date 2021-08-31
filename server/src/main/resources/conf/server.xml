@@ -6,9 +6,9 @@
   <Engines>
     <Engine name="tomcat10" type="tomcat" version="10.0.0-M8">
       <!--添加必要的驱动,不需要容器提供数据源，可以删除-->
-      <Jar gav="org.postgresql:postgresql:42.2.6"/>
+      <Jar uri="gav://org.postgresql:postgresql:42.2.6"/>
       <!--
-      <Jar gav="com.oracle:ojdbc14:11.2.0.1.0"/>
+      <Jar uri="gav://com.oracle:ojdbc14:11.2.0.1.0"/>
       -->
     </Engine>
   </Engines>
@@ -44,7 +44,7 @@
   </Resources>
 
   <Webapps>
-    <Webapp name="micdn" gav="org.beangle.micdn:beangle-micdn-server:0.1.3"/>
+    <Webapp name="micdn" uri="gav://org.beangle.micdn:beangle-micdn-server:0.1.3"/>
     <!--
     <Webapp name="your_app_name" docBase="as.home/webapps/your_war_name">
       <ResourceRef ref="jdbc/datasource"/>

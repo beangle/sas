@@ -13,18 +13,19 @@ if [ -z "$M2_REPO" ]; then
   export M2_REPO="$HOME/.m2/repository"
 fi
 
-export scala_ver=2.13.3
-export scalaxml_ver=2.0.0-M1
-export beangle_sas_ver=0.8.1
-export beangle_commons_ver=5.2.0
-export beangle_template_ver=0.0.28
-export beangle_data_ver=5.3.11
-export beangle_repo_ver=0.0.19
-export slf4j_ver=2.0.0-alpha1
-export logback_ver=1.3.0-alpha5
+export scala_ver=3.0.1
+export scala_lib_ver=2.13.6
+export scalaxml_ver=2.0.1
+export beangle_sas_ver=0.9.0
+export beangle_commons_ver=5.2.5
+export beangle_template_ver=0.0.33
+export beangle_data_ver=5.3.24
+export beangle_boot_ver=0.0.24
+export slf4j_ver=2.0.0-alpha4
+export logback_ver=1.3.0-alpha9
 
-export freemarker_ver=2.3.30
-export commons_compress_ver=1.18
+export freemarker_ver=2.3.31
+export commons_compress_ver=1.21
 
 # download groupId artifactId version
 download(){
@@ -98,14 +99,14 @@ abort(){
   checkEnv
 
   echo "Downloading and link libraries..."
-  download org.scala-lang scala-library $scala_ver
-  download org.scala-lang scala-reflect $scala_ver
-  download org.scala-lang.modules scala-xml_2.13 $scalaxml_ver
-  download org.beangle.commons beangle-commons-core_2.13     $beangle_commons_ver
-  download org.beangle.commons beangle-commons-file_2.13     $beangle_commons_ver
-  download org.beangle.data beangle-data-jdbc_2.13 $beangle_data_ver
-  download org.beangle.template beangle-template-freemarker_2.13 $beangle_template_ver
-  download org.beangle.repo beangle-repo-artifact_2.13 $beangle_repo_ver
+  download org.scala-lang scala3-library_3 $scala_ver
+  download org.scala-lang scala-library $scala_lib_ver
+  download org.scala-lang.modules scala-xml_3 $scalaxml_ver
+  download org.beangle.commons beangle-commons-core_3     $beangle_commons_ver
+  download org.beangle.commons beangle-commons-file_3     $beangle_commons_ver
+  download org.beangle.data beangle-data-jdbc_3 $beangle_data_ver
+  download org.beangle.template beangle-template-freemarker_3 $beangle_template_ver
+  download org.beangle.boot beangle-boot_3 $beangle_boot_ver
   download org.beangle.sas beangle-sas-core  $beangle_sas_ver
   download org.beangle.sas beangle-sas-shell  $beangle_sas_ver
   download org.beangle.sas beangle-sas-tomcat  $beangle_sas_ver

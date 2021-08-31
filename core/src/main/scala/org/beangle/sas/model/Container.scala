@@ -1,21 +1,20 @@
 /*
- * Beangle, Agile Development Scaffold and Toolkits.
- *
- * Copyright © 2005, The Beangle Software.
+ * Copyright (C) 2005, The Beangle Software.
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * it under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.beangle.sas.model
 
 import org.beangle.commons.collection.Collections
@@ -86,14 +85,7 @@ object Container {
       }
 
       (engineElem \ "Jar").foreach { jarElem =>
-        val jar = new Jar
-        val gav = (jarElem \ "@gav").text
-        val url = (jarElem \ "@url").text
-        val path = (jarElem \ "@path").text
-
-        if (isNotBlank(gav)) jar.gav = Some(gav)
-        if (isNotBlank(url)) jar.url = Some(url)
-        if (isNotBlank(path)) jar.path = Some(path)
+        val jar = new Jar((jarElem \ "@uri").text)
         engine.jars += jar
       }
       conf.engines += engine
@@ -174,25 +166,26 @@ object Container {
 
     // 6. register webapps
     (xml \ "Webapps" \ "Webapp").foreach { webappElem =>
-      val context = new Webapp((webappElem \ "@name").text)
-      if ((webappElem \ "@docBase").nonEmpty) context.docBase = (webappElem \ "@docBase").text
-      if ((webappElem \ "@url").nonEmpty) context.url = (webappElem \ "@url").text
-      if ((webappElem \ "@gav").nonEmpty) context.gav = (webappElem \ "@gav").text
+      val app = new Webapp((webappElem \ "@name").text)
+      app.uri = (webappElem \ "@uri").text
+      if (ArchiveURI.isGav(app.uri) && app.uri.contains("SNAPSHOT")) {
+        throw new RuntimeException("Cannot accept gav with SNAPSHOT")
+      }
 
-      for ((k, v) <- webappElem.attributes.asAttrMap -- Set("name", "docBase", "reloadable", "url", "gav")) {
-        context.properties.put(k, v)
+      for ((k, v) <- webappElem.attributes.asAttrMap -- Set("name", "uri", "reloadable")) {
+        app.properties.put(k, v)
       }
 
       (webappElem \ "ResourceRef").foreach { dsElem =>
-        context.resources += conf.resources((dsElem \ "@ref").text)
+        app.resources += conf.resources((dsElem \ "@ref").text)
       }
       (webappElem \ "Realm").foreach { realmElem =>
-        context.realms = realmElem.toString()
+        app.realms = realmElem.toString()
       }
       (webappElem \ "resolveSupport").foreach { resolveElem =>
-        context.resolveSupport = resolveElem.toString().toBoolean
+        app.resolveSupport = resolveElem.toString().toBoolean
       }
-      conf.webapps += context
+      conf.webapps += app
     }
 
     //7. generate proxy and backends
@@ -259,7 +252,7 @@ object Container {
             case Some(s) =>
               if (Strings.isNotEmpty(serverHost)) {
                 if (!s.farm.hosts.exists(_.name == serverHost)) {
-                  throw new RuntimeException(s"Cannot find server host ${serverHost} in ${s.farm.name}'s hosts.")
+                  throw new RuntimeException(s"Cannot find server host $serverHost in ${s.farm.name}'s hosts.")
                 }
               }
               s.farm.hosts foreach { h =>
@@ -267,7 +260,7 @@ object Container {
                   serverList += backend.addServer(serverName, h.ip, s.http, None)
                 }
               }
-            case None => throw new RuntimeException(s"Cannot find server ${serverName},Server name's pattern is {farm}.{server}.")
+            case None => throw new RuntimeException(s"Cannot find server $serverName,Server name's pattern is {farm}.{server}.")
           }
           (selem \ "@options") foreach { e =>
             serverList foreach { s =>

@@ -17,6 +17,25 @@
 
 package org.beangle.sas.model
 
-class Repository(val local: Option[String], val remote: Option[String]) {
+import org.beangle.boot.artifact.Artifact
 
+object ArchiveURI {
+
+  val GavProtocol = "gav://"
+
+  def isGav(uri: String): Boolean = {
+    uri.startsWith(GavProtocol)
+  }
+
+  def toArtifact(gav: String): Artifact = {
+    if (isGav(gav)) {
+      Artifact(gav.substring(GavProtocol.length))
+    } else {
+      throw new RuntimeException("$gav is not starts with gav://")
+    }
+  }
+
+  def isRemote(uri: String): Boolean = {
+    uri.startsWith("http://") || uri.startsWith("https://")
+  }
 }
