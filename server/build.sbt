@@ -7,12 +7,14 @@ def newLocation(f: File, newBase: String): String = {
 
 def relocate(f: File, newBase: String): Seq[(File, String)] = {
   val buf = new mutable.ArrayBuffer[(File, String)]
-  buf += (f -> newLocation(f, newBase))
-  val fc = f.listFiles()
-  if (fc != null) {
-    fc foreach { fi => buf ++= relocate(fi, newBase) }
+  if (f.getName != "META-INF") {
+    buf += (f -> newLocation(f, newBase))
+    val fc = f.listFiles()
+    if (fc != null) {
+      fc foreach { fi => buf ++= relocate(fi, newBase) }
+    }
   }
   buf
 }
 
-Compile / packageBin / mappings := relocate(target.value / "classes", "beangle-sas-"+version.value)
+Compile / packageBin / mappings := relocate(target.value / "classes", "beangle-sas-" + version.value)
