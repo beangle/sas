@@ -37,26 +37,27 @@ val commonDeps = Seq(beangle_boot, scalaxml, beangle_data_jdbc, scalatest,tomcat
 
 lazy val root = (project in file("."))
   .settings()
-  .aggregate(core, shell, juli,server,tomcat)
+  .aggregate(engine, agent, juli,server)
 
-lazy val core = (project in file("core"))
+lazy val engine = (project in file("engine"))
   .disablePlugins(AssemblyPlugin)
   .settings(
-    name := "beangle-sas-core",
+    name := "beangle-sas-engine",
     common,
     crossPaths := false,
-    libraryDependencies ++= commonDeps
+    libraryDependencies ++= commonDeps,
+    libraryDependencies ++= Seq(tomcat_catalina)
   )
 
-lazy val shell = (project in file("shell"))
+lazy val agent = (project in file("agent"))
   .disablePlugins(AssemblyPlugin)
   .settings(
-    name := "beangle-sas-shell",
+    name := "beangle-sas-agent",
     common,
     crossPaths := false,
     libraryDependencies ++= commonDeps,
     libraryDependencies ++= Seq(beangle_template_freemarker)
-  ).dependsOn(core)
+  ).dependsOn(engine)
 
 lazy val juli = (project in file("juli"))
   .settings(
@@ -106,12 +107,4 @@ lazy val server = (project in file("server"))
     packageBin / artifact  := Artifact(moduleName.value, "zip", "zip")
   )
 
-lazy val tomcat = (project in file("tomcat"))
-  .disablePlugins(AssemblyPlugin)
-  .settings(
-    name := "beangle-sas-tomcat",
-    common,
-    libraryDependencies ++= Seq(tomcat_catalina),
-    crossPaths := false
-  )
 publish / skip := true

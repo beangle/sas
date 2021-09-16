@@ -91,7 +91,7 @@ mkdir -p $SAS_HOME/servers
 cd $SAS_HOME/servers
 
 for target in "$@"; do
-  java -cp "$SAS_HOME/lib/*:$SAS_HOME/bin/lib/*" org.beangle.sas.shell.Maker $SAS_HOME/conf/server.xml $target
+  java -cp "$SAS_HOME/lib/*:$SAS_HOME/bin/lib/*" org.beangle.sas.tool.Maker $SAS_HOME/conf/server.xml $target
 done
 
 started=0

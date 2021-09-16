@@ -107,9 +107,8 @@ abort(){
   download org.beangle.data beangle-data-jdbc_3 $beangle_data_ver
   download org.beangle.template beangle-template-freemarker_3 $beangle_template_ver
   download org.beangle.boot beangle-boot_3 $beangle_boot_ver
-  download org.beangle.sas beangle-sas-core  $beangle_sas_ver
-  download org.beangle.sas beangle-sas-shell  $beangle_sas_ver
-  download org.beangle.sas beangle-sas-tomcat  $beangle_sas_ver
+  download org.beangle.sas beangle-sas-engine  $beangle_sas_ver
+  download org.beangle.sas beangle-sas-agent  $beangle_sas_ver
   download org.beangle.sas beangle-sas-juli  $beangle_sas_ver
   download org.apache.commons commons-compress $commons_compress_ver
   download org.freemarker freemarker $freemarker_ver
