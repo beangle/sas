@@ -47,7 +47,8 @@ object TomcatMaker {
 
     val context = engine.context
     if (context.loader == null) {
-      context.loader = new Loader("org.apache.catalina.loader.RepositoryLoader")
+      context.loader = new Loader("org.apache.catalina.loader.WebappLoader")
+      context.loader.properties.put("loaderClass","org.beangle.sas.engine.tomcat.DependencyClassLoader")
     }
     if (context.jarScanner == null) {
       val scanner = new JarScanner
@@ -59,9 +60,10 @@ object TomcatMaker {
       context.jarScanner = scanner
     }
     //添加beangle-sas-engine and logback-access
+    engine.jars += Jar.gav("org.beangle.sas:beangle-sas-tomcat:" + container.version)
     engine.jars += Jar.gav("org.beangle.sas:beangle-sas-engine:" + container.version)
-    engine.jars += Jar.gav("ch.qos.logback:logback-access:1.3.0-alpha5")
-    engine.jars += Jar.gav("ch.qos.logback:logback-core:1.3.0-alpha5")
+//    engine.jars += Jar.gav("ch.qos.logback:logback-access:1.3.0-alpha5")
+//    engine.jars += Jar.gav("ch.qos.logback:logback-core:1.3.0-alpha5")
   }
 
   def makeEngine(sasHome: String, engine: Engine, remote: Repo.Remote, local: Repo.Local): Unit = {

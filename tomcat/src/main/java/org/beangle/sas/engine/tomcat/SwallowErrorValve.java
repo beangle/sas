@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.beangle.sas.engine;
+package org.beangle.sas.engine.tomcat;
 
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;

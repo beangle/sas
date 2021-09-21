@@ -2,7 +2,7 @@ import org.beangle.parent.Dependencies._
 import org.beangle.parent.Settings._
 
 ThisBuild / organization := "org.beangle.sas"
-ThisBuild / version := "0.9.1-SNAPSHOT"
+ThisBuild / version := "0.9.1"
 
 ThisBuild / scmInfo := Some(
   ScmInfo(
@@ -29,25 +29,49 @@ val beangle_data_jdbc = "org.beangle.data" %% "beangle-data-jdbc" % "5.3.24"
 val beangle_boot = "org.beangle.boot" %% "beangle-boot" % "0.0.24"
 val beangle_template_freemarker = "org.beangle.template" %% "beangle-template-freemarker" % "0.0.33"
 
-val tomcat_catalina = "org.apache.tomcat" % "tomcat-catalina" % "10.0.10"
-val tomcat_juli = "org.apache.tomcat" % "tomcat-juli" % "10.0.10"
-val undertow_servlet = "io.undertow" % "undertow-servlet" % "2.2.10.Final"
-
-val commonDeps = Seq(beangle_boot, scalaxml, beangle_data_jdbc, scalatest,tomcat_catalina, undertow_servlet)
+val tomcat_juli = "org.apache.tomcat" % "tomcat-juli" % "10.0.11"
+val undertow_servlet = "io.undertow" % "undertow-servlet-jakartaee9" % "2.2.10.Final"
+val tomcat_embeded_core="org.apache.tomcat.embed" % "tomcat-embed-core" % "10.0.11" exclude("org.apache.tomcat","tomcat-annotations-api")
+val commonDeps = Seq(beangle_boot, scalaxml, scalatest)
 
 lazy val root = (project in file("."))
   .settings()
-  .aggregate(engine, agent, juli,server)
+  .aggregate(core,engine,tomcat, undertow, agent, juli,server)
+
+lazy val core = (project in file("core"))
+  .disablePlugins(AssemblyPlugin)
+  .settings(
+    name := "beangle-sas-core",
+    common,
+    libraryDependencies ++= commonDeps,
+    crossPaths := false
+  )
 
 lazy val engine = (project in file("engine"))
   .disablePlugins(AssemblyPlugin)
   .settings(
     name := "beangle-sas-engine",
     common,
-    crossPaths := false,
-    libraryDependencies ++= commonDeps,
-    libraryDependencies ++= Seq(tomcat_catalina)
+    crossPaths := false
   )
+
+lazy val tomcat = (project in file("tomcat"))
+  .disablePlugins(AssemblyPlugin)
+  .settings(
+    name := "beangle-sas-tomcat",
+    common,
+    crossPaths := false,
+    libraryDependencies ++= Seq(tomcat_embeded_core)
+  ).dependsOn(engine)
+
+lazy val undertow = (project in file("undertow"))
+  .disablePlugins(AssemblyPlugin)
+  .settings(
+    name := "beangle-sas-undertow",
+    common,
+    crossPaths := false,
+    libraryDependencies ++= Seq(undertow_servlet)
+  ).dependsOn(engine)
 
 lazy val agent = (project in file("agent"))
   .disablePlugins(AssemblyPlugin)
@@ -56,8 +80,9 @@ lazy val agent = (project in file("agent"))
     common,
     crossPaths := false,
     libraryDependencies ++= commonDeps,
-    libraryDependencies ++= Seq(beangle_template_freemarker)
-  ).dependsOn(engine)
+    libraryDependencies ++= Seq(beangle_data_jdbc,beangle_template_freemarker)
+    //libraryDependencies += "io.netty" % "netty-all" % "4.1.68.Final"
+  ).dependsOn(core)
 
 lazy val juli = (project in file("juli"))
   .settings(
@@ -104,6 +129,8 @@ lazy val server = (project in file("server"))
     name := "beangle-sas",
     common,
     crossPaths := false,
+    libraryDependencies ++=Seq("org.springframework.boot" %"spring-boot-starter-tomcat" %"2.5.4"),
+    libraryDependencies ++=Seq("org.springframework.boot" %"spring-boot-starter-web" %"2.5.4"),
     packageBin / artifact  := Artifact(moduleName.value, "zip", "zip")
   )
 

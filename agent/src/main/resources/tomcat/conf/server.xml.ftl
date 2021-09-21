@@ -44,7 +44,7 @@
     [/#if]
 [#t/]
     <Engine name="Catalina" defaultHost="localhost">
-      <Host name="localhost" appBase="webapps" unpackWARs="true" startStopThreads="0" autoDeploy="false" errorReportValveClass="org.beangle.sas.tomcat.SwallowErrorValve">
+      <Host name="localhost" appBase="webapps" unpackWARs="true" startStopThreads="0" autoDeploy="false" errorReportValveClass="org.beangle.sas.engine.tomcat.SwallowErrorValve">
       [#if server.enableAccessLog]
         <Valve className="ch.qos.logback.access.tomcat.LogbackValve" quiet="true" filename="conf/logback-access.xml"/>
       [/#if]

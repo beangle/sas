@@ -15,11 +15,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.beangle.sas.engine
+package org.beangle.sas.engine.tomcat;
 
-trait Server {
+import org.apache.catalina.startup.Tomcat;
+import org.beangle.sas.engine.AbstractServer;
 
-  def start(): Unit
+public class TomcatServer extends AbstractServer {
+  private final Tomcat tomcat;
 
-  def stop(): Unit
+  public TomcatServer(Tomcat tomcat) {
+    this.tomcat = tomcat;
+  }
+
+  @Override
+  public void doStart() throws Exception {
+    this.tomcat.start();
+  }
+
+  @Override
+  public void doStop() throws Exception {
+    tomcat.stop();
+    tomcat.destroy();
+  }
 }
