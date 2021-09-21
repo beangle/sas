@@ -72,7 +72,7 @@ export beangle_commons_ver=5.2.5
 export slf4j_ver=2.0.0-alpha4
 export logback_ver=1.3.0-alpha9
 export commons_compress_ver=1.21
-export boot_ver=0.0.24
+export boot_ver=0.0.25
 export sas_ver=0.9.1
 export tomcat_ver=10.0.11
 
@@ -90,12 +90,18 @@ detect_warfile
 #get options and args of java program
 args="${opts#*$warfile}"
 options="${opts%%$warfile*}"
-java -cp "${bootpath:1}" org.beangle.boot.dependency.AppResolver $warfile $M2_REMOTE_REPO $M2_REPO
+destdir=`java -cp "${bootpath:1}" org.beangle.boot.dependency.AppResolver $warfile $M2_REMOTE_REPO $M2_REPO`
+if [ $? -ne 0  ]; then
+  echo "Cannot resolve $warfile, Launching aborted"
+  exit
+fi
+
 bootpath=""
 download org.apache.tomcat.embed tomcat-embed-core $tomcat_ver
 download org.apache.tomcat.embed tomcat-embed-jasper $tomcat_ver
+download org.apache.tomcat.embed tomcat-embed-websocket $tomcat_ver
 download org.beangle.sas beangle-sas-tomcat $sas_ver
 download org.beangle.sas beangle-sas-engine $sas_ver
 
-#echo java -server -cp "${bootpath:1}" $options "org.beangle.sas.engine.tomcat.Bootstrap" $args $warfile
-java -server -cp "${bootpath:1}" $options "org.beangle.sas.engine.tomcat.Bootstrap" $args $warfile
+#echo java -server -cp "${bootpath:1}" $options "org.beangle.sas.engine.tomcat.Bootstrap" $args $destdir
+java -server -cp "${bootpath:1}" $options "org.beangle.sas.engine.tomcat.Bootstrap" $args $destdir
