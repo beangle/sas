@@ -62,8 +62,8 @@ object TomcatMaker {
     //添加beangle-sas-engine and logback-access
     engine.jars += Jar.gav("org.beangle.sas:beangle-sas-tomcat:" + container.version)
     engine.jars += Jar.gav("org.beangle.sas:beangle-sas-engine:" + container.version)
-//    engine.jars += Jar.gav("ch.qos.logback:logback-access:1.3.0-alpha5")
-//    engine.jars += Jar.gav("ch.qos.logback:logback-core:1.3.0-alpha5")
+    engine.jars += Jar.gav("ch.qos.logback:logback-access:1.3.0-alpha5")
+    engine.jars += Jar.gav("ch.qos.logback:logback-core:1.3.0-alpha5")
   }
 
   def makeEngine(sasHome: String, engine: Engine, remote: Repo.Remote, local: Repo.Local): Unit = {

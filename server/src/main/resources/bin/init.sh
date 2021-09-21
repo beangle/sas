@@ -20,7 +20,7 @@ export beangle_sas_ver=0.9.1
 export beangle_commons_ver=5.2.5
 export beangle_template_ver=0.0.33
 export beangle_data_ver=5.3.24
-export beangle_boot_ver=0.0.24
+export beangle_boot_ver=0.0.25
 export slf4j_ver=2.0.0-alpha4
 export logback_ver=1.3.0-alpha9
 
