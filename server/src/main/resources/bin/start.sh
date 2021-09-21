@@ -43,9 +43,7 @@ start(){
 
   touch "$SERVER_OUT"
   if [ -f $dir/bin/bootstrap.jar ]; then
-    export beangle_sas_ver=0.8.1
-    export slf4j_ver=2.0.0-alpha1
-    export logback_ver=1.3.0-alpha5
+    export beangle_sas_ver=0.9.1
 
     LOGGING_CONFIG="-Dnop"
     LOGGING_MANAGER="-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager"
@@ -93,7 +91,7 @@ mkdir -p $SAS_HOME/servers
 cd $SAS_HOME/servers
 
 for target in "$@"; do
-  java -cp "$SAS_HOME/lib/*:$SAS_HOME/bin/lib/*" org.beangle.sas.shell.Maker $SAS_HOME/conf/server.xml $target
+  java -cp "$SAS_HOME/lib/*:$SAS_HOME/bin/lib/*" org.beangle.sas.tool.Maker $SAS_HOME/conf/server.xml $target
 done
 
 started=0

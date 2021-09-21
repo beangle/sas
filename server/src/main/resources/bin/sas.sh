@@ -17,7 +17,7 @@ sas_command="$1"
 
 if [ "$sas_command" = "version" ] ; then
 
-  java -cp "$sas_classpath" org.beangle.sas.shell.Version $SAS_HOME
+  java -cp "$sas_classpath" org.beangle.sas.tool.Version $SAS_HOME
 
 elif [ "$sas_command" = "aes" ] ; then
 
@@ -25,28 +25,28 @@ elif [ "$sas_command" = "aes" ] ; then
     echo "Usage:sas.sh aes key plain|encoded"
     exit
   fi
-  java -cp "$sas_classpath" org.beangle.sas.shell.Aes "$2" "$3"
+  java -cp "$sas_classpath" org.beangle.sas.tool.Aes "$2" "$3"
 
 elif [ "$sas_command" = "proxy" ] ; then
 
-  java -cp "$sas_classpath" org.beangle.sas.shell.Proxy $SAS_HOME
+  java -cp "$sas_classpath" org.beangle.sas.tool.Proxy $SAS_HOME
 
 elif [ "$sas_command" = "config" ] ; then
 
-  java -cp "$sas_classpath" org.beangle.sas.shell.Config $SAS_HOME
+  java -cp "$sas_classpath" org.beangle.sas.tool.Config $SAS_HOME
 
 elif [ "$sas_command" = "firewall" ] ; then
 
-  java -cp "$sas_classpath" org.beangle.sas.shell.Firewall $SAS_HOME
+  java -cp "$sas_classpath" org.beangle.sas.tool.Firewall $SAS_HOME
 
 elif [ "$sas_command" = "resolve" ] ; then
 
-  java -cp "$sas_classpath" org.beangle.sas.shell.Resolver $SAS_HOME/conf/server.xml
+  java -cp "$sas_classpath" org.beangle.sas.tool.Resolver $SAS_HOME/conf/server.xml
 
 elif [ "$sas_command" = "status" ] ; then
 
   cd $SAS_HOME||exit
-  java -cp "$sas_classpath" org.beangle.sas.shell.Version $SAS_HOME
+  java -cp "$sas_classpath" org.beangle.sas.tool.Version $SAS_HOME
   started=0
 
   shopt -s nullglob

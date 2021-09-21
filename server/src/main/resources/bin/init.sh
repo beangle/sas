@@ -16,11 +16,11 @@ fi
 export scala_ver=3.0.1
 export scala_lib_ver=2.13.6
 export scalaxml_ver=2.0.1
-export beangle_sas_ver=0.9.0
+export beangle_sas_ver=0.9.1
 export beangle_commons_ver=5.2.5
 export beangle_template_ver=0.0.33
 export beangle_data_ver=5.3.24
-export beangle_boot_ver=0.0.24
+export beangle_boot_ver=0.0.25
 export slf4j_ver=2.0.0-alpha4
 export logback_ver=1.3.0-alpha9
 
@@ -107,10 +107,11 @@ abort(){
   download org.beangle.data beangle-data-jdbc_3 $beangle_data_ver
   download org.beangle.template beangle-template-freemarker_3 $beangle_template_ver
   download org.beangle.boot beangle-boot_3 $beangle_boot_ver
-  download org.beangle.sas beangle-sas-core  $beangle_sas_ver
-  download org.beangle.sas beangle-sas-shell  $beangle_sas_ver
+  download org.beangle.sas beangle-sas-engine  $beangle_sas_ver
+  download org.beangle.sas beangle-sas-core    $beangle_sas_ver
+  download org.beangle.sas beangle-sas-agent   $beangle_sas_ver
   download org.beangle.sas beangle-sas-tomcat  $beangle_sas_ver
-  download org.beangle.sas beangle-sas-juli  $beangle_sas_ver
+  download org.beangle.sas beangle-sas-juli    $beangle_sas_ver
   download org.apache.commons commons-compress $commons_compress_ver
   download org.freemarker freemarker $freemarker_ver
   download org.slf4j slf4j-api $slf4j_ver
