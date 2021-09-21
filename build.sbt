@@ -129,8 +129,8 @@ lazy val server = (project in file("server"))
     name := "beangle-sas",
     common,
     crossPaths := false,
-    libraryDependencies ++=Seq("org.springframework.boot" %"spring-boot-starter-tomcat" %"2.5.4"),
-    libraryDependencies ++=Seq("org.springframework.boot" %"spring-boot-starter-web" %"2.5.4"),
+//    libraryDependencies ++=Seq("org.springframework.boot" %"spring-boot-starter-tomcat" %"2.5.4"),
+//    libraryDependencies ++=Seq("org.springframework.boot" %"spring-boot-starter-web" %"2.5.4"),
     packageBin / artifact  := Artifact(moduleName.value, "zip", "zip")
   )
 

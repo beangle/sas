@@ -1,8 +1,8 @@
 #!/bin/sh
 if [ $# -eq 0 ]; then
   echo "Usage:
-   launch.sh [jvm_options] /path/to/war [args]
-   launch.sh [jvm_options] group_id:artifact_id:war:version [args]
+   launch.sh [jvm_options] /path/to/war [--port=8080] [--path=/yourbase] [other_args]
+   launch.sh [jvm_options] group_id:artifact_id:version [args]
    launch.sh [jvm_options] http://host.com/path/towar [args]"
   exit 1
 fi
@@ -48,26 +48,7 @@ download(){
   fi
 }
 
-export_extra_classpath() {
-  classpath_prefix="-cp"
-  classpath_extra=$(echo "$*" | sed 's/^.*-cp \(\S*\) .*$/\1/')
-  if [ "$*" = "$classpath_extra" ]; then
-    classpath_prefix="-classpath"
-    classpath_extra=$(echo "$*" | sed 's/^.*-classpath \(\S*\) .*$/\1/')
-  fi
-  if [ "$*" = "$classpath_extra" ]; then
-    classpath_prefix="--class-path"
-    classpath_extra=$(echo "$*" | sed 's/^.*--class-path \(\S*\) .*$/\1/')
-  fi
-
-  if [ "$*" != "$classpath_extra" ]; then
-    classpath_str="$classpath_prefix $classpath_extra"
-    export classpath_extra
-    opts="${opts#*"$classpath_str"}"
-  fi
-}
-
-  #find warfile in opts
+#find warfile in opts
 detect_warfile(){
   for arg in $opts
   do
@@ -93,6 +74,7 @@ export logback_ver=1.3.0-alpha9
 export commons_compress_ver=1.21
 export boot_ver=0.0.24
 export sas_ver=0.9.1
+export tomcat_ver=10.0.11
 
 download org.scala-lang scala3-library_3 $scala_ver
 download org.scala-lang scala-library $scala_lib_ver
@@ -104,16 +86,16 @@ download org.slf4j slf4j-api $slf4j_ver
 download ch.qos.logback logback-core $logback_ver
 download ch.qos.logback logback-classic $logback_ver
 
-export_extra_classpath "$opts"
 detect_warfile
 #get options and args of java program
 args="${opts#*$warfile}"
 options="${opts%%$warfile*}"
 java -cp "${bootpath:1}" org.beangle.boot.dependency.AppResolver $warfile $M2_REMOTE_REPO $M2_REPO
 bootpath=""
-download org.beangle.sas beangle-sas-tomcat $sas_ver
-download org.beangle.sas beangle-sas-engine $sas_ver
 download org.apache.tomcat.embed tomcat-embed-core $tomcat_ver
 download org.apache.tomcat.embed tomcat-embed-jasper $tomcat_ver
+download org.beangle.sas beangle-sas-tomcat $sas_ver
+download org.beangle.sas beangle-sas-engine $sas_ver
 
-java -cp "${bootpath:1}" $options "org.beangle.sas.engine.tomcat.Bootstrap" $args
+#echo java -server -cp "${bootpath:1}" $options "org.beangle.sas.engine.tomcat.Bootstrap" $args $warfile
+java -server -cp "${bootpath:1}" $options "org.beangle.sas.engine.tomcat.Bootstrap" $args $warfile

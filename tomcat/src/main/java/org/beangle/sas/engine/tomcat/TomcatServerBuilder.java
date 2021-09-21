@@ -41,12 +41,9 @@ public class TomcatServerBuilder {
     this.config = config;
   }
 
-  public Tomcat build() {
+  public Tomcat build(String baseDir) {
     Tomcat tomcat = new Tomcat();
-    File baseDir = config.createTempDir("tomcat");
-    log.info("Create temp base dir: " + baseDir.getAbsolutePath());
-    new File(baseDir, "webapps").mkdirs();
-    tomcat.setBaseDir(baseDir.getAbsolutePath());
+    tomcat.setBaseDir(baseDir);
     //tomcat is startup class
     //server{service{engine{host{context}}}}
     configServer((StandardServer) tomcat.getServer());
