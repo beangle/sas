@@ -2,7 +2,7 @@ import org.beangle.parent.Dependencies._
 import org.beangle.parent.Settings._
 
 ThisBuild / organization := "org.beangle.sas"
-ThisBuild / version := "0.9.2-SNAPSHOT"
+ThisBuild / version := "0.9.2"
 
 ThisBuild / scmInfo := Some(
   ScmInfo(
@@ -25,9 +25,9 @@ ThisBuild / homepage := Some(url("https://beangle.github.io/sas/index.html"))
 ThisBuild / crossPaths := false
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-val beangle_data_jdbc = "org.beangle.data" %% "beangle-data-jdbc" % "5.3.24"
-val beangle_boot = "org.beangle.boot" %% "beangle-boot" % "0.0.24"
-val beangle_template_freemarker = "org.beangle.template" %% "beangle-template-freemarker" % "0.0.33"
+val beangle_data_jdbc = "org.beangle.data" %% "beangle-data-jdbc" % "5.3.25"
+val beangle_boot = "org.beangle.boot" %% "beangle-boot" % "0.0.26"
+val beangle_template_freemarker = "org.beangle.template" %% "beangle-template-freemarker" % "0.0.34"
 
 val tomcat_juli = "org.apache.tomcat" % "tomcat-juli" % "10.0.11"
 val undertow_servlet = "io.undertow" % "undertow-servlet-jakartaee9" % "2.2.10.Final"
@@ -129,8 +129,6 @@ lazy val server = (project in file("server"))
     name := "beangle-sas",
     common,
     crossPaths := false,
-//    libraryDependencies ++=Seq("org.springframework.boot" %"spring-boot-starter-tomcat" %"2.5.4"),
-//    libraryDependencies ++=Seq("org.springframework.boot" %"spring-boot-starter-web" %"2.5.4"),
     packageBin / artifact  := Artifact(moduleName.value, "zip", "zip")
   )
 
