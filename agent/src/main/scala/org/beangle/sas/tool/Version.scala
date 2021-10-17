@@ -17,9 +17,29 @@
 
 package org.beangle.sas.tool
 
+import java.net.URL
+
 object Version {
   def main(args: Array[String]): Unit = {
-    println(org.beangle.sas.Version.logo)
+    val version = findJarVersion(Version.getClass)
+    println(org.beangle.sas.Version.logo(version))
     println(" hosts:" + SasTool.getLocalIPs().toBuffer.sorted.mkString(","))
+  }
+
+  private def findJarVersion(clazz: Class[_]): String = {
+    val className = "/" + clazz.getName().replace(".", "/") + ".class"
+    val classPath = clazz.getResource(className).toString
+    if (classPath.startsWith("jar")) {
+      val manifestPath = classPath.replace(className, "/META-INF/MANIFEST.MF")
+      val manifest = new java.util.jar.Manifest(new URL(manifestPath).openStream)
+      val attr = manifest.getMainAttributes
+      var version = attr.getValue("Bundle-Version")
+      if (null == version) {
+        version = attr.getValue("Implementation-Version")
+      }
+      if (null == version) "UNKNOWN" else version
+    } else {
+      "SNAPSHOT"
+    }
   }
 }

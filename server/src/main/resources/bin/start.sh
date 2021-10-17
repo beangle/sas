@@ -43,7 +43,7 @@ start(){
 
   touch "$SERVER_OUT"
   if [ -f $dir/bin/bootstrap.jar ]; then
-    export beangle_sas_ver=0.9.1
+    export beangle_sas_ver=0.9.2
 
     LOGGING_CONFIG="-Dnop"
     LOGGING_MANAGER="-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager"
