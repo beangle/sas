@@ -68,12 +68,12 @@ detect_warfile(){
 export scala_ver=3.0.1
 export scala_lib_ver=2.13.6
 
-export beangle_commons_ver=5.2.5
+export beangle_commons_ver=5.2.8
 export slf4j_ver=2.0.0-alpha4
 export logback_ver=1.3.0-alpha9
 export commons_compress_ver=1.21
 export boot_ver=0.0.25
-export sas_ver=0.9.2
+export sas_ver=0.9.3
 export tomcat_ver=10.0.11
 
 download org.scala-lang scala3-library_3 $scala_ver
