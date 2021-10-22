@@ -98,8 +98,12 @@ started=0
 for dir in *; do
   for target in "$@"; do
     if [ "$dir" = "$target" ] ||  [ "all" = "$target" ] || [ "${dir%.*}" = "$target" ]; then
-      if start $dir; then
-        started=$((started+1))
+      if [ ! -f "$dir/error" ]; then
+        if start $dir; then
+          started=$((started+1))
+        fi
+      else
+        echo "see $dir/error"
       fi
     fi
   done

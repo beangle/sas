@@ -17,7 +17,7 @@
 
 package org.beangle.sas.tool
 
-import org.beangle.boot.artifact.{Artifact, ArtifactDownloader, Repo}
+import org.beangle.boot.artifact.{Artifact, ArtifactDownloader, Repo, Archive}
 import org.beangle.boot.dependency.AppResolver
 import org.beangle.commons.io.IOs
 import org.beangle.commons.lang.Strings.substringAfterLast
@@ -25,6 +25,7 @@ import org.beangle.sas.config.{ArchiveURI, Container, Webapp}
 
 import java.io.{File, FileInputStream, FileOutputStream}
 import java.net.URL
+import scala.collection.mutable
 
 /**
  * 解析下载war包中的依赖。
@@ -32,10 +33,10 @@ import java.net.URL
  */
 object Resolver {
 
-  def main(args: Array[String]): Unit = {
+  def main(args: Array[String]): Int = {
     if (args.length < 1) {
       println("Usage: Resolve /path/to/server.xml")
-      return
+      return -1
     }
     val configFile = new File(args(0))
     val container = Container(scala.xml.XML.load(new FileInputStream(configFile)))
@@ -47,10 +48,12 @@ object Resolver {
       else new Repo.Remote("remote", repository.remote.get)
 
     val local = new Repo.Local(repository.local.orNull)
-    resolve(sasHome, container, remote, local, container.webapps)
+    val missing = resolve(sasHome, remote, local, container.webapps)
+    if missing.nonEmpty then -1 else 0
   }
 
-  def resolve(sasHome: String, container: Container, remote: Repo.Remote, local: Repo.Local, webapps: collection.Seq[Webapp]): Unit = {
+  def resolve(sasHome: String, remote: Repo.Remote, local: Repo.Local, webapps: collection.Seq[Webapp]): collection.Seq[String] = {
+    val missings = new mutable.ArrayBuffer[String]
     webapps foreach { webapp =>
       //1. download and translate gav/url to docBase
       if (ArchiveURI.isGav(webapp.uri)) {
@@ -64,22 +67,28 @@ object Resolver {
         val fileName = download(webapp.uri, sasHome + "/webapps/")
         webapp.docBase = sasHome + "/webapps/" + fileName
       } else {
-        if (webapp.uri.contains("${sas.home}")) {
-          webapp.docBase = webapp.uri.replace("${sas.home}", sasHome)
-        } else if (webapp.uri.startsWith("../../..")) {
-          webapp.docBase = webapp.uri.replace("../../..", sasHome)
+        var docBase = webapp.uri
+        if (docBase.contains("${sas.home}")) {
+          docBase = docBase.replace("${sas.home}", sasHome)
+        } else if (docBase.startsWith("../../..")) {
+          docBase = docBase.replace("../../..", sasHome)
         }
+        webapp.docBase = webapp.uri
       }
 
       //2.resolve war
-      if (webapp.resolveSupport && new File(webapp.docBase).exists() && resolvable(webapp.docBase)) {
-        val (all, missing) = AppResolver.process(new File(webapp.docBase), remote, local)
-        if (missing.nonEmpty) {
-          println("Download error :" + missing)
-          println("Cannot launch webapp :" + webapp.docBase)
-        }
-      }
+      if new File(webapp.docBase).exists()  then
+        if webapp.resolveSupport && resolvable(webapp.docBase) then
+          val result = AppResolver.process(new File(webapp.docBase), remote, local)
+          if result._2.nonEmpty then
+            println("Download error :" + result._2)
+            println("Cannot launch webapp :" + webapp.docBase)
+            missings ++= result._2.map(_.toString)
+      else
+        missings += webapp.docBase
+        println(s"""Due to missing ${webapp.docBase},it's launch was aborted.""")
     }
+    missings
   }
 
   private def resolvable(path: String): Boolean = {
