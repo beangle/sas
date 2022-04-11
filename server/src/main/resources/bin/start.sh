@@ -43,7 +43,7 @@ start(){
 
   touch "$SERVER_OUT"
   if [ -f $dir/bin/bootstrap.jar ]; then
-    export beangle_sas_ver=0.9.2
+    export beangle_sas_ver=0.9.3
 
     LOGGING_CONFIG="-Dnop"
     LOGGING_MANAGER="-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager"
@@ -98,8 +98,12 @@ started=0
 for dir in *; do
   for target in "$@"; do
     if [ "$dir" = "$target" ] ||  [ "all" = "$target" ] || [ "${dir%.*}" = "$target" ]; then
-      if start $dir; then
-        started=$((started+1))
+      if [ ! -f "$dir/error" ]; then
+        if start $dir; then
+          started=$((started+1))
+        fi
+      else
+        echo "see $dir/error"
       fi
     fi
   done

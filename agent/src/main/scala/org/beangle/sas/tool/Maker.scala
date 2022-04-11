@@ -59,9 +59,7 @@ object Maker {
       }
     }
     //2. resolve server webapps
-    servers foreach { server =>
-      Resolver.resolve(sasHome, container, remote, local, container.getWebapps(server, ips))
-    }
+    val missings = servers.map(s => s -> Resolver.resolve(sasHome, remote, local, container.getWebapps(s, ips))).toMap
 
     //make engine and servers
     engines foreach { engine =>
@@ -72,17 +70,24 @@ object Maker {
         case EngineType.Vibed =>
           VibedMaker.makeEngine(sasHome, engine, remote, local)
         case _ =>
-          System.err.println("Cannot recoganize engine type " + engine.typ)
+          System.err.println("Cannot recognize engine type " + engine.typ)
           System.exit(1)
       }
     }
     //last step
     servers foreach { server =>
-      makeServer(sasHome, container, server, ips)
+      val dirs = Dirs.on(sasHome + "/servers/" + server.qualifiedName)
+      if missings(server).nonEmpty then
+        dirs.write("error", missings(server).mkString("\n"))
+        println(s"Cannot resolve ${server.qualifiedName},see details: ${new File(dirs.pwd, "error")}")
+      else
+        makeServer(sasHome, container, server, ips)
+        dirs.delete("error")
     }
   }
 
   /** 检查部署在server上的应用是否都已经存在了，如果存在则生成Server。
+   *
    * @param sasHome
    * @param container
    * @param server
@@ -99,29 +104,10 @@ object Maker {
         base.delete(server.qualifiedName)
       }
     } else {
-      val missingWars = Collections.newBuffer[String]
-      val appDocBases = container.webapps.map { x => x.name -> x.docBase }.toMap
-      deployments foreach { deployment =>
-        val docBase = appDocBases(deployment.webapp)
-        if (!new File(docBase).exists()) {
-          missingWars += docBase
-        }
-      }
-      if (missingWars.nonEmpty) {
-        missingWars foreach { mw =>
-          println(s"Missing ${mw}")
-        }
-        if (missingWars.size == 1) {
-          println(s"""Due to missing a webapp,${server.qualifiedName}'s launch was aborted.""")
-        } else {
-          println(s"""Due to missing ${missingWars.size} webapps,${server.qualifiedName}'s launch was aborted.""")
-        }
-      } else {
-        server.farm.engine.typ match {
-          case EngineType.Tomcat => TomcatMaker.makeServer(sasHome, container, server, ips)
-          case EngineType.Vibed => VibedMaker.makeServer(sasHome, container, server, ips)
-          case _ =>
-        }
+      server.farm.engine.typ match {
+        case EngineType.Tomcat => TomcatMaker.makeServer(sasHome, container, server, ips)
+        case EngineType.Vibed => VibedMaker.makeServer(sasHome, container, server, ips)
+        case _ =>
       }
     }
   }

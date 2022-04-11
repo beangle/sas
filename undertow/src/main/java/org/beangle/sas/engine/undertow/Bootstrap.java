@@ -15,10 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.beangle.sas.engine.tomcat;
+package org.beangle.sas.engine.undertow;
 
-import org.apache.catalina.startup.Tomcat;
-import org.beangle.sas.engine.AbstractServer;
+import io.undertow.Undertow;
 import org.beangle.sas.engine.CmdOptions;
 import org.beangle.sas.engine.Server;
 import org.beangle.sas.engine.Tools;
@@ -30,17 +29,18 @@ public class Bootstrap {
 
   private static Logger logger = Logger.getLogger(Bootstrap.class.toString());
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws Exception {
     if (args.length < 1) {
-      System.out.println("Usage:org.beangle.sas.engine.tomcat.Bootstrap [--port=8081] [--path=/test] /path/to/your/war");
+      System.out.println("Usage:org.beangle.sas.engine.undertow.Bootstrap [--port=8081] [--path=/test] /path/to/your/war");
       return;
     }
     Server.Config config = CmdOptions.parse(args);
-    File baseDir = config.createTempDir("tomcat");
+    File baseDir = config.createTempDir("undertow");
     logger.info("create base dir: " + baseDir.getAbsolutePath());
     new File(baseDir, "webapps").mkdirs();
-    Tomcat tomcat = new TomcatServerBuilder(config).build(baseDir.getAbsolutePath());
-    final TomcatServer ts = new TomcatServer(tomcat);
+    new File(baseDir, "temp").mkdirs();
+    Undertow undertow = new UndertowServerBuilder(config).build(baseDir.getAbsolutePath());
+    final UndertowServer ts = new UndertowServer(undertow);
     ts.start();
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
       @Override
@@ -50,5 +50,4 @@ public class Bootstrap {
       }
     }));
   }
-
 }
