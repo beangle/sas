@@ -30,13 +30,13 @@ import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.util.scan.StandardJarScanner;
 import org.beangle.sas.engine.Server;
 
-import java.io.File;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
 public class TomcatServerBuilder {
   private final Server.Config config;
   private static final Log log = LogFactory.getLog(TomcatServerBuilder.class);
+
   public TomcatServerBuilder(Server.Config config) {
     this.config = config;
   }
@@ -89,24 +89,8 @@ public class TomcatServerBuilder {
     StandardContext context = new StandardContext();
     context.setName(config.contextPath);
     context.setPath(config.contextPath);
-    //embeded or as server
-    WebappLoader loader = new WebappLoader();
-    if (config.docBase == null) {
-      loader.setLoaderClass(EmbeddedWebappClassLoader.class.getName());
-      loader.setDelegate(true);
-      context.addLifecycleListener(new FixContextListener());
-      context.setDocBase(config.createTempDir("tomcat-docbase").getAbsolutePath());
-      addInitializer(context);
-    } else {
-      loader.setLoaderClass(DependencyClassLoader.class.getName());
-      loader.setDelegate(false);
-      context.addLifecycleListener(new ContextConfig());
-      context.setDocBase(config.docBase);
-    }
-    context.setLoader(loader);
     // disable scanning
     skipScanning(context);
-
     // container sci support
     if (!config.jspSupport && !config.websocketSupport) {
       context.setContainerSciFilter("apache");
@@ -115,9 +99,24 @@ public class TomcatServerBuilder {
     } else if (!config.websocketSupport) {
       context.setContainerSciFilter("WsSci");
     }
+    //embeded or as server
+    WebappLoader loader = new WebappLoader();
+    if (config.docBase == null) {
+      loader.setLoaderClass(EmbeddedWebappClassLoader.class.getName());
+      loader.setDelegate(true);
+      context.addLifecycleListener(new FixContextListener());
+      context.setDocBase(config.createTempDir("tomcat-docbase").getAbsolutePath());
+      addInitializers(context);
+    } else {
+      loader.setLoaderClass(DependencyClassLoader.class.getName());
+      loader.setDelegate(false);
+      context.addLifecycleListener(new ContextConfig());
+      context.setDocBase(config.docBase);
+    }
+    context.setLoader(loader);
 
     // default servlet and jsp
-    addDefaultServlet(context);
+    addDefaults(context);
 
     if (config.devMode) {
       context.setReloadable(true);
@@ -142,7 +141,7 @@ public class TomcatServerBuilder {
     context.setIgnoreAnnotations(true);
   }
 
-  private void addInitializer(StandardContext context) {
+  private void addInitializers(StandardContext context) {
     try {
       ServiceLoader<ServletContainerInitializer> loader = ServiceLoader.load(ServletContainerInitializer.class);
       Iterator<ServletContainerInitializer> iter = loader.iterator();
@@ -154,17 +153,19 @@ public class TomcatServerBuilder {
     }
   }
 
-  private void addDefaultServlet(Context ctx) {
+  private void addDefaults(Context ctx) {
     // Default servlet
-    Wrapper dft = Tomcat.addServlet(ctx, "default", "org.apache.catalina.servlets.DefaultServlet");
-    dft.setLoadOnStartup(1);
-    dft.setOverridable(true);
-    dft.addInitParameter("debug", "0");
-    dft.addInitParameter("listings", "false");
-    ctx.addServletMappingDecoded("/", "default");
+    if (config.defaultServletSupport) {
+      Wrapper dft = Tomcat.addServlet(ctx, "default", "org.apache.catalina.servlets.DefaultServlet");
+      dft.setLoadOnStartup(1);
+      dft.setOverridable(true);
+      dft.addInitParameter("debug", "0");
+      dft.addInitParameter("listings", "false");
+      ctx.addServletMappingDecoded("/", "default");
+    }
 
+    // JSP servlet (by class name - to avoid loading all deps)
     if (config.jspSupport) {
-      // JSP servlet (by class name - to avoid loading all deps)
       Wrapper jsp = Tomcat.addServlet(ctx, "jsp", "org.apache.jasper.servlet.JspServlet");
       jsp.addInitParameter("fork", "false");
       jsp.addInitParameter("development", "false");
@@ -174,7 +175,7 @@ public class TomcatServerBuilder {
       ctx.addServletMappingDecoded("*.jspx", "jsp");
     }
     // Sessions(minutes)
-    ctx.setSessionTimeout(30);
+    ctx.setSessionTimeout(config.defaultSessionTimeout);
 
     // MIME type mappings
     Tomcat.addDefaultMimeTypeMappings(ctx);
@@ -190,9 +191,7 @@ public class TomcatServerBuilder {
     public void lifecycleEvent(LifecycleEvent event) {
       try {
         Context context = (Context) event.getLifecycle();
-        if (event.getType().equals(Lifecycle.CONFIGURE_START_EVENT)) {
-          context.setConfigured(true);
-        }
+        if (event.getType().equals(Lifecycle.CONFIGURE_START_EVENT)) context.setConfigured(true);
       } catch (ClassCastException e) {
       }
     }

@@ -20,6 +20,8 @@ package org.beangle.sas.engine;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.Map;
 
 public interface Server {
 
@@ -34,8 +36,12 @@ public interface Server {
     public String hostname;
     public boolean devMode = false;
     public boolean jspSupport = false;
+    public boolean defaultServletSupport = true;
     public boolean websocketSupport = false;
+    public int defaultSessionTimeout = 30;//minutes
     public String unpack = "";
+
+    public Map<String, String> properties = new HashMap<String, String>();
 
     public Config(String contextPath, int port) {
       this(contextPath, port, null);
@@ -49,6 +55,12 @@ public interface Server {
 
     public boolean embedMode() {
       return null == docBase;
+    }
+
+    public Integer getInt(String propertyName) {
+      String v = properties.get(propertyName);
+      if (null == v || v.length() == 0) return null;
+      else return Integer.valueOf(v);
     }
 
     public final File createTempDir(String prefix) {

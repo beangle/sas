@@ -25,13 +25,19 @@ ThisBuild / homepage := Some(url("https://beangle.github.io/sas/index.html"))
 ThisBuild / crossPaths := false
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-val beangle_data_jdbc = "org.beangle.data" %% "beangle-data-jdbc" % "5.3.25"
-val beangle_boot = "org.beangle.boot" %% "beangle-boot" % "0.0.26"
-val beangle_template_freemarker = "org.beangle.template" %% "beangle-template-freemarker" % "0.0.34"
+val beangle_data_ver="5.4.0"
+val beangle_template_ver="0.0.37"
+val beangle_boot_ver="0.0.28"
+val apache_tomcat_ver="10.0.20"
+val io_undertow_ver="2.2.17.Final"
 
-val tomcat_juli = "org.apache.tomcat" % "tomcat-juli" % "10.0.11"
-val undertow_servlet = "io.undertow" % "undertow-servlet-jakartaee9" % "2.2.10.Final"
-val tomcat_embeded_core="org.apache.tomcat.embed" % "tomcat-embed-core" % "10.0.11" exclude("org.apache.tomcat","tomcat-annotations-api")
+val beangle_data_jdbc = "org.beangle.data" %% "beangle-data-jdbc" % beangle_data_ver
+val beangle_boot = "org.beangle.boot" %% "beangle-boot" % beangle_boot_ver
+val beangle_template_freemarker = "org.beangle.template" %% "beangle-template-freemarker" % beangle_template_ver
+
+val tomcat_juli = "org.apache.tomcat" % "tomcat-juli" % apache_tomcat_ver
+val undertow_servlet = "io.undertow" % "undertow-servlet-jakarta" % io_undertow_ver
+val tomcat_embeded_core="org.apache.tomcat.embed" % "tomcat-embed-core" % apache_tomcat_ver exclude("org.apache.tomcat","tomcat-annotations-api")
 val commonDeps = Seq(beangle_boot, scalaxml, scalatest)
 
 lazy val root = (project in file("."))
@@ -81,7 +87,6 @@ lazy val agent = (project in file("agent"))
     crossPaths := false,
     libraryDependencies ++= commonDeps,
     libraryDependencies ++= Seq(beangle_data_jdbc,beangle_template_freemarker)
-    //libraryDependencies += "io.netty" % "netty-all" % "4.1.68.Final"
   ).dependsOn(core)
 
 lazy val juli = (project in file("juli"))

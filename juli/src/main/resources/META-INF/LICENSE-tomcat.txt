@@ -201,14 +201,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-
-
 APACHE TOMCAT SUBCOMPONENTS:
 
 Apache Tomcat includes a number of subcomponents with separate copyright notices
 and license terms. Your use of these subcomponents is subject to the terms and
 conditions of the following licenses.
-
 
 For the ecj-x.x.x.jar component:
 
@@ -422,7 +419,6 @@ intellectual property laws of the United States of America. No party to this
 Agreement will bring a legal action under this Agreement more than one year
 after the cause of action arose. Each party waives its rights to a jury trial in
 any resulting litigation.
-
 
 For the Windows Installer component:
 
@@ -705,7 +701,6 @@ subjecting your linked code to the terms of the Common Public license version
 1.0. Any modifications or additions to files from the LZMA compression module
 for NSIS, however, are subject to the terms of the Common Public License version
 1.0.
-
 
 For the following XML Schemas for Java EE Deployment Descriptors:
  - javaee_5.xsd
@@ -1047,4 +1042,3 @@ COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
    to this License shall be subject to the jurisdiction of the Federal Courts of
    the Northern District of California and the state courts of the State of
    California, with venue lying in Santa Clara County, California.
-
