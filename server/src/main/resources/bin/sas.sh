@@ -1,19 +1,17 @@
 #!/bin/sh
 PRGDIR=`dirname "$0"`
-
 export SAS_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
+. "$SAS_HOME/bin/env.sh"
+
 if [ -r "$SAS_HOME/bin/setenv.sh" ]; then
   . "$SAS_HOME/bin/setenv.sh"
-fi
-if [ -z "$M2_REMOTE_REPO" ]; then
-  export M2_REMOTE_REPO="https://maven.aliyun.com/nexus/content/groups/public"
-fi
-if [ -z "$M2_REPO" ]; then
-  export M2_REPO="$HOME/.m2/repository"
 fi
 
 sas_classpath="$SAS_HOME/bin/lib/*"
 sas_command="$1"
+if [ "$sas_command" = "" ] ; then
+  sas_command="status"
+fi
 
 if [ "$sas_command" = "version" ] ; then
 
@@ -65,9 +63,9 @@ elif [ "$sas_command" = "status" ] ; then
     done
   fi
   if [ $started = 0 ];then
-    echo "Beangle Sas is shutdown."
+    echo " Beangle Sas is shutdown."
   elif (( started > 1 )); then
-    echo "Beangle Sas launches $started servers."
+    echo " Beangle Sas launches $started servers."
   fi
 
 elif [ "$sas_command" = "update" ] ; then

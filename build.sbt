@@ -2,7 +2,7 @@ import org.beangle.parent.Dependencies._
 import org.beangle.parent.Settings._
 
 ThisBuild / organization := "org.beangle.sas"
-ThisBuild / version := "0.9.3"
+ThisBuild / version := "0.9.4"
 
 ThisBuild / scmInfo := Some(
   ScmInfo(
@@ -115,10 +115,10 @@ lazy val juli = (project in file("juli"))
         xs map(_.toLowerCase) match {
           case ("manifest.mf" :: Nil) | ("notice" :: Nil) | ("license" :: Nil) =>MergeStrategy.discard
           case "maven" :: xs =>  MergeStrategy.discard
-          case "services" :: "javax.servlet.servletcontainerinitializer"::Nil  => MergeStrategy.discard
+          case "services" :: "jakarta.servlet.servletcontainerinitializer"::Nil  => MergeStrategy.discard
+          case "services" :: "org.slf4j.spi.slf4jserviceprovider"::Nil  => MergeStrategy.discard
           case "services" :: "org.apache.commons.logging.logfactory"::Nil  => MergeStrategy.discard
           case "services" :: "ch.qos.logback.classic.spi.configurator"::Nil  => MergeStrategy.discard
-          case "services" :: "org.slf4j.spi.slf4jserviceprovider"::Nil  => MergeStrategy.discard
           case _ => MergeStrategy.first
         }
       case PathList("module-info.class") =>MergeStrategy.discard

@@ -1,31 +1,12 @@
 #!/bin/sh
 PRGDIR=`dirname "$0"`
 export SAS_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
+. "$SAS_HOME/bin/env.sh"
 
 cd $PRGDIR
 if [ -r "$SAS_HOME/bin/setenv.sh" ]; then
   . "$SAS_HOME/bin/setenv.sh"
 fi
-if [ -z "$M2_REMOTE_REPO" ]; then
-  export M2_REMOTE_REPO="https://maven.aliyun.com/nexus/content/groups/public"
-fi
-if [ -z "$M2_REPO" ]; then
-  export M2_REPO="$HOME/.m2/repository"
-fi
-
-export scala_ver=3.0.1
-export scala_lib_ver=2.13.6
-export scalaxml_ver=2.0.1
-export beangle_sas_ver=0.9.3
-export beangle_commons_ver=5.2.8
-export beangle_template_ver=0.0.35
-export beangle_data_ver=5.3.25
-export beangle_boot_ver=0.0.26
-export slf4j_ver=2.0.0-alpha4
-export logback_ver=1.3.0-alpha9
-
-export freemarker_ver=2.3.31
-export commons_compress_ver=1.21
 
 # download groupId artifactId version
 download(){
