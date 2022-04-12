@@ -1,6 +1,7 @@
 #!/bin/sh
 PRGDIR=`dirname "$0"`
 export SAS_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
+. "$SAS_HOME/bin/env.sh"
 
 if [ ! -d $SAS_HOME/bin/lib ]; then
   echo "Please init beangle sas server first."
@@ -43,7 +44,6 @@ start(){
 
   touch "$SERVER_OUT"
   if [ -f $dir/bin/bootstrap.jar ]; then
-    export beangle_sas_ver=0.9.3
 
     LOGGING_CONFIG="-Dnop"
     LOGGING_MANAGER="-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager"

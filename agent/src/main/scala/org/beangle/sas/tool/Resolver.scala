@@ -81,9 +81,11 @@ object Resolver {
         if webapp.resolveSupport && resolvable(webapp.docBase) then
           val result = AppResolver.process(new File(webapp.docBase), remote, local)
           if result._2.nonEmpty then
-            println("Download error :" + result._2)
+            println("Missing:" + result._2.mkString(","))
             println("Cannot launch webapp :" + webapp.docBase)
             missings ++= result._2.map(_.toString)
+          end if
+        end if
       else
         missings += webapp.docBase
         println(s"""Due to missing ${webapp.docBase},it's launch was aborted.""")

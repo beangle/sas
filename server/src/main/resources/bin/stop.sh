@@ -2,6 +2,7 @@
 PRGDIR=`dirname "$0"`
 SAS_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
 export SAS_HOME
+. "$SAS_HOME/bin/env.sh"
 
 if [ $# -eq 0 ]; then
   echo "Usage:stop.sh server_name or farm_name"
