@@ -97,8 +97,7 @@ object Maker {
 
     if (deployments.isEmpty) {
       //如果发现没有对应部署的，并且没有运行的server，则进行删除。
-      if (new File(sasHome + "/servers/" + server.qualifiedName).exists() &&
-        SasTool.detectExecution(server).isEmpty) {
+      if (new File(sasHome + "/servers/" + server.qualifiedName).exists() && SasTool.detectExecution(server).isEmpty) {
         val base = Dirs.on(sasHome + "/servers")
         base.cd(server.qualifiedName + "/webapps").setWriteable()
         base.delete(server.qualifiedName)

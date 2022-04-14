@@ -17,7 +17,7 @@
 
 package org.beangle.sas.tool
 
-import org.beangle.boot.artifact.{Artifact, ArtifactDownloader, Repo, Archive}
+import org.beangle.boot.artifact.{Archive, Artifact, ArtifactDownloader, Repo}
 import org.beangle.boot.dependency.AppResolver
 import org.beangle.commons.io.IOs
 import org.beangle.commons.lang.Strings.substringAfterLast
@@ -33,7 +33,7 @@ import scala.collection.mutable
  */
 object Resolver {
 
-  def main(args: Array[String]): Int = {
+  def main(args: Array[String]): Unit = {
     if (args.length < 1) {
       println("Usage: Resolve /path/to/server.xml")
       return -1
@@ -49,7 +49,7 @@ object Resolver {
 
     val local = new Repo.Local(repository.local.orNull)
     val missing = resolve(sasHome, remote, local, container.webapps)
-    if missing.nonEmpty then -1 else 0
+    System.exit(if missing.nonEmpty then -1 else 0)
   }
 
   def resolve(sasHome: String, remote: Repo.Remote, local: Repo.Local, webapps: collection.Seq[Webapp]): collection.Seq[String] = {
@@ -73,22 +73,22 @@ object Resolver {
         } else if (docBase.startsWith("../../..")) {
           docBase = docBase.replace("../../..", sasHome)
         }
-        webapp.docBase = webapp.uri
+        webapp.docBase = docBase
       }
 
       //2.resolve war
-      if new File(webapp.docBase).exists()  then
+      if new File(webapp.docBase).exists() then
         if webapp.resolveSupport && resolvable(webapp.docBase) then
           val result = AppResolver.process(new File(webapp.docBase), remote, local)
           if result._2.nonEmpty then
             println("Missing:" + result._2.mkString(","))
-            println("Cannot launch webapp :" + webapp.docBase)
+            println("Cannot launch webapp:" + webapp.docBase)
             missings ++= result._2.map(_.toString)
           end if
         end if
       else
         missings += webapp.docBase
-        println(s"""Due to missing ${webapp.docBase},it's launch was aborted.""")
+        println(s"""Missing ${webapp.docBase}""")
     }
     missings
   }
