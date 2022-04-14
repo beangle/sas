@@ -10,7 +10,7 @@ fi
 export scala_ver=3.1.2
 export scala_lib_ver=2.13.8
 export scalaxml_ver=2.1.0
-export beangle_sas_ver=0.9.4
+export beangle_sas_ver=0.9.5
 export beangle_commons_ver=5.2.13
 export beangle_template_ver=0.0.37
 export beangle_data_ver=5.4.0
