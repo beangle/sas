@@ -63,9 +63,9 @@ elif [ "$sas_command" = "status" ] ; then
     done
   fi
   if [ $started = 0 ];then
-    echo " Beangle Sas is shutdown."
+    echo "Beangle Sas is shutdown."
   elif (( started > 1 )); then
-    echo " Beangle Sas launches $started servers."
+    echo "Beangle Sas launches $started servers."
   fi
 
 elif [ "$sas_command" = "update" ] ; then

@@ -26,13 +26,10 @@ import java.net.URL
 object Version {
 
   def logo(version:String): String = {
-    s"""|   _____
-        |  / ____|
-        | | (___    __ _  ___
-        |  \\___ \\  / _` |/ __|
-        |  ____) || (_| |\\__ \\
-        | |_____/  \\__,_||___/
-        | version ${version}""".stripMargin
+    s""" ___    __    ___
+       |/ __)  /__\\  / __)
+       |\\__ \\ /(__)\\ \\__ \\
+       |(___/(__)(__)(___/
+       |version ${version}""".stripMargin
   }
-
 }

@@ -23,11 +23,11 @@ object Version {
   def main(args: Array[String]): Unit = {
     val version = findJarVersion(Version.getClass)
     println(org.beangle.sas.Version.logo(version))
-    println(" hosts:" + SasTool.getLocalIPs().toBuffer.sorted.mkString(","))
+    println("hosts:" + SasTool.getLocalIPs().toBuffer.sorted.mkString(","))
   }
 
   private def findJarVersion(clazz: Class[_]): String = {
-    val className = "/" + clazz.getName().replace(".", "/") + ".class"
+    val className = "/" + clazz.getName.replace(".", "/") + ".class"
     val classPath = clazz.getResource(className).toString
     if (classPath.startsWith("jar")) {
       val manifestPath = classPath.replace(className, "/META-INF/MANIFEST.MF")
