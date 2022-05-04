@@ -3,7 +3,7 @@ PRGDIR=`dirname "$0"`
 export SAS_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
 . "$SAS_HOME/bin/env.sh"
 
-if [ -r "$SAS_HOME/bin/setenv.sh" ]; then
+if [ -x "$SAS_HOME/bin/setenv.sh" ]; then
   . "$SAS_HOME/bin/setenv.sh"
 fi
 
@@ -36,6 +36,23 @@ elif [ "$sas_command" = "firewall" ] ; then
 elif [ "$sas_command" = "resolve" ] ; then
 
   java -cp "$sas_classpath" org.beangle.sas.tool.Resolver $SAS_HOME/conf/server.xml
+
+elif [ "$sas_command" = "pull" ] ; then
+
+  if [ -z "$SAS_ADMIN" ]; then
+    echo "define SAS_ADMIN and SAS_PROFILE in setenv.sh"
+    exit 1
+  fi
+  wget -q $SAS_ADMIN/${SAS_PROFILE}/server.xml -O $SAS_HOME/conf/server_newer.xml
+  if [ -f $SAS_HOME/conf/server_newer.xml ]; then
+    rm -rf $SAS_HOME/conf/server_old.xml
+    if [ -f $SAS_HOME/conf/server.xml ]; then
+      mv $SAS_HOME/conf/server.xml $SAS_HOME/conf/server_old.xml
+      echo "rename server.xml to server_old.xml."
+    fi
+    mv $SAS_HOME/conf/server_newer.xml $SAS_HOME/conf/server.xml
+    echo "conf/server.xml was updated."
+  fi
 
 elif [ "$sas_command" = "status" ] ; then
 
@@ -118,6 +135,7 @@ else
   echo "  proxy           Generate haproxy/enginx config file"
   echo "  status          Show status"
   echo "  update          Update sas to new_version"
+  echo "  pull            Fetch and update server.xml"
   echo "  version         Show version"
   exit 1
 
