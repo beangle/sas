@@ -32,6 +32,7 @@ import java.io.{File, StringWriter}
 object TomcatMaker {
 
   /** 增加sas对tomcat的默认要求到配置模型中。
+   *
    * @param container
    * @param engine
    */
@@ -48,7 +49,7 @@ object TomcatMaker {
     val context = engine.context
     if (context.loader == null) {
       context.loader = new Loader("org.apache.catalina.loader.WebappLoader")
-      context.loader.properties.put("loaderClass","org.beangle.sas.engine.tomcat.DependencyClassLoader")
+      context.loader.properties.put("loaderClass", "org.beangle.sas.engine.tomcat.DependencyClassLoader")
     }
     if (context.jarScanner == null) {
       val scanner = new JarScanner
@@ -96,109 +97,6 @@ object TomcatMaker {
     }
   }
 
-  def makeServer(sasHome: String, container: Container, server: Server, ips: Set[String]): Unit = {
-    val result = SasTool.detectExecution(server)
-    result match {
-      case Some(e) =>
-        val dirs = Dirs.on(sasHome + "/servers/" + server.qualifiedName)
-        dirs.write("SERVER_PID", e.processId.toString)
-      case None =>
-        doMakeBase(sasHome, container, server, ips)
-        SasTool.rollLog(sasHome, container, server)
-    }
-  }
-
-  /** 生成一个base的目录结构和配置文件
-   * @param sasHome
-   * @param container
-   * @param server
-   */
-  protected[maker] def doMakeBase(sasHome: String, container: Container, server: Server, ips: Set[String]): Unit = {
-    val engine = server.farm.engine
-    val serverName = server.qualifiedName
-    val base = Dirs.on(sasHome + "/servers/" + serverName)
-    base.mkdirs()
-    base.mkdirs("temp", "work", "conf")
-    //这个文件夹可能是只读，不好删除，先设置可写
-    base.cd("webapps").setWriteable()
-    //删除这些已有文件，创建一个新环境
-    base.delete("webapps", "conf", "bin", "logs", "lib").mkdirs("webapps", "conf", "bin")
-
-    val engineHome = sasHome + "/engines/" + engine.typ + "-" + engine.version
-    if (new File(engineHome).exists()) {
-      base.ln(engineHome + "/lib")
-
-      val conf = base.cd("conf")
-      Dirs.on(engineHome + "/conf").ls() foreach { cf =>
-        conf.ln(engineHome + "/conf/" + cf)
-      }
-
-      val bin = base.cd("bin")
-      Dirs.on(engineHome + "/bin").ls() foreach { f =>
-        bin.ln(engineHome + "/bin/" + f)
-      }
-    }
-    val logs = Dirs.on(sasHome + "/logs/" + serverName)
-    logs.mkdirs()
-    base.ln(new File(sasHome + "/logs/" + serverName), "logs")
-
-    container.getDeployments(server, ips) foreach { d =>
-      container.getWebapp(d.webapp) foreach { w =>
-        val docBase = new File(w.docBase)
-        if (docBase.exists() && docBase.isFile) {
-          d.unpack match {
-            case Some(unpack) => if (unpack) unzipWar(base, w, d)
-            case None =>
-              d.unpack = Some(!War.isLibEmpty(w.docBase))
-              if (d.unpack.get) {
-                unzipWar(base, w, d)
-              }
-          }
-        }
-      }
-    }
-    //这个文件夹设置成只读
-    base.cd("webapps").setReadOnly()
-    genBaseConfig(container, server, sasHome, ips)
-  }
-
-  protected[maker] def unzipWar(base: Dirs, webapp: Webapp, deployment: Deployment): Unit = {
-    var path = deployment.path
-    if (path.startsWith("/")) path = path.substring(1)
-    if (path.endsWith("/")) path = path.substring(0, path.length - 1)
-    path = path.replace("/", "#")
-    if (Strings.isBlank(path)) path = "ROOT"
-    val docBase = base.cd("webapps").mkdirs(path).cd(path).pwd
-    Zipper.unzip(new File(webapp.docBase), docBase)
-    webapp.docBase = docBase.getAbsolutePath
-  }
-
-  protected[maker] def genBaseConfig(container: Container, server: Server, targetDir: String, ips: Set[String]): Unit = {
-    val farm = server.farm
-    val data = new collection.mutable.HashMap[String, Any]()
-    data.put("container", container)
-    data.put("farm", farm)
-    data.put("server", server)
-    data.put("ips", ips)
-    data.put("deployments", container.getDeployments(server, ips))
-    val sw = new StringWriter()
-    val freemarkerTemplate = SasTool.templateCfg.getTemplate(s"${farm.engine.typ}/conf/server.xml.ftl")
-    freemarkerTemplate.process(data, sw)
-    val serverDir = targetDir + "/servers/" + server.qualifiedName
-    new File(serverDir).mkdirs()
-    Files.writeString(new File(serverDir + "/conf/server.xml"), sw.toString)
-
-    if (farm.opts.isDefined) {
-      val envTemplate = SasTool.templateCfg.getTemplate(s"sas/setenv.sh.ftl")
-      val nsw = new StringWriter()
-      envTemplate.process(data, nsw)
-      new File(serverDir + "/bin").mkdirs()
-      val target = new File(serverDir + "/bin/setenv.sh")
-      Files.writeString(target, nsw.toString)
-      target.setExecutable(true)
-    }
-  }
-
   protected[maker] def doMakeEngine(sasHome: String, engine: Engine, tomcatZip: File): Unit = {
     val engineHome = new File(sasHome + "/engines")
     engineHome.mkdirs()
@@ -225,7 +123,7 @@ object TomcatMaker {
     }
 
     //clean bin
-    Dirs.on(engineDir, "bin").delete("startup.sh", "shutdown.sh", "configtest.sh", "version.sh",
+    Dirs.on(engineDir, "bin").delete("startup.sh", "shutdown.sh", "configtest.sh", "version.sh", "migrate.sh",
       "digest.sh", "tool-wrapper.sh", "catalina.sh", "setclasspath.sh", "makebase.sh", "ciphers.sh", "tomcat-juli.jar")
 
     val bin = new File(engineDir, "bin")
@@ -263,6 +161,103 @@ object TomcatMaker {
     val nsw = new StringWriter()
     envTemplate.process(data, nsw)
     Files.writeString(new File(engineDir + "/conf/web.xml"), nsw.toString)
+  }
+
+  def makeServer(sasHome: String, container: Container, server: Server): Unit = {
+    val result = SasTool.detectExecution(server)
+    result match {
+      case Some(e) =>
+        val dirs = Dirs.on(sasHome + "/servers/" + server.qualifiedName)
+        dirs.write("SERVER_PID", e.processId.toString)
+      case None =>
+        doMakeBase(sasHome, container, server)
+        SasTool.rollLog(sasHome, container, server)
+    }
+  }
+
+  /** 生成一个base的目录结构和配置文件
+   *
+   * @param sasHome
+   * @param container
+   * @param server
+   */
+  protected[maker] def doMakeBase(sasHome: String, container: Container, server: Server): Unit = {
+    val engine = server.farm.engine
+    val serverName = server.qualifiedName
+    val base = Dirs.on(sasHome + "/servers/" + serverName)
+    base.mkdirs()
+    base.mkdirs("temp", "work", "conf")
+    //这个文件夹可能是只读，不好删除，先设置可写
+    base.cd("webapps").setWriteable()
+    //删除这些已有文件，创建一个新环境
+    base.delete("webapps", "conf", "bin", "logs", "lib").mkdirs("webapps", "conf", "bin")
+
+    val engineHome = sasHome + "/engines/" + engine.typ + "-" + engine.version
+    if (new File(engineHome).exists()) {
+      base.ln(engineHome + "/lib")
+
+      val conf = base.cd("conf")
+      Dirs.on(engineHome + "/conf").ls() foreach { cf =>
+        conf.ln(engineHome + "/conf/" + cf)
+      }
+
+      val bin = base.cd("bin")
+      Dirs.on(engineHome + "/bin").ls() foreach { f =>
+        bin.ln(engineHome + "/bin/" + f)
+      }
+    }
+    val logs = Dirs.on(sasHome + "/logs/" + serverName)
+    logs.mkdirs()
+    base.ln(new File(sasHome + "/logs/" + serverName), "logs")
+
+    container.getWebapps(server) foreach { w =>
+      val docBase = new File(w.docBase)
+      if (docBase.exists() && docBase.isFile) {
+        w.unpack match {
+          case Some(unpack) => if (unpack) unzipWar(base, w)
+          case None =>
+            w.unpack = Some(!War.isLibEmpty(w.docBase))
+            if w.unpack.get then unzipWar(base, w)
+        }
+      }
+    }
+    //这个文件夹设置成只读
+    base.cd("webapps").setReadOnly()
+    genBaseConfig(container, server, sasHome)
+  }
+
+  protected[maker] def unzipWar(base: Dirs, webapp: Webapp): Unit = {
+    var path = webapp.contextPath
+    if (path.startsWith("/")) path = path.substring(1)
+    if (path.endsWith("/")) path = path.substring(0, path.length - 1)
+    path = path.replace("/", "#")
+    if (Strings.isBlank(path)) path = "ROOT"
+    val docBase = base.cd("webapps").mkdirs(path).cd(path).pwd
+    Zipper.unzip(new File(webapp.docBase), docBase)
+    webapp.docBase = docBase.getAbsolutePath
+  }
+
+  protected[maker] def genBaseConfig(container: Container, server: Server, targetDir: String): Unit = {
+    val farm = server.farm
+    val data = new collection.mutable.HashMap[String, Any]()
+    data.put("container", container)
+    data.put("farm", farm)
+    data.put("server", server)
+    data.put("webapps", container.getWebapps(server))
+    val sw = new StringWriter()
+    val freemarkerTemplate = SasTool.templateCfg.getTemplate(s"${farm.engine.typ}/conf/server.xml.ftl")
+    freemarkerTemplate.process(data, sw)
+    val serverDir = targetDir + "/servers/" + server.qualifiedName
+    new File(serverDir).mkdirs()
+    Files.writeString(new File(serverDir + "/conf/server.xml"), sw.toString)
+
+    val envTemplate = SasTool.templateCfg.getTemplate(s"sas/setenv.sh.ftl")
+    val nsw = new StringWriter()
+    envTemplate.process(data, nsw)
+    new File(serverDir + "/bin").mkdirs()
+    val target = new File(serverDir + "/bin/setenv.sh")
+    Files.writeString(target, nsw.toString)
+    target.setExecutable(true)
   }
 
 }

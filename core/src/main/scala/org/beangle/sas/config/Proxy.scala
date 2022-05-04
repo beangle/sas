@@ -30,10 +30,6 @@ object Proxy {
     var options: Option[String] = None
     var servers: mutable.Buffer[Server] = Collections.newBuffer[Server]
 
-    def getServer(name: String, ip: String): Option[Server] = {
-      servers.find(x => x.name == name && x.ip == ip)
-    }
-
     def addServer(name: String, ip: String, port: Int, options: Option[String]): Server = {
       require(port > 0, s"wrong port:${name} ${port}")
       getServer(name, ip) match {
@@ -48,20 +44,8 @@ object Proxy {
       }
     }
 
-    def addServers(pattern: String, container: Container): Unit = {
-      var host = "*"
-      var serverName = pattern
-      if (pattern.contains("@")) {
-        host = Strings.substringAfterLast(pattern, "@")
-        serverName = Strings.substringBeforeLast(pattern, "@")
-      }
-      container.getMatchedServers(serverName) foreach { s =>
-        s.farm.hosts foreach { h =>
-          if (host == "*" || host == h.name) {
-            this.addServer(s.qualifiedName, h.ip, s.http, None)
-          }
-        }
-      }
+    def getServer(name: String, ip: String): Option[Server] = {
+      servers.find(x => x.name == name && x.ip == ip)
     }
 
     def contains(sname: String, ip: String): Boolean = {
@@ -79,62 +63,43 @@ object Proxy {
     var certificateKey: String = _
     var ciphers: String = _
     var protocols: String = _
-    var port = 443
+    var port: Int = 443
     var forceHttps: Boolean = true
   }
 
 }
 
-import org.beangle.sas.config.Proxy._
+import org.beangle.sas.config.Proxy.*
 
 class Proxy {
+  /** 后端主机列表设置 */
+  val backends: mutable.Buffer[Backend] = Collections.newBuffer[Backend]
+  /** 代理引擎类型 */
   var engine: String = "haproxy"
   /** 主机 */
   var hostname: Option[String] = None
   /** 最大连接数 */
-  var maxconn: Int = 15000
+  var maxconn: Int = 30000
+  /** http端口 */
+  var httpPort: Int = 80
   /** 统计状态设置 */
   var status: Option[Status] = None
   /** https配置 */
   var https: Option[Https] = None
-  /** 后端主机列表设置 */
-  val backends: mutable.Map[String, Backend] = Collections.newMap[String, Backend]
 
   def update(proxy: Proxy): Unit = {
     this.hostname = proxy.hostname
     this.maxconn = proxy.maxconn
   }
 
-  /**
-   * Get or Create backend by server name or farm name
-   * @param serverName
-   * @param container
-   * @return
-   */
-  def getOrCreateBackend(serverName: String, container: Container): Backend = {
-    require(!(serverName.contains(",") || serverName.contains("@")), "Cannot contains , and @,Using explicit backend")
-    val backendName = Strings.replace(serverName, ".", "_")
-    backends.get(backendName) match {
-      case None =>
-        val backend = new Backend(backendName)
-        backend.addServers(serverName, container)
-        addBackend(backend)
-      case Some(b) =>
-        if (b.servers.isEmpty) {
-          b.addServers(serverName, container)
-        }
-        b
-    }
-  }
-
   def getBackend(pattern: String): Backend = {
     var name = pattern
     name = Strings.replace(name, ".", "_")
-    backends(name)
+    backends.find(b => b.name == name).get
   }
 
   def addBackend(backend: Backend): Backend = {
-    backends.put(backend.name, backend)
+    backends.addOne(backend)
     backend
   }
 

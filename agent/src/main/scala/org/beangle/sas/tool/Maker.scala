@@ -34,9 +34,9 @@ object Maker {
     }
     val configFile = new File(args(0))
     val container = Container(scala.xml.XML.load(new FileInputStream(configFile)))
-    val server = args(1)
+    val serverPattern = args(1)
     val sasHome = configFile.getParentFile.getParentFile.getCanonicalPath
-    make(container, sasHome, server)
+    make(container, sasHome, serverPattern)
   }
 
   def make(container: Container, sasHome: String, serverPattern: String): Unit = {
@@ -51,7 +51,7 @@ object Maker {
     val engines = Collections.newSet[Engine]
     val servers = Collections.newBuffer[Server]
     container.farms foreach { farm =>
-      for (server <- farm.servers) {
+      for (server <- farm.servers; if ips.contains(server.host.ip)) {
         if (serverPattern == "all" || serverPattern == farm.name || serverPattern == server.qualifiedName) {
           servers += server
           engines += farm.engine
@@ -59,7 +59,7 @@ object Maker {
       }
     }
     //2. resolve server webapps
-    val missings = servers.map(s => s -> Resolver.resolve(sasHome, remote, local, container.getWebapps(s, ips))).toMap
+    val missings = servers.map(s => s -> Resolver.resolve(sasHome, remote, local, container.getWebapps(s))).toMap
 
     //make engine and servers
     engines foreach { engine =>
@@ -81,7 +81,7 @@ object Maker {
         dirs.write("error", missings(server).mkString("\n"))
         println(s"Cannot resolve ${server.qualifiedName},see details: ${new File(dirs.pwd, "error")}")
       else
-        makeServer(sasHome, container, server, ips)
+        makeServer(sasHome, container, server)
         dirs.delete("error")
     }
   }
@@ -92,11 +92,11 @@ object Maker {
    * @param container
    * @param server
    */
-  private def makeServer(sasHome: String, container: Container, server: Server, ips: Set[String]): Unit = {
-    val deployments = container.getDeployments(server, ips)
+  private def makeServer(sasHome: String, container: Container, server: Server): Unit = {
+    val webapps = container.getWebapps(server)
 
-    if (deployments.isEmpty) {
-      //如果发现没有对应部署的，并且没有运行的server，则进行删除。
+    if (webapps.isEmpty) {
+      //如果发现没有对应部署的webapp，并且没有运行的server，则进行删除。
       if (new File(sasHome + "/servers/" + server.qualifiedName).exists() && SasTool.detectExecution(server).isEmpty) {
         val base = Dirs.on(sasHome + "/servers")
         base.cd(server.qualifiedName + "/webapps").setWriteable()
@@ -104,8 +104,8 @@ object Maker {
       }
     } else {
       server.farm.engine.typ match {
-        case EngineType.Tomcat => TomcatMaker.makeServer(sasHome, container, server, ips)
-        case EngineType.Vibed => VibedMaker.makeServer(sasHome, container, server, ips)
+        case EngineType.Tomcat => TomcatMaker.makeServer(sasHome, container, server)
+        case EngineType.Vibed => VibedMaker.makeServer(sasHome, container, server)
         case _ =>
       }
     }

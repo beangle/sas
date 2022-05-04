@@ -30,19 +30,19 @@ object VibedMaker {
 
   }
 
-  def makeServer(sasHome: String, container: Container, server: Server, ips: Set[String]): Unit = {
+  def makeServer(sasHome: String, container: Container, server: Server): Unit = {
     val result = SasTool.detectExecution(server)
     result match {
       case Some(e) =>
         val dirs = Dirs.on(sasHome + "/servers/" + server.qualifiedName)
         dirs.write("SERVER_PID", e.processId.toString)
       case None =>
-        doMakeBase(sasHome, container, server, ips)
+        doMakeBase(sasHome, container, server)
         SasTool.rollLog(sasHome, container, server)
     }
   }
 
-  private def doMakeBase(sasHome: String, container: Container, server: Server, ips: Set[String]): Unit = {
+  private def doMakeBase(sasHome: String, container: Container, server: Server): Unit = {
     val farm = server.farm
     val serverName = server.qualifiedName
     val serverDir = sasHome + "/servers/" + serverName
@@ -58,21 +58,19 @@ object VibedMaker {
     data.put("container", container)
     data.put("farm", server.farm)
     data.put("server", server)
-    data.put("ips", ips)
-    data.put("deployments", container.getDeployments(server, ips))
+    data.put("ips", SasTool.getLocalIPs())
+    data.put("webapps", container.getWebapps(server))
     val sw = new StringWriter()
     val freemarkerTemplate = SasTool.templateCfg.getTemplate(s"${farm.engine.typ}/conf/server.xml.ftl")
     freemarkerTemplate.process(data, sw)
     Files.writeString(new File(serverDir + "/conf/server.xml"), sw.toString)
 
-    container.getDeployments(server, ips) foreach { d =>
-      container.getWebapp(d.webapp) foreach { w =>
-        base.cd("bin").write("command.txt", w.docBase)
-        Files.setExecutable(new File(w.docBase))
-      }
+    container.getWebapps(server) foreach { w =>
+      base.cd("bin").write("command.txt", w.docBase)
+      Files.setExecutable(new File(w.docBase))
     }
 
-    if (farm.opts.isDefined) {
+    if (farm.serverOptions.isDefined) {
       val envTemplate = SasTool.templateCfg.getTemplate(s"sas/setenv.sh.ftl")
       val nsw = new StringWriter()
       envTemplate.process(data, nsw)

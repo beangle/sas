@@ -49,11 +49,10 @@
         <Valve className="ch.qos.logback.access.tomcat.LogbackValve" quiet="true" filename="conf/logback-access.xml"/>
       [/#if]
 [#t/]
-      [#list deployments as deployment]
-        [#assign webapp=container.getWebapp(deployment.webapp)/]
+      [#list webapps as webapp]
 [#t/]
         [#assign containerSciFilter=webapp.getContainerSciFilter(farm.engine)!""/]
-        <Context path="${deployment.path}" [#if containerSciFilter?length>0]containerSciFilter="${containerSciFilter}"[/#if]  [#if !((deployment.unpack)!true)]unpackWAR="false"[/#if] [#if deployment.reloadable]reloadable="true"[/#if] [#rt/]
+        <Context path="${webapp.contextPath}" [#if containerSciFilter?length>0]containerSciFilter="${containerSciFilter}"[/#if]  [#if !((webapp.unpack)!true)]unpackWAR="false"[/#if] [#rt/]
         [#lt/] docBase="${webapp.docBase}"[#rt/]
         [#lt/][#list webapp.properties?keys as p] ${p}="${webapp.properties[p]}"[/#list]>
           [#list webapp.resources as resource]

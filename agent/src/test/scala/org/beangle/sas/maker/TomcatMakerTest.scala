@@ -17,10 +17,11 @@
 
 package org.beangle.sas.maker
 
-import java.io.File
-import org.beangle.sas.config.{Container, Engine, Farm, Host, Server}
+import org.beangle.sas.config.*
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
+
+import java.io.File
 
 class TomcatMakerTest extends AnyFunSpec with Matchers {
   describe("Resolver") {
@@ -35,7 +36,7 @@ class TomcatMakerTest extends AnyFunSpec with Matchers {
       val file = new File("/tmp/apache-tomcat-8.5.15.zip")
       if (file.exists()) {
         TomcatMaker.doMakeEngine("/tmp/sas", engine, file)
-        TomcatMaker.doMakeBase(sasHome, container, server,Set(Host.Localhost.ip))
+        TomcatMaker.doMakeBase(sasHome, container, server)
       }
     }
   }

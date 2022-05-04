@@ -22,6 +22,8 @@ import org.beangle.commons.lang.Numbers.toInt
 import org.beangle.commons.lang.Strings.{isEmpty, isNotBlank}
 import org.beangle.commons.lang.{Numbers, Strings}
 
+import scala.collection.mutable
+
 object Container {
 
   def apply(xml: scala.xml.Elem): Container = {
@@ -39,9 +41,7 @@ object Container {
       val remote = (repoElem \ "@remote").text
       conf.repository = new Repository(if (isEmpty(local)) None else Some(local), if (isEmpty(remote)) None else Some(remote))
     }
-    if (null == conf.repository) {
-      conf.repository = new Repository(None, None)
-    }
+    if null == conf.repository then conf.repository = new Repository(None, None)
 
     //2. identify engines
     (xml \ "Engines" \ "Engine") foreach { engineElem =>
@@ -95,14 +95,9 @@ object Container {
     (xml \ "Hosts" \ "Host") foreach { hostElem =>
       val name = (hostElem \ "@name").text
       val ip = (hostElem \ "@ip").text
-      val comment = (hostElem \ "@comment").text
-      val host = new Host(name, ip)
-      if (isNotBlank(comment)) host.comment = Some(comment)
-      conf.hosts += host
+      conf.hosts += new Host(name, ip)
     }
-    if (conf.hosts.isEmpty) {
-      conf.hosts.addOne(Host.Localhost)
-    }
+    if conf.hosts.isEmpty then conf.hosts.addOne(Host.Localhost)
 
     // 4. register resources
     (xml \ "Resources" \ "Resource") foreach { resourceElem =>
@@ -119,20 +114,16 @@ object Container {
       if (engine.isEmpty) throw new RuntimeException("Cannot find engine for" + (farmElem \ "@engine").text)
 
       val farm = new Farm((farmElem \ "@name").text, engine.get)
-      require(!farm.name.contains("."), s"farm name ${farm.name} cannot contains .")
-      val hosts = (farmElem \ "@hosts").text
-      if (isEmpty(hosts)) {
-        farm.hosts += Host.Localhost
-      } else {
-        Strings.split(hosts) foreach { host =>
-          farm.hosts += conf.getHost(host)
-        }
-      }
+      require(!farm.name.contains("."), s"farm name ${farm.name} cannot contains dot")
+      val maxHeapSize = (farmElem \ "@maxHeapSize").text
+      farm.maxHeapSize = if isEmpty(maxHeapSize) then "300M" else maxHeapSize
       (farmElem \ "@enableAccessLog") foreach { n =>
         farm.enableAccessLog = java.lang.Boolean.valueOf(n.text)
       }
-      val opts = (farmElem \ "Options").text
-      farm.opts = if (isEmpty(opts)) None else Some(opts)
+      val serverOpts = (farmElem \ "ServerOptions").text
+      farm.serverOptions = if (isEmpty(serverOpts)) None else Some(serverOpts)
+      val proxyOpts = (farmElem \ "ProxyOptions").text
+      farm.proxyOptions = if (isEmpty(proxyOpts)) None else Some(proxyOpts)
 
       (farmElem \ "Http") foreach { httpElem =>
         val http = new HttpConnector
@@ -147,164 +138,124 @@ object Container {
         if ((elem \ "@caFile").nonEmpty) http2.caFile = (elem \ "@caFile").text
         farm.http2 = http2
       }
+      (farmElem \ "ProxyOptions") foreach { selem =>
+        farm.proxyOptions = Some(trimlines(selem.text))
+      }
       (farmElem \ "Server") foreach { serverElem =>
         val server = new Server(farm, (serverElem \ "@name").text)
         server.http = toInt((serverElem \ "@http").text)
         server.http2 = toInt((serverElem \ "@http2").text)
         farm.servers += server
 
+        val host = (serverElem \ "@host").text
+        server.host = if isEmpty(host) then Host.Localhost else conf.getHost(host)
+
         val accessEnabled = serverElem \ "@enableAccessLog"
         accessEnabled foreach { n =>
           server.enableAccessLog = java.lang.Boolean.valueOf(n.text)
         }
-        if (accessEnabled.isEmpty) {
-          server.enableAccessLog = farm.enableAccessLog
-        }
+        if accessEnabled.isEmpty then server.enableAccessLog = farm.enableAccessLog
+
+        val maxHeapSize = (serverElem \ "@maxHeapSize").text
+        server.maxHeapSize = if isEmpty(maxHeapSize) then farm.maxHeapSize else maxHeapSize
+
+        val proxyOpts = (serverElem \ "@proxyOptions").text
+        server.proxyOptions = if (isEmpty(proxyOpts)) None else Some(proxyOpts)
       }
       conf.farms += farm
     }
 
-    // 6. register webapps
+    // 6. register webapps and deployments
     (xml \ "Webapps" \ "Webapp").foreach { webappElem =>
       val app = new Webapp((webappElem \ "@name").text)
       app.uri = (webappElem \ "@uri").text
-      if (ArchiveURI.isGav(app.uri) && app.uri.contains("SNAPSHOT")) {
-        throw new RuntimeException("Cannot accept gav with SNAPSHOT")
-      }
-
-      for ((k, v) <- webappElem.attributes.asAttrMap -- Set("name", "uri", "reloadable")) {
+      for ((k, v) <- webappElem.attributes.asAttrMap -- Set("name", "uri", "reloadable", "path", "runAt", "docBase")) {
         app.properties.put(k, v)
       }
 
-      (webappElem \ "ResourceRef").foreach { dsElem =>
-        app.resources += conf.resources((dsElem \ "@ref").text)
-      }
+      (webappElem \ "ResourceRef").foreach { dsElem => app.resources += conf.resources((dsElem \ "@ref").text) }
       (webappElem \ "Realm").foreach { realmElem =>
         app.realms = realmElem.toString()
       }
-      (webappElem \ "resolveSupport").foreach { resolveElem =>
-        app.resolveSupport = resolveElem.toString().toBoolean
+      (webappElem \ "resolveSupport").foreach { resolveElem => app.resolveSupport = resolveElem.toString().toBoolean }
+      app.updatePath((webappElem \ "@path").text)
+      val runAt = (webappElem \ "@runAt").text
+      Strings.split(runAt) foreach { s =>
+        conf.farms.find(x => x.name == s) match {
+          case Some(f) =>
+            app.runAt ++= f.servers
+          case None =>
+            conf.getServer(s) match {
+              case Some(server) => app.runAt += server
+              case None => throw new RuntimeException(s"Cannot find server named ${s}")
+            }
+        }
       }
+      (webappElem \ "@unpack") foreach { u => app.unpack = Some(u.text.toBoolean) }
       conf.webapps += app
     }
 
-    //7. generate proxy and backends
+    //7. generate front proxy and backends
     (xml \ "Proxy") foreach { proxyElem =>
       val proxy = conf.proxy
-      (proxyElem \ "@maxconn") foreach { e =>
-        proxy.maxconn = Integer.valueOf(e.text)
-      }
-      (proxyElem \ "@hostname") foreach { e =>
-        proxy.hostname = Some(e.text)
-      }
-      (proxyElem \ "@engine") foreach { e =>
-        proxy.engine = e.text
-      }
+      (proxyElem \ "@maxconn") foreach { e => proxy.maxconn = Integer.valueOf(e.text) }
+      (proxyElem \ "@hostname") foreach { e => proxy.hostname = Some(e.text) }
+      (proxyElem \ "@engine") foreach { e => proxy.engine = e.text }
+      (proxyElem \ "@httpPort") foreach { e => proxy.httpPort = Integer.valueOf(e.text) }
 
       (proxyElem \ "Status") foreach { elem =>
         val stat = new Proxy.Status
         proxy.status = Some(stat)
-        (elem \ "@uri") foreach { e =>
-          stat.uri = e.text
-        }
-        (elem \ "@auth") foreach { e =>
-          stat.auth = e.text
-        }
+        (elem \ "@uri") foreach { e => stat.uri = e.text }
+        (elem \ "@auth") foreach { e => stat.auth = e.text }
       }
 
       (proxyElem \ "Https") foreach { elem =>
         val https = new Proxy.Https
         proxy.https = Some(https)
-        (elem \ "@ciphers") foreach { e =>
-          https.ciphers = e.text
-        }
-        (elem \ "@certificate") foreach { e =>
-          https.certificate = e.text
-        }
-        (elem \ "@certificateKey") foreach { e =>
-          https.certificateKey = e.text
-        }
-        (elem \ "@protocols") foreach { e =>
-          https.protocols = e.text
-        }
-        (elem \ "@forceHttps") foreach { e =>
-          https.forceHttps = java.lang.Boolean.valueOf(e.text)
-        }
+        (elem \ "@ciphers") foreach { e => https.ciphers = e.text }
+        (elem \ "@certificate") foreach { e => https.certificate = e.text }
+        (elem \ "@certificateKey") foreach { e => https.certificateKey = e.text }
+        (elem \ "@protocols") foreach { e => https.protocols = e.text }
+        (elem \ "@forceHttps") foreach { e => https.forceHttps = java.lang.Boolean.valueOf(e.text) }
+        (elem \ "@port") foreach { e => https.port = java.lang.Integer.valueOf(e.text) }
       }
       if (proxy.hostname.isEmpty && proxy.enableHttps) {
         throw new RuntimeException("Cannot find hostname,when https enabled")
       }
 
-      (proxyElem \ "Backend") foreach { elem =>
-        val backend = new Proxy.Backend((elem \ "@name").text)
-        (elem \ "@servers") foreach { serversElem =>
-          val patterns = Strings.split(serversElem.text)
-          patterns foreach { pattern =>
-            backend.addServers(pattern, conf)
-          }
-        }
-        //添加或更新主机
-        (elem \ "Server") foreach { selem =>
-          val serverName = (selem \ "@name").text
-          val serverHost = (selem \ "@host").text
-          val serverList = Collections.newBuffer[Proxy.Server]
-          conf.getServer(serverName) match {
-            case Some(s) =>
-              if (Strings.isNotEmpty(serverHost)) {
-                if (!s.farm.hosts.exists(_.name == serverHost)) {
-                  throw new RuntimeException(s"Cannot find server host $serverHost in ${s.farm.name}'s hosts.")
-                }
-              }
-              s.farm.hosts foreach { h =>
-                if (Strings.isEmpty(serverHost) || serverHost == h.name) {
-                  serverList += backend.addServer(serverName, h.ip, s.http, None)
-                }
-              }
-            case None => throw new RuntimeException(s"Cannot find server $serverName,Server name's pattern is {farm}.{server}.")
-          }
-          (selem \ "@options") foreach { e =>
-            serverList foreach { s =>
-              s.options = Some(e.text)
-            }
-          }
-          (selem \ "@port") foreach { e =>
-            val p = Numbers.toInt(e.text)
-            serverList foreach { s =>
-              s.port = p
-            }
-          }
-        }
-        (elem \ "Options") foreach { selem =>
-          backend.options = Some(trimlines(selem.text))
-        }
-        proxy.addBackend(backend)
+      val backends = new mutable.HashMap[Farm, mutable.HashSet[Set[Server]]]
+      val backendMapping = new mutable.HashMap[Set[Server], mutable.HashSet[Webapp]]
+      conf.webapps foreach { webapp =>
+        if webapp.runAt.nonEmpty then
+          val farm = webapp.runAt.head.farm
+          val servers = webapp.runAt.toSet
+          val farmBackends = backends.getOrElseUpdate(farm, new mutable.HashSet[Set[Server]])
+          farmBackends.addOne(servers)
+          backendMapping.getOrElseUpdate(servers, new mutable.HashSet[Webapp]).addOne(webapp)
       }
-    }
+      backends foreach { case (farm, serverLists) =>
+        var i = 1
+        val farmBackends = serverLists map { servers =>
+          val backendName =
+            if servers.size == 1 then
+              servers.head.qualifiedName.replace('.', '_')
+            else
+              i = i + 1
+              s"${farm.name}$i"
+          val backend = new Proxy.Backend(backendName)
+          servers foreach { s => backend.addServer(s.name, s.host.ip, s.proxyHttpPort.getOrElse(s.http), s.proxyOptions) }
 
-    //8. scan all deployments
-    (xml \ "Deployments" \ "Deployment") foreach { deployElem =>
-      var path = (deployElem \ "@path").text
-      if (path == "/") {
-        path = ""
+          backend.options = farm.proxyOptions
+          proxy.addBackend(backend)
+          backendMapping(servers) foreach { webapp => webapp.entryPoint = backend }
+          backend
+        }
+        if farmBackends.size == 1 then farmBackends.head.name = farm.name
       }
-      val backend = (deployElem \ "@on").text
-      val deployment = new Deployment((deployElem \ "@webapp").text, backend, path)
-
-      (deployElem \ "@unpack") foreach { u =>
-        deployment.unpack = Some(u.text.toBoolean)
-      }
-      (deployElem \ "@reloadable") foreach { u =>
-        deployment.reloadable = u.text.toBoolean
-      }
-      conf.proxy.getOrCreateBackend(backend, conf)
-      conf.deployments += deployment
     }
 
     conf
-  }
-
-  private def trimlines(content: String): String = {
-    Strings.split(content, '\n').map(_.trim).mkString("\n")
   }
 
   private def readHttpConnector(elem: scala.xml.Node, http: HttpConnector): Unit = {
@@ -321,30 +272,36 @@ object Container {
     if ((elem \ "@compressionMimeType").nonEmpty) http.compressionMimeType = (elem \ "@compressionMimeType").text
   }
 
+  private def trimlines(content: String): String = {
+    Strings.split(content, '\n').map(_.trim).mkString("\n")
+  }
 }
 
 class Container {
 
-  var version: String = _
-
-  var repository: Repository = _
-
-  var proxy: Proxy = _
-
   val engines = new collection.mutable.ListBuffer[Engine]
-
   val hosts = new collection.mutable.ListBuffer[Host]
-
   val farms = new collection.mutable.ListBuffer[Farm]
-
   val webapps = new collection.mutable.ListBuffer[Webapp]
-
   val resources = new collection.mutable.HashMap[String, Resource]
-
-  val deployments = new collection.mutable.ListBuffer[Deployment]
+  var version: String = _
+  var repository: Repository = _
+  var proxy: Proxy = _
 
   def webappNames: Set[String] = {
     webapps.map(c => c.name).toSet
+  }
+
+  /** 可运行的webapp
+   * 过滤掉webapp没有entryPoint的应用，并按照上下文排序，根放在最后
+   *
+   * @return
+   */
+  def runnableWebapps: Seq[Webapp] = {
+    var runables = webapps.filter(_.entryPoint != null)
+    runables = runables.sortBy(w => w.contextPath)
+    val roots = runables.filter(_.contextPath.length < 2)
+    (runables.subtractAll(roots) ++ roots).toSeq
   }
 
   def resourceNames: Set[String] = {
@@ -357,10 +314,8 @@ class Container {
 
   def farmResourceNames(farm: Farm): Set[String] = {
     val names = new collection.mutable.HashSet[String]
-    deployments foreach { d =>
-      if (d.on == farm.name || d.on.startsWith(farm.name + ".")) {
-        webapps find (w => w.name == d.webapp) foreach { w => names ++= w.resourceNames }
-      }
+    webapps foreach { webapp =>
+      if webapp.runAt.nonEmpty && webapp.runAt.head.farm == farm then names ++= webapp.resourceNames
     }
     names.toSet
   }
@@ -381,9 +336,7 @@ class Container {
 
   def getServer(name: String): Option[Server] = {
     val res = new collection.mutable.ArrayBuffer[Server]
-    farms foreach { x =>
-      res ++= x.servers.find(_.qualifiedName == name)
-    }
+    farms foreach { x => res ++= x.servers.find(_.qualifiedName == name) }
     res.headOption
   }
 
@@ -394,9 +347,7 @@ class Container {
       x.servers foreach { server =>
         val fullname = server.qualifiedName
         val matched = patterns.exists(one => one == fullname || fullname.startsWith(one + "."))
-        if (matched) {
-          res += server
-        }
+        if matched then res += server
       }
     }
     res.toList
@@ -410,26 +361,10 @@ class Container {
     webapps.find(_.name == name)
   }
 
-  def getDeployments(server: Server, ips: collection.Set[String]): Seq[Deployment] = {
-    deployments.filter { d =>
-      ips.exists { ip =>
-        proxy.getBackend(d.on).contains(server.qualifiedName, ip)
-      }
-    }.toSeq
-  }
-
-  def getWebapps(server: Server, ips: collection.Set[String]): Seq[Webapp] = {
-    val webappMap = webapps.map(x => (x.name, x)).toMap
+  def getWebapps(server: Server): Seq[Webapp] = {
     val serverApps = Collections.newBuffer[Webapp]
-    deployments.foreach { d =>
-      val suitable = ips.exists { ip =>
-        proxy.getBackend(d.on).contains(server.qualifiedName, ip)
-      }
-      if (suitable) {
-        webappMap.get(d.webapp) foreach { w =>
-          serverApps += w
-        }
-      }
+    webapps.foreach { webapp =>
+      if webapp.runAt.contains(server) then serverApps += webapp
     }
     serverApps.toSeq
   }
@@ -437,5 +372,4 @@ class Container {
   def hasExternHost: Boolean = {
     hosts.exists { h => h.ip != "127.0.0.1" && h.ip != "localhost" }
   }
-
 }

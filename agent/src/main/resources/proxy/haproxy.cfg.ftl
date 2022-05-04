@@ -41,12 +41,13 @@ defaults
 [/#if]
 
 frontend main
-    bind *:80
+    bind *:${proxy.httpPort}
     [#if proxy.enableHttps]
-    bind *:${proxy.https.port} ssl crt ${proxy.https.certificate!"/etc/haproxy/${proxy.hostname}.pem"} [#if proxy.https.ciphers??]ciphers ${proxy.https.ciphers}[/#if] ${proxy.https.protocols!"no-sslv3 no-tlsv10"}
+    [#assign https=proxy.https/]
+    bind *:${https.port} ssl crt ${https.certificate!"/etc/haproxy/${proxy.hostname}.pem"} [#if https.ciphers??]ciphers ${https.ciphers}[/#if] ${https.protocols!"no-sslv3 no-tlsv10"}
     http-request set-header X-Forwarded-Proto https if { ssl_fc }
     http-request set-header X-Forwarded-Port %[dst_port]
-    [#if proxy.https.forceHttps]
+    [#if https.forceHttps]
     acl is_me hdr_beg(host) ${proxy.hostname}
     redirect scheme https if !{ ssl_fc } is_me
     [/#if]
@@ -54,32 +55,34 @@ frontend main
 
 [#assign max_path_len=1]
 [#assign max_proxy_len=1]
-[#list container.deployments as deployment]
-  [#if deployment.path?length > max_path_len]
-    [#assign max_path_len=deployment.path?length]
+
+[#assign runnableWebapps=container.runnableWebapps/]
+[#list runnableWebapps as webapp]
+  [#if webapp.contextPath?length > max_path_len]
+    [#assign max_path_len=webapp.contextPath?length]
   [/#if]
-  [#if deployment.on?length > max_proxy_len]
-    [#assign max_proxy_len=deployment.on?length]
+  [#if webapp.entryPoint.name?length > max_proxy_len]
+    [#assign max_proxy_len=webapp.entryPoint.name?length]
   [/#if]
 [/#list]
 
-[#list container.deployments?sort_by('path') as deployment]
-    [#if deployment.path?length>0]
-    acl is${deployment.path?replace('/','_')?right_pad(max_path_len)} path_beg ${deployment.path}
+[#list runnableWebapps as webapp]
+    [#if webapp.contextPath?length>1]
+    acl is${webapp.contextPath?replace('/','_')?right_pad(max_path_len)} path_beg ${webapp.contextPath}
     [/#if]
 [/#list]
 
 [#assign use_backends=[]]
-[#list container.deployments?sort_by('path') as deployment]
-[#if deployment.path?length>0]
-[#assign this_backend]    use_backend ${proxy.getBackend(deployment.on).name?right_pad(max_proxy_len)}  if is${deployment.path?replace('/','_')}[/#assign]
+[#list runnableWebapps as webapp]
+[#if webapp.contextPath?length>1]
+[#assign this_backend]    use_backend ${webapp.entryPoint.name?right_pad(max_proxy_len)}  if is${webapp.contextPath?replace('/','_')}[/#assign]
 [#assign use_backends=use_backends+[this_backend]/]
 [#else]
-  [#assign default_server=proxy.getBackend(deployment.on).name/]
+  [#assign default_server=webapp.entryPoint.name/]
 [/#if]
 [/#list]
 
-[#list use_backends?sort as use_backend]
+[#list use_backends as use_backend]
 ${use_backend}
 [/#list]
 
@@ -87,12 +90,11 @@ ${use_backend}
     default_backend ${default_server}
 [/#if]
 
-    [#list proxy.backends?keys?sort as name]
-    [#assign backend=proxy.backends[name]/]
-backend ${name}
+    [#list proxy.backends?sort_by('name') as backend]
+backend ${backend.name}
 ${addMargin(backend.options!"balance roundrobin")}
     [#list backend.servers as server]
-    server ${server.ip?replace('.','_')?replace(':','_')}_${server.port} ${server.ip}:${server.port} ${server.options!} check
+    server ${server.ip?replace('.','_')?replace(':','_')}_${server.port} ${server.ip}:${server.port} ${server.proxyOptions!'check'}
     [/#list]
 
     [/#list]

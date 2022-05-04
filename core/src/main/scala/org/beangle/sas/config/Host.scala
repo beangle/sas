@@ -18,13 +18,11 @@
 package org.beangle.sas.config
 
 object Host {
-  val Localhost = new Host("localhost", "127.0.0.1", None)
+  val Localhost = new Host("localhost", "127.0.0.1")
 
-  def apply(ip: String): Host = {
-    new Host(ip, ip, None)
-  }
+  def apply(ip: String): Host = new Host(ip, ip)
 }
 
-class Host(var name: String, var ip: String, var comment: Option[String] = None) {
+class Host(var name: String, var ip: String) {
 
 }

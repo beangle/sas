@@ -30,9 +30,8 @@ http {
 [/#if]
     include /etc/nginx/conf.d/*.conf;
 
-    [#list proxy.backends?keys?sort as name]
-    [#assign backend=proxy.backends[name]/]
-    upstream ${name}{
+    [#list proxy.backends?sort_by("name") as backend]
+    upstream ${backend.name}{
 [#if backend.options??]${addMargin(backend.options)}[/#if][#t]
     [#list backend.servers as server]
         server ${server.ip}:${server.port} ${server.options!};
@@ -40,19 +39,21 @@ http {
     }
     [/#list]
 
-    [#if proxy.https?? && proxy.https.forceHttps]
+    [#if proxy.https?? && proxy.https.forceHttps][#--跳转到https--]
     server {
-        listen 80 default_server;
-        listen [::]:80 default_server;
-        server_name ${proxy.hostname!};
+        listen ${proxy.httpPort} default_server;
+        listen [::]:${proxy.httpPort} default_server;
+        [#if proxy.hostname??]
+        server_name  ${proxy.hostname};
+        [/#if]
         return 301 https://$server_name$request_uri;
     }
     [/#if]
 
     server {
-[#if !(proxy.https?? && proxy.https.forceHttps)]
-        listen  80;
-[/#if]
+        [#if !(proxy.https?? && proxy.https.forceHttps)]
+        listen ${proxy.httpPort};
+        [/#if]
         [#if proxy.https??]
         listen ${proxy.https.port} ssl;
         [/#if]
@@ -80,10 +81,10 @@ http {
             access_log off;
         }
         [/#if]
-    [#list container.deployments?sort_by('path') as deployment]
-    [#if deployment.path?length>0]
-        location ${deployment.path} {
-            proxy_pass http://${proxy.getBackend(deployment.on).name};
+    [#list container.runnableWebapps as webapp]
+    [#if webapp.contextPath?length>1]
+        location ${webapp.contextPath} {
+            proxy_pass http://${webapp.entryPoint.name};
         }
     [/#if]
     [/#list]

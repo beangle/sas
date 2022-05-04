@@ -36,7 +36,7 @@ object Resolver {
   def main(args: Array[String]): Unit = {
     if (args.length < 1) {
       println("Usage: Resolve /path/to/server.xml")
-      return -1
+      System.exit(-1)
     }
     val configFile = new File(args(0))
     val container = Container(scala.xml.XML.load(new FileInputStream(configFile)))
@@ -55,6 +55,17 @@ object Resolver {
   def resolve(sasHome: String, remote: Repo.Remote, local: Repo.Local, webapps: collection.Seq[Webapp]): collection.Seq[String] = {
     val missings = new mutable.ArrayBuffer[String]
     webapps foreach { webapp =>
+      //locate snapshot artifact in webapps
+      if (ArchiveURI.isGav(webapp.uri) && webapp.uri.contains("SNAPSHOT")) {
+        val gav = ArchiveURI.toArtifact(webapp.uri)
+        val snapshortJar = "${sas.home}/webapps/" + s"${gav.artifactId}-${gav.version}.jar"
+        val snapshortWar = "${sas.home}/webapps/" + s"${gav.artifactId}-${gav.version}.war"
+        webapp.uri =
+          if new File(snapshortWar).exists then snapshortWar
+          else if new File(snapshortJar).exists then snapshortJar
+          else snapshortWar
+      }
+
       //1. download and translate gav/url to docBase
       if (ArchiveURI.isGav(webapp.uri)) {
         var gav = ArchiveURI.toArtifact(webapp.uri)

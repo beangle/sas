@@ -24,11 +24,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public interface Server {
-
   void start();
-
   void shutdown();
-
   public static class Config {
     public final String contextPath;
     public final String docBase;
@@ -40,7 +37,6 @@ public interface Server {
     public boolean websocketSupport = false;
     public int defaultSessionTimeout = 30;//minutes
     public String unpack = "";
-
     public Map<String, String> properties = new HashMap<String, String>();
 
     public Config(String contextPath, int port) {

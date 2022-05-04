@@ -29,10 +29,6 @@ elif [ "$sas_command" = "proxy" ] ; then
 
   java -cp "$sas_classpath" org.beangle.sas.tool.Proxy $SAS_HOME
 
-elif [ "$sas_command" = "config" ] ; then
-
-  java -cp "$sas_classpath" org.beangle.sas.tool.Config $SAS_HOME
-
 elif [ "$sas_command" = "firewall" ] ; then
 
   java -cp "$sas_classpath" org.beangle.sas.tool.Firewall $SAS_HOME
@@ -56,7 +52,8 @@ elif [ "$sas_command" = "status" ] ; then
         PID=`cat "$dir/SERVER_PID"`
         ps -p $PID >/dev/null 2>&1
         if [ $? -eq 0 ] ; then
-          echo "$dir(pid=$PID) is running."
+          port=`ss -tlnp |grep $PID|awk  '{port=substr($4,3);print port}'`
+          echo "$dir(pid=$PID port=$port)."
           started=$((started+1))
         fi
       fi
@@ -117,7 +114,6 @@ else
   echo "Usage: sas.sh ( commands ... )"
   echo "commands:"
   echo "  aes             Generate password by aes"
-  echo "  config          Config sas on command line"
   echo "  firewall        Generate firewall config file"
   echo "  proxy           Generate haproxy/enginx config file"
   echo "  status          Show status"

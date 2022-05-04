@@ -17,6 +17,7 @@
 
 package org.beangle.sas.tool
 
+import org.beangle.commons.io.Files./
 import org.beangle.commons.lang.SystemInfo
 
 object Proxy extends ShellEnv {
@@ -26,7 +27,7 @@ object Proxy extends ShellEnv {
     container.proxy.engine match {
       case "haproxy" =>
         val file = ProxyGenerator.genHaproxy(container, workdir)
-        println(s"Generate ${workdir}/conf/haproxy.cfg")
+        println(s"Generate ${workdir}" + / + "conf" + / + "haproxy.cfg")
         println("Execute:\n    cp " + file.getAbsolutePath + " /etc/haproxy/haproxy.cfg")
       case "nginx" =>
         val file = ProxyGenerator.genNginx(container, workdir)
