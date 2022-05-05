@@ -76,12 +76,15 @@ detect_warfile
 #get options and args of java program
 args="${opts#*$warfile}"
 options="${opts%%$warfile*}"
-destdir=`java -cp "${bootpath:1}" org.beangle.boot.dependency.AppResolver $warfile $M2_REMOTE_REPO $M2_REPO`
+bootpath="${bootpath:1}" #omit head :
+#destfile is resolved absolute file path.
+destfile=`java -cp "$bootpath" org.beangle.boot.dependency.AppResolver $warfile --remote=$M2_REMOTE_REPO --local=$M2_REPO --quiet`
 if [ $? -ne 0  ]; then
   echo "Cannot resolve $warfile, Launching aborted"
   exit
 fi
 
+# reset bootpath
 bootpath=""
 download org.apache.tomcat.embed tomcat-embed-core $tomcat_ver
 download org.apache.tomcat.embed tomcat-embed-jasper $tomcat_ver
@@ -89,5 +92,6 @@ download org.apache.tomcat.embed tomcat-embed-websocket $tomcat_ver
 download org.beangle.sas beangle-sas-tomcat $beangle_sas_ver
 download org.beangle.sas beangle-sas-engine $beangle_sas_ver
 
-#echo java -server -cp "${bootpath:1}" $options "org.beangle.sas.engine.tomcat.Bootstrap" $args $destdir
-java -server -cp "${bootpath:1}" $options "org.beangle.sas.engine.tomcat.Bootstrap" $args $destdir
+bootpath="${bootpath:1}" #omit head :
+#echo java -server -cp "$bootpath" $options "org.beangle.sas.engine.tomcat.Bootstrap" $args $destfile
+java -server -cp "$bootpath" $options "org.beangle.sas.engine.tomcat.Bootstrap" $args $destfile
