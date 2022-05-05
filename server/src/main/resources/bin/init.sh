@@ -4,8 +4,12 @@ export SAS_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
 . "$SAS_HOME/bin/env.sh"
 
 cd $PRGDIR
-if [ -r "$SAS_HOME/bin/setenv.sh" ]; then
+if [ -x "$SAS_HOME/bin/setenv.sh" ]; then
   . "$SAS_HOME/bin/setenv.sh"
+fi
+
+if [ ! -f $SAS_HOME/conf/server.xml ] && [ $SAS_ADMIN ] && [ $SAS_PROFILE ]; then
+  wget -q $SAS_ADMIN/${SAS_PROFILE}/server.xml -O $SAS_HOME/conf/server.xml
 fi
 
 # download groupId artifactId version
@@ -99,4 +103,7 @@ abort(){
   download ch.qos.logback logback-core $logback_ver
   download ch.qos.logback logback-classic $logback_ver
   download ch.qos.logback logback-access $logback_ver
-  echo "Initialization Completed.You can custom conf/server.xml."
+  echo "Initialization Completed"
+  if [ -f $SAS_HOME/conf/server.xml ]; then
+    echo "Custom the conf/server.xml."
+  fi

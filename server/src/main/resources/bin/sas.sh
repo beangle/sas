@@ -69,8 +69,8 @@ elif [ "$sas_command" = "status" ] ; then
         PID=`cat "$dir/SERVER_PID"`
         ps -p $PID >/dev/null 2>&1
         if [ $? -eq 0 ] ; then
-          port=`ss -tlnp |grep $PID|awk  '{port=substr($4,3);print port}'`
-          echo "$dir(pid=$PID port=$port)."
+          port=`ss -tlnp |grep $PID|awk '{split($4,a,":");print a[2]}'|uniq`
+          echo "$dir(pid=$PID port=$port)"
           started=$((started+1))
         fi
       fi

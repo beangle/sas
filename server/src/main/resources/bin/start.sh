@@ -3,14 +3,29 @@ PRGDIR=`dirname "$0"`
 export SAS_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
 . "$SAS_HOME/bin/env.sh"
 
-if [ ! -d $SAS_HOME/bin/lib ]; then
-  echo "Please init beangle sas server first."
-  exit 1
-fi
-
 if [ $# -eq 0 ]; then
   echo "Usage:start.sh server_name or farm_name"
   exit
+fi
+
+cd $PRGDIR
+
+if [ ! -d $SAS_HOME/bin/lib ]; then
+  . "$SAS_HOME/bin/init.sh"
+fi
+
+if [ -x "$SAS_HOME/bin/setenv.sh" ]; then
+  . "$SAS_HOME/bin/setenv.sh"
+fi
+
+if [ $SAS_ADMIN ] && [ $SAS_PROFILE ] && [ "$SAS_CONNECT" != "offline" ]; then
+  echo "fetching the latest server.xml..."
+  wget -q $SAS_ADMIN/${SAS_PROFILE}/server.xml -O $SAS_HOME/conf/server.xml
+fi
+
+if [ ! -f $SAS_HOME/conf/server.xml ]; then
+  echo "Missing conf/server.xml,startup was aborted."
+  exit 1
 fi
 
 # start servername
