@@ -31,15 +31,11 @@ object EngineType {
 }
 
 class Engine(var name: String, var typ: String, var version: String) {
-  var context: Context = _
-
-  var jspSupport = false
-
-  var websocketSupport = false
-
   val listeners = new collection.mutable.ListBuffer[Listener]
-
   val jars = new collection.mutable.ListBuffer[Jar]
+  var context: Context = _
+  var jspSupport = false
+  var websocketSupport = false
 
   override def toString: String = {
     name
@@ -54,6 +50,14 @@ class Engine(var name: String, var typ: String, var version: String) {
       case e: Engine => e.name == this.name
       case _ => false
     }
+  }
+
+  def dir(sasHome: String): File = {
+    new File(path(sasHome))
+  }
+
+  def path(sasHome: String): String = {
+    s"$sasHome/engines/${name}-${version}"
   }
 }
 

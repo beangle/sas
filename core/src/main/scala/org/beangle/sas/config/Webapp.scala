@@ -17,53 +17,55 @@
 
 package org.beangle.sas.config
 
-class Webapp(var name: String) {
+import org.beangle.commons.lang.Strings
+import org.beangle.sas.config.Proxy.Backend
 
-  var resolveSupport:Boolean=true
+import scala.collection.mutable
 
+class Webapp(var uri: String) {
   val resources = new collection.mutable.ListBuffer[Resource]
+  val properties = new java.util.Properties
+  var resolveSupport: Boolean = true
+  var docBase: String = _
+  var realms: String = _
+  var jspSupport: Boolean = false
+  var websocketSupport: Boolean = false
+  var runAt: mutable.ArrayBuffer[Server] = new mutable.ArrayBuffer[Server]
+  var entryPoint: Proxy.Backend = _
+  var contextPath: String = _
+  var unpack: Option[Boolean] = None
 
   def resourceNames: Set[String] = resources.map(d => d.name).toSet
-
-  var uri: String = _
-
-  var docBase:String =_
-
-  val properties = new java.util.Properties
-
-  var realms: String = _
-
-  var jspSupport: Boolean = false
-
-  var websocketSupport: Boolean = false
 
   def getContainerSciFilter(engine: Engine): Option[String] = {
     engine.typ match {
       case "tomcat" =>
-        if (!jspSupport && !websocketSupport) {
-          Some("apache")
-        } else if (!jspSupport) {
-          Some("JasperInitializer")
-        } else if (!websocketSupport) {
-          Some("WsSci")
-        } else {
-          None
-        }
+        if !jspSupport && !websocketSupport then Some("apache")
+        else if !jspSupport then Some("JasperInitializer")
+        else if !websocketSupport then Some("WsSci")
+        else None
       case _ => None
     }
   }
 
+  def updatePath(path: String): Unit = {
+    this.contextPath =
+      if Strings.isEmpty(path) || path == "/" then ""
+      else if path.endsWith("/") then path.substring(0, path.length - 1)
+      else path
+  }
+
   override def toString: String = {
-    name
+    uri
   }
 
   override def hashCode(): Int = {
-    name.hashCode
+    uri.hashCode
   }
 
   override def equals(obj: Any): Boolean = {
     obj match {
-      case e: Webapp => e.name == this.name
+      case e: Webapp => e.uri == this.uri
       case _ => false
     }
   }

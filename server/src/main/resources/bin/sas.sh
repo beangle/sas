@@ -3,7 +3,7 @@ PRGDIR=`dirname "$0"`
 export SAS_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
 . "$SAS_HOME/bin/env.sh"
 
-if [ -r "$SAS_HOME/bin/setenv.sh" ]; then
+if [ -x "$SAS_HOME/bin/setenv.sh" ]; then
   . "$SAS_HOME/bin/setenv.sh"
 fi
 
@@ -29,10 +29,6 @@ elif [ "$sas_command" = "proxy" ] ; then
 
   java -cp "$sas_classpath" org.beangle.sas.tool.Proxy $SAS_HOME
 
-elif [ "$sas_command" = "config" ] ; then
-
-  java -cp "$sas_classpath" org.beangle.sas.tool.Config $SAS_HOME
-
 elif [ "$sas_command" = "firewall" ] ; then
 
   java -cp "$sas_classpath" org.beangle.sas.tool.Firewall $SAS_HOME
@@ -40,6 +36,23 @@ elif [ "$sas_command" = "firewall" ] ; then
 elif [ "$sas_command" = "resolve" ] ; then
 
   java -cp "$sas_classpath" org.beangle.sas.tool.Resolver $SAS_HOME/conf/server.xml
+
+elif [ "$sas_command" = "pull" ] ; then
+
+  if [ -z "$SAS_ADMIN" ]; then
+    echo "define SAS_ADMIN and SAS_PROFILE in setenv.sh"
+    exit 1
+  fi
+  wget -q $SAS_ADMIN/${SAS_PROFILE}/server.xml -O $SAS_HOME/conf/server_newer.xml
+  if [ -f $SAS_HOME/conf/server_newer.xml ]; then
+    rm -rf $SAS_HOME/conf/server_old.xml
+    if [ -f $SAS_HOME/conf/server.xml ]; then
+      mv $SAS_HOME/conf/server.xml $SAS_HOME/conf/server_old.xml
+      echo "rename server.xml to server_old.xml."
+    fi
+    mv $SAS_HOME/conf/server_newer.xml $SAS_HOME/conf/server.xml
+    echo "conf/server.xml was updated."
+  fi
 
 elif [ "$sas_command" = "status" ] ; then
 
@@ -56,16 +69,20 @@ elif [ "$sas_command" = "status" ] ; then
         PID=`cat "$dir/SERVER_PID"`
         ps -p $PID >/dev/null 2>&1
         if [ $? -eq 0 ] ; then
-          echo "$dir(pid=$PID) is running."
+          port=`ss -tlnp |grep $PID|awk '{split($4,a,":");print a[length(a)]}'|uniq`
+          if [ $started == 0 ]; then
+            echo "---------------running servers---------------"
+          fi
+          echo "$dir(pid=$PID port=$port)"
           started=$((started+1))
         fi
       fi
     done
   fi
   if [ $started = 0 ];then
-    echo " Beangle Sas is shutdown."
+    echo "Beangle Sas is shutdown."
   elif (( started > 1 )); then
-    echo " Beangle Sas launches $started servers."
+    echo "Beangle Sas launches $started servers."
   fi
 
 elif [ "$sas_command" = "update" ] ; then
@@ -117,11 +134,11 @@ else
   echo "Usage: sas.sh ( commands ... )"
   echo "commands:"
   echo "  aes             Generate password by aes"
-  echo "  config          Config sas on command line"
   echo "  firewall        Generate firewall config file"
   echo "  proxy           Generate haproxy/enginx config file"
   echo "  status          Show status"
   echo "  update          Update sas to new_version"
+  echo "  pull            Fetch and update server.xml"
   echo "  version         Show version"
   exit 1
 

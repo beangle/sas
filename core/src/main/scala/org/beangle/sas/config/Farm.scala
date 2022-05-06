@@ -34,7 +34,7 @@ object Farm {
       farm.servers += server1
     }
     if (1 == serverCount) farm.servers.head.name = "server"
-    import EngineType._
+    import EngineType.*
     engine.typ match {
       case Jetty | Undertow | Tomcat => Some("-noverify -Xmx1G -Xms1G")
       case _ => None
@@ -44,34 +44,37 @@ object Farm {
 }
 
 class Farm(var name: String, var engine: Engine) {
-
-  /** 部署的主机列表 */
-  var hosts: mutable.Buffer[Host] = Collections.newBuffer[Host]
-
   /** http连接配置 */
   var http = new HttpConnector
-
+  /** http2连接定义 */
   var http2: Http2Connector = _
-
+  /** 内部服务 */
   var servers: mutable.Buffer[Server] = Collections.newBuffer[Server]
-
   /** 是否启用访问日志 */
   var enableAccessLog: Boolean = _
-
+  /** 最大堆内存 */
+  var maxHeapSize: String = _
   /** 进程参数 */
-  var opts: Option[String] = None
+  var serverOptions: Option[String] = None
+  /** 代理参数 */
+  var proxyOptions: Option[String] = None
 }
 
 class Server(val farm: Farm, var name: String) {
-
   /** http/1 端口 */
   var http: Int = _
-
   /** http/2 端口 */
   var http2: Int = _
-
+  /** 主机 */
+  var host: Host = _
+  /** 最大堆内存 */
+  var maxHeapSize: String = _
   /** 是否启用访问日志 */
   var enableAccessLog: Boolean = _
+  /** 代理http端口 */
+  var proxyHttpPort: Option[Int] = None
+  /** 代理参数 */
+  var proxyOptions: Option[String] = None
 
   def qualifiedName: String = {
     if (Strings.isNotBlank(farm.name)) farm.name + "." + name

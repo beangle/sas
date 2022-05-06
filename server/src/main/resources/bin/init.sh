@@ -4,8 +4,12 @@ export SAS_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
 . "$SAS_HOME/bin/env.sh"
 
 cd $PRGDIR
-if [ -r "$SAS_HOME/bin/setenv.sh" ]; then
+if [ -x "$SAS_HOME/bin/setenv.sh" ]; then
   . "$SAS_HOME/bin/setenv.sh"
+fi
+
+if [ ! -f $SAS_HOME/conf/server.xml ] && [ $SAS_ADMIN ] && [ $SAS_PROFILE ]; then
+  wget -q $SAS_ADMIN/${SAS_PROFILE}/server.xml -O $SAS_HOME/conf/server.xml
 fi
 
 # download groupId artifactId version
@@ -85,13 +89,10 @@ abort(){
   download org.scala-lang.modules scala-xml_3 $scalaxml_ver
   download org.beangle.commons beangle-commons-core_3     $beangle_commons_ver
   download org.beangle.commons beangle-commons-file_3     $beangle_commons_ver
-  download org.beangle.data beangle-data-jdbc_3 $beangle_data_ver
   download org.beangle.template beangle-template-freemarker_3 $beangle_template_ver
   download org.beangle.boot beangle-boot_3 $beangle_boot_ver
   download org.beangle.sas beangle-sas-engine  $beangle_sas_ver
   download org.beangle.sas beangle-sas-core    $beangle_sas_ver
-  download org.beangle.sas beangle-sas-agent   $beangle_sas_ver
-  download org.beangle.sas beangle-sas-tomcat  $beangle_sas_ver
   download org.beangle.sas beangle-sas-juli    $beangle_sas_ver
   download org.apache.commons commons-compress $commons_compress_ver
   download org.freemarker freemarker $freemarker_ver
@@ -99,4 +100,7 @@ abort(){
   download ch.qos.logback logback-core $logback_ver
   download ch.qos.logback logback-classic $logback_ver
   download ch.qos.logback logback-access $logback_ver
-  echo "Initialization Completed.You can custom conf/server.xml."
+  echo "Initialization Completed"
+  if [ -f $SAS_HOME/conf/server.xml ]; then
+    echo "Custom the conf/server.xml."
+  fi

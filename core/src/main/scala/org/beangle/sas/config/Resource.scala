@@ -17,7 +17,11 @@
 
 package org.beangle.sas.config
 
+import java.util as ju
+
 class Resource(var name: String) {
+
+  val properties = new ju.Properties
 
   def url: String = {
     properties.getProperty("url")
@@ -31,12 +35,12 @@ class Resource(var name: String) {
     properties.getProperty("username")
   }
 
-  def `type`: String = {
-    properties.getProperty("type")
-  }
-
   def username_=(newName: String): Unit = {
     properties.setProperty("username", newName)
+  }
+
+  def `type`: String = {
+    properties.getProperty("type")
   }
 
   def driverClassName: String = {
@@ -54,10 +58,6 @@ class Resource(var name: String) {
   def password_=(newer: String): Unit = {
     properties.setProperty("password", newer)
   }
-
-  import java.{util => ju}
-
-  val properties = new ju.Properties
 
   override def toString: String = {
     name + properties
