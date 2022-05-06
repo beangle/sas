@@ -167,8 +167,7 @@ object Container {
 
     // 6. register webapps and deployments
     (xml \ "Webapps" \ "Webapp").foreach { webappElem =>
-      val app = new Webapp((webappElem \ "@name").text)
-      app.uri = (webappElem \ "@uri").text
+      val app = new Webapp((webappElem \ "@uri").text)
       for ((k, v) <- webappElem.attributes.asAttrMap -- Set("name", "uri", "reloadable", "path", "runAt", "docBase")) {
         app.properties.put(k, v)
       }
@@ -288,10 +287,6 @@ class Container {
   var repository: Repository = _
   var proxy: Proxy = _
 
-  def webappNames: Set[String] = {
-    webapps.map(c => c.name).toSet
-  }
-
   /** 可运行的webapp
    * 过滤掉webapp没有entryPoint的应用，并按照上下文排序，根放在最后
    *
@@ -355,10 +350,6 @@ class Container {
 
   def getHost(name: String): Host = {
     hosts.find(_.name == name).get
-  }
-
-  def getWebapp(name: String): Option[Webapp] = {
-    webapps.find(_.name == name)
   }
 
   def getWebapps(server: Server): Seq[Webapp] = {

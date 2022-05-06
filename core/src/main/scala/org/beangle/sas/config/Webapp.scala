@@ -22,11 +22,10 @@ import org.beangle.sas.config.Proxy.Backend
 
 import scala.collection.mutable
 
-class Webapp(var name: String) {
+class Webapp(var uri: String) {
   val resources = new collection.mutable.ListBuffer[Resource]
   val properties = new java.util.Properties
   var resolveSupport: Boolean = true
-  var uri: String = _
   var docBase: String = _
   var realms: String = _
   var jspSupport: Boolean = false
@@ -57,16 +56,16 @@ class Webapp(var name: String) {
   }
 
   override def toString: String = {
-    name
+    uri
   }
 
   override def hashCode(): Int = {
-    name.hashCode
+    uri.hashCode
   }
 
   override def equals(obj: Any): Boolean = {
     obj match {
-      case e: Webapp => e.name == this.name
+      case e: Webapp => e.uri == this.uri
       case _ => false
     }
   }
