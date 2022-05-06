@@ -26,7 +26,7 @@ ThisBuild / crossPaths := false
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 val beangle_template_ver = "0.0.37"
-val beangle_boot_ver = "0.0.28"
+val beangle_boot_ver = "0.0.30"
 val apache_tomcat_ver = "10.0.20"
 val io_undertow_ver = "2.2.17.Final"
 
