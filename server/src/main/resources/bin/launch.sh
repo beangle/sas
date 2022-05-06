@@ -89,7 +89,6 @@ bootpath=""
 download org.apache.tomcat.embed tomcat-embed-core $tomcat_ver
 download org.apache.tomcat.embed tomcat-embed-jasper $tomcat_ver
 download org.apache.tomcat.embed tomcat-embed-websocket $tomcat_ver
-download org.beangle.sas beangle-sas-tomcat $beangle_sas_ver
 download org.beangle.sas beangle-sas-engine $beangle_sas_ver
 
 bootpath="${bootpath:1}" #omit head :

@@ -13,7 +13,6 @@ export scalaxml_ver=2.1.0
 export beangle_sas_ver=0.10.0
 export beangle_commons_ver=5.2.13
 export beangle_template_ver=0.0.37
-export beangle_data_ver=5.4.0
 export beangle_boot_ver=0.0.30
 export slf4j_ver=2.0.0-alpha7
 export logback_ver=1.3.0-alpha14

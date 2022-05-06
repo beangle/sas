@@ -14,12 +14,16 @@ if [ ! -d $SAS_HOME/bin/lib ]; then
   . "$SAS_HOME/bin/init.sh"
 fi
 
-if [ -x "$SAS_HOME/bin/setenv.sh" ]; then
+if [ -f "$SAS_HOME/bin/setenv.sh" ]; then
+  if [ ! -x "$SAS_HOME/bin/setenv.sh" ]; then
+    chmod +x "$SAS_HOME/bin/setenv.sh"
+  fi
   . "$SAS_HOME/bin/setenv.sh"
 fi
 
 if [ $SAS_ADMIN ] && [ $SAS_PROFILE ] && [ "$SAS_CONNECT" != "offline" ]; then
   echo "fetching the latest server.xml..."
+  mkdir -p $SAS_HOME/conf/
   wget -q $SAS_ADMIN/${SAS_PROFILE}/server.xml -O $SAS_HOME/conf/server.xml
 fi
 

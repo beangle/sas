@@ -61,14 +61,21 @@ object TomcatMaker {
       context.jarScanner = scanner
     }
     //添加beangle-sas-engine and logback-access
-    engine.jars += Jar.gav("org.beangle.sas:beangle-sas-tomcat:" + container.version)
     engine.jars += Jar.gav("org.beangle.sas:beangle-sas-engine:" + container.version)
     engine.jars += Jar.gav("ch.qos.logback:logback-access:1.3.0-alpha14")
     engine.jars += Jar.gav("ch.qos.logback:logback-core:1.3.0-alpha14")
   }
 
+  /** 创建一个引擎
+   * 如果引擎中有内容，则不会重复创建，但会检查是否有缺失的jar.
+   *
+   * @param sasHome
+   * @param engine
+   * @param remote
+   * @param local
+   */
   def makeEngine(sasHome: String, engine: Engine, remote: Repo.Remote, local: Repo.Local): Unit = {
-    val tomcat = new File(sasHome + "/engines/tomcat-" + engine.version)
+    val tomcat = engine.dir(sasHome)
     // tomcat not exists or empty dir
     if (!tomcat.exists() || tomcat.list().length == 0) {
       val artifact = Artifact("org.apache.tomcat:tomcat:zip:" + engine.version)
@@ -102,10 +109,9 @@ object TomcatMaker {
     engineHome.mkdirs()
     val tomcatDirname = tomcatZip.getName.replace(".zip", "")
     val version = Strings.substringAfter(tomcatDirname, "-")
-    val engineDir = new File(engineHome.getPath + "/tomcat-" + version)
-    if (engineDir.exists()) {
-      Dirs.delete(engineDir)
-    }
+    val engineDir = engine.dir(sasHome)
+    if engineDir.exists() then Dirs.delete(engineDir)
+
     Zipper.unzip(tomcatZip, engineHome)
     new File(engineHome.getPath + "/apache-tomcat-" + version).renameTo(engineDir)
     //delete outer dirs
@@ -163,6 +169,13 @@ object TomcatMaker {
     Files.writeString(new File(engineDir + "/conf/web.xml"), nsw.toString)
   }
 
+  /** 创建一个运行服务器
+   * 前期检查该服务是否存在以及是否运行
+   *
+   * @param sasHome
+   * @param container
+   * @param server
+   */
   def makeServer(sasHome: String, container: Container, server: Server): Unit = {
     val result = SasTool.detectExecution(server)
     result match {
@@ -192,7 +205,7 @@ object TomcatMaker {
     //删除这些已有文件，创建一个新环境
     base.delete("webapps", "conf", "bin", "logs", "lib").mkdirs("webapps", "conf", "bin")
 
-    val engineHome = sasHome + "/engines/" + engine.typ + "-" + engine.version
+    val engineHome = engine.path(sasHome)
     if (new File(engineHome).exists()) {
       base.ln(engineHome + "/lib")
 
