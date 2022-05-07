@@ -8,8 +8,6 @@ if [ $# -eq 0 ]; then
   exit
 fi
 
-cd $PRGDIR
-
 if [ ! -d $SAS_HOME/bin/lib ]; then
   . "$SAS_HOME/bin/init.sh"
 fi
