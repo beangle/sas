@@ -3,7 +3,6 @@ PRGDIR=`dirname "$0"`
 export SAS_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
 . "$SAS_HOME/bin/env.sh"
 
-cd $PRGDIR
 if [ -x "$SAS_HOME/bin/setenv.sh" ]; then
   . "$SAS_HOME/bin/setenv.sh"
 fi
@@ -27,7 +26,7 @@ download(){
         echo "fetching $URL"
       else
         echo "$URL not exists,installation aborted."
-        exit 1
+        return 1
       fi
 
       if command -v aria2c >/dev/null 2; then
@@ -82,25 +81,50 @@ abort(){
 }
 
   checkEnv
+  artifacts=("org.scala-lang:scala3-library_3:$scala_ver"
+             "org.scala-lang:scala-library:$scala_lib_ver"
+             "org.scala-lang.modules:scala-xml_3:$scalaxml_ver"
+             "org.beangle.commons:beangle-commons-core_3:$beangle_commons_ver"
+             "org.beangle.commons:beangle-commons-file_3:$beangle_commons_ver"
+             "org.beangle.template:beangle-template-freemarker_3:$beangle_template_ver"
+             "org.beangle.boot:beangle-boot_3:$beangle_boot_ver"
+             "org.beangle.sas:beangle-sas-engine:$beangle_sas_ver"
+             "org.beangle.sas:beangle-sas-core:$beangle_sas_ver"
+             "org.beangle.sas:beangle-sas-juli:$beangle_sas_ver"
+             "org.apache.commons:commons-compress:$commons_compress_ver"
+             "org.freemarker:freemarker:$freemarker_ver"
+             "org.slf4j:slf4j-api:$slf4j_ver"
+             "ch.qos.logback:logback-core:$logback_ver"
+             "ch.qos.logback:logback-classic:$logback_ver"
+             "ch.qos.logback:logback-access:$logback_ver")
 
   echo "Downloading and link libraries..."
-  download org.scala-lang scala3-library_3 $scala_ver
-  download org.scala-lang scala-library $scala_lib_ver
-  download org.scala-lang.modules scala-xml_3 $scalaxml_ver
-  download org.beangle.commons beangle-commons-core_3     $beangle_commons_ver
-  download org.beangle.commons beangle-commons-file_3     $beangle_commons_ver
-  download org.beangle.template beangle-template-freemarker_3 $beangle_template_ver
-  download org.beangle.boot beangle-boot_3 $beangle_boot_ver
-  download org.beangle.sas beangle-sas-engine  $beangle_sas_ver
-  download org.beangle.sas beangle-sas-core    $beangle_sas_ver
-  download org.beangle.sas beangle-sas-juli    $beangle_sas_ver
-  download org.apache.commons commons-compress $commons_compress_ver
-  download org.freemarker freemarker $freemarker_ver
-  download org.slf4j slf4j-api $slf4j_ver
-  download ch.qos.logback logback-core $logback_ver
-  download ch.qos.logback logback-classic $logback_ver
-  download ch.qos.logback logback-access $logback_ver
-  echo "Initialization Completed"
-  if [ -f $SAS_HOME/conf/server.xml ]; then
-    echo "Custom the conf/server.xml."
+  for artifact in ${artifacts[@]}; do
+    gav=($(echo $artifact | tr ":" "\n"))
+    download "${gav[0]}" "${gav[1]}"  "${gav[2]}"
+  done
+
+
+  missing_count=0
+
+  for artifact in ${artifacts[@]}; do
+    gav=($(echo $artifact | tr ":" "\n"))
+    group_id=`echo "${gav[0]}" | tr . /`
+    local_file="$M2_REPO/$group_id/${gav[1]}/${gav[2]}/${gav[1]}-${gav[2]}.jar"
+    if [ ! -f "$local_file" ]; then
+       echo "missing $local_file"
+       missing_count=$((missing_count+1))
+    fi
+  done
+
+  if [ $missing_count = 0 ];then
+    echo "Initialization Completed"
+    if [ -f $SAS_HOME/conf/server.xml ]; then
+      echo "Custom the conf/server.xml."
+    fi
+  else
+    rm -rf $SAS_HOME/bin/lib
+    echo "missing $missing_count artifacts"
+    exit 1
   fi
+
