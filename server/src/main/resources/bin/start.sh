@@ -20,9 +20,20 @@ if [ -f "$SAS_HOME/bin/setenv.sh" ]; then
 fi
 
 if [ $SAS_ADMIN ] && [ $SAS_PROFILE ] && [ "$SAS_CONNECT" != "offline" ]; then
-  echo "fetching the latest server.xml..."
+  echo -n "fetching $SAS_ADMIN/${SAS_PROFILE}/server.xml..."
   mkdir -p $SAS_HOME/conf/
-  wget -q $SAS_ADMIN/${SAS_PROFILE}/server.xml -O $SAS_HOME/conf/server.xml
+  wget -q $SAS_ADMIN/${SAS_PROFILE}/server.xml -O $SAS_HOME/conf/server_newer.xml || rm $SAS_HOME/conf/server_newer.xml
+  if [ -f $SAS_HOME/conf/server_newer.xml ]; then
+    rm -rf $SAS_HOME/conf/server_old.xml
+    if [ -f $SAS_HOME/conf/server.xml ]; then
+      mv $SAS_HOME/conf/server.xml $SAS_HOME/conf/server_old.xml
+    fi
+    mv $SAS_HOME/conf/server_newer.xml $SAS_HOME/conf/server.xml
+    echo "ok"
+  else
+    echo "cannot get server.xml,startup was aborted."
+    exit 1;
+  fi
 fi
 
 if [ ! -f $SAS_HOME/conf/server.xml ]; then
