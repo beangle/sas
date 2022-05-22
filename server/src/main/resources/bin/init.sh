@@ -1,6 +1,6 @@
 #!/bin/sh
-PRGDIR=`dirname "$0"`
-export SAS_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
+PRGDIR=$(dirname "$0")
+export SAS_HOME=$(cd "$PRGDIR/../" >/dev/null; pwd)
 . "$SAS_HOME/bin/env.sh"
 
 if [ -x "$SAS_HOME/bin/setenv.sh" ]; then
@@ -13,7 +13,7 @@ fi
 
 # download groupId artifactId version
 download(){
-  local group_id=`echo "$1" | tr . /`
+  local group_id=$(echo "$1" | tr . /)
   local URL="$M2_REMOTE_REPO/$group_id/$2/$3/$2-$3.jar"
   local artifact_name="$2-$3.jar"
   local local_file="$M2_REPO/$group_id/$2/$3/$2-$3.jar"
@@ -109,7 +109,7 @@ abort(){
 
   for artifact in ${artifacts[@]}; do
     gav=($(echo $artifact | tr ":" "\n"))
-    group_id=`echo "${gav[0]}" | tr . /`
+    group_id=$(echo "${gav[0]}" | tr . /)
     local_file="$M2_REPO/$group_id/${gav[1]}/${gav[2]}/${gav[1]}-${gav[2]}.jar"
     if [ ! -f "$local_file" ]; then
        echo "missing $local_file"

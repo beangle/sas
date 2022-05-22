@@ -1,6 +1,6 @@
 #!/bin/sh
-PRGDIR=`dirname "$0"`
-export SAS_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
+PRGDIR=$(dirname "$0")
+export SAS_HOME=$(cd "$PRGDIR/../" >/dev/null; pwd)
 . "$SAS_HOME/bin/env.sh"
 
 if [ $# -eq 0 ]; then
@@ -22,7 +22,8 @@ fi
 if [ $SAS_ADMIN ] && [ $SAS_PROFILE ] && [ "$SAS_CONNECT" != "offline" ]; then
   echo -n "fetching $SAS_ADMIN/${SAS_PROFILE}/server.xml..."
   mkdir -p $SAS_HOME/conf/
-  wget -q $SAS_ADMIN/${SAS_PROFILE}/server.xml -O $SAS_HOME/conf/server_newer.xml || rm $SAS_HOME/conf/server_newer.xml
+  ip_addresses=$(hostname -I)
+  wget -q $SAS_ADMIN/${SAS_PROFILE}/server.xml --header="ip:$ip_addresses" -O $SAS_HOME/conf/server_newer.xml || rm $SAS_HOME/conf/server_newer.xml
   if [ -f $SAS_HOME/conf/server_newer.xml ]; then
     rm -rf $SAS_HOME/conf/server_old.xml
     if [ -f $SAS_HOME/conf/server.xml ]; then
@@ -50,7 +51,7 @@ start(){
   export SERVER_TMPDIR="$SERVER_BASE"/temp
 
   if [ -s "$SERVER_PID" ]; then
-      PID=`cat "$SERVER_PID"`
+      PID=$(cat "$SERVER_PID")
       ps -p $PID >/dev/null 2>&1
       if [ $? -eq 0 ] ; then
         ps  --no-headers -f -p $PID
@@ -99,7 +100,7 @@ start(){
       >> "$SERVER_OUT" 2>&1 "&"
 
   elif [ -f "$SERVER_BASE/bin/command.txt" ] ; then
-    COMMAND=`cat "$SERVER_BASE/bin/command.txt"`
+    COMMAND=$(cat "$SERVER_BASE/bin/command.txt")
     eval "$COMMAND" --server "$SERVER_BASE/conf/server.xml"  "$SERVER_OPTS" >> "$SERVER_OUT" 2>&1 "&"
   else
     echo "Unrecognize engine,launch is aborted."
