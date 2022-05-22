@@ -1,6 +1,6 @@
 #!/bin/sh
-PRGDIR=`dirname "$0"`
-SAS_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
+PRGDIR=$(dirname "$0")
+SAS_HOME=$(cd "$PRGDIR/../" >/dev/null; pwd)
 export SAS_HOME
 . "$SAS_HOME/bin/env.sh"
 
@@ -18,7 +18,7 @@ stop(){
   FORCE=1
 
   if [  -s "$SERVER_PID" ]; then
-    PID=`cat "$SERVER_PID"`
+    PID=$(cat "$SERVER_PID")
     kill -15 $PID >/dev/null 2>&1
   else
     return 1
@@ -35,7 +35,7 @@ stop(){
     if [ $SLEEP -gt 0 ]; then
       sleep 1
     fi
-    SLEEP=`expr $SLEEP - 1 `
+    SLEEP=$(expr $SLEEP - 1 )
   done
 
   if [ $FORCE -eq 1 ]; then

@@ -7,8 +7,8 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 
-PRGDIR=`dirname "$0"`
-export SAS_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
+PRGDIR=$(dirname "$0")
+export SAS_HOME=$(cd "$PRGDIR/../" >/dev/null; pwd)
 . "$SAS_HOME/bin/env.sh"
 
 # launch classpath
@@ -20,7 +20,7 @@ warfile=""
 
 # download groupId artifactId version
 download(){
-  group_id=`echo "$1" | tr . /`
+  group_id=$(echo "$1" | tr . /)
   URL="$M2_REMOTE_REPO/$group_id/$2/$3/$2-$3.jar"
   artifact_name="$2-$3.jar"
   local_file="$M2_REPO/$group_id/$2/$3/$2-$3.jar"
@@ -78,7 +78,7 @@ args="${opts#*$warfile}"
 options="${opts%%$warfile*}"
 bootpath="${bootpath:1}" #omit head :
 #destfile is resolved absolute file path.
-destfile=`java -cp "$bootpath" org.beangle.boot.dependency.AppResolver $warfile --remote=$M2_REMOTE_REPO --local=$M2_REPO --quiet`
+destfile=$(java -cp "$bootpath" org.beangle.boot.dependency.AppResolver $warfile --remote=$M2_REMOTE_REPO --local=$M2_REPO --quiet)
 if [ $? -ne 0  ]; then
   echo "Cannot resolve $warfile, Launching aborted"
   exit

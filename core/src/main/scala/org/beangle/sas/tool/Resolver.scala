@@ -19,6 +19,7 @@ package org.beangle.sas.tool
 
 import org.beangle.boot.artifact.{Archive, Artifact, ArtifactDownloader, Repo}
 import org.beangle.boot.dependency.AppResolver
+import org.beangle.commons.collection.Collections
 import org.beangle.commons.io.IOs
 import org.beangle.commons.lang.Strings.substringAfterLast
 import org.beangle.sas.config.{ArchiveURI, Container, Webapp}
@@ -47,8 +48,16 @@ object Resolver {
       if (repository.remote.isEmpty) new Repo.Remote("remote", Repo.Remote.AliyunURL)
       else new Repo.Remote("remote", repository.remote.get)
 
+    //try to find webapps which run at these ips
+    val ips = SasTool.getLocalIPs()
+    val webapps = Collections.newSet[Webapp]
+    container.farms foreach { farm =>
+      for (server <- farm.servers; if ips.contains(server.host.ip)) {
+        webapps ++= container.getWebapps(server)
+      }
+    }
     val local = new Repo.Local(repository.local.orNull)
-    val missing = resolve(sasHome, remote, local, container.webapps)
+    val missing = resolve(sasHome, remote, local, webapps.toSeq)
     System.exit(if missing.nonEmpty then -1 else 0)
   }
 

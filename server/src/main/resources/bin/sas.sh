@@ -1,6 +1,6 @@
 #!/bin/sh
-PRGDIR=`dirname "$0"`
-export SAS_HOME=`cd "$PRGDIR/../" >/dev/null; pwd`
+PRGDIR=$(dirname "$0")
+export SAS_HOME=$(cd "$PRGDIR/../" >/dev/null; pwd)
 . "$SAS_HOME/bin/env.sh"
 
 if [ -x "$SAS_HOME/bin/setenv.sh" ]; then
@@ -43,7 +43,9 @@ elif [ "$sas_command" = "pull" ] ; then
     echo "define SAS_ADMIN and SAS_PROFILE in setenv.sh"
     exit 1
   fi
-  wget -q $SAS_ADMIN/${SAS_PROFILE}/server.xml -O $SAS_HOME/conf/server_newer.xml
+  echo "fetching $SAS_ADMIN/${SAS_PROFILE}/server.xml..."
+  ip_addresses=$(hostname -I)
+  wget -q $SAS_ADMIN/${SAS_PROFILE}/server.xml --header="ip:$ip_addresses" -O $SAS_HOME/conf/server_newer.xml || rm $SAS_HOME/conf/server_newer.xml
   if [ -f $SAS_HOME/conf/server_newer.xml ]; then
     rm -rf $SAS_HOME/conf/server_old.xml
     if [ -f $SAS_HOME/conf/server.xml ]; then
@@ -52,6 +54,8 @@ elif [ "$sas_command" = "pull" ] ; then
     fi
     mv $SAS_HOME/conf/server_newer.xml $SAS_HOME/conf/server.xml
     echo "conf/server.xml was updated."
+  else
+    echo "cannot get $SAS_ADMIN/${SAS_PROFILE}/server.xml"
   fi
 
 elif [ "$sas_command" = "status" ] ; then
@@ -66,10 +70,10 @@ elif [ "$sas_command" = "status" ] ; then
 
     for dir in * ; do
       if [ -f $dir/SERVER_PID ]; then
-        PID=`cat "$dir/SERVER_PID"`
+        PID=$(cat "$dir/SERVER_PID")
         ps -p $PID >/dev/null 2>&1
         if [ $? -eq 0 ] ; then
-          port=`ss -tlnp |grep $PID|awk '{split($4,a,":");print a[length(a)]}'|uniq`
+          port=$(ss -tlnp |grep $PID|awk '{split($4,a,":");print a[length(a)]}'|uniq)
           if [ $started == 0 ]; then
             echo "---------------running servers---------------"
           fi
