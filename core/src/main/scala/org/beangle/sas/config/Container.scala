@@ -161,6 +161,10 @@ object Container {
 
         val proxyOpts = (serverElem \ "@proxyOptions").text
         server.proxyOptions = if (isEmpty(proxyOpts)) None else Some(proxyOpts)
+
+        (serverElem \ "@proxyHttpPort") foreach { p =>
+          server.proxyHttpPort = Some(p.text.toInt)
+        }
       }
       conf.farms += farm
     }
