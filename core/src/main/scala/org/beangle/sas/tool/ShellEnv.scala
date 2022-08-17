@@ -31,14 +31,17 @@ trait ShellEnv extends Logging {
 
   var configFile = "/conf/server.xml"
 
-  def read() = {
+  def read(): Option[Container] = {
     assert(null != workdir)
     if (workdir.endsWith("/")) workdir = workdir.substring(0, workdir.length - 1)
     val target = new File(workdir + configFile)
     if (target.exists) {
       logger.info(s"Read config file ${target.getName}")
       container = Container(scala.xml.XML.load(new FileInputStream(target)))
+    } else {
+      logger.error(s"Missing config file ${target.getName}")
     }
+    Option(this.container)
   }
 
   def toXml: String = {

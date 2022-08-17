@@ -23,19 +23,19 @@ import org.beangle.commons.lang.SystemInfo
 object Proxy extends ShellEnv {
   def main(args: Array[String]): Unit = {
     workdir = if (args.length == 0) SystemInfo.user.dir else args(0)
-    read()
-    container.proxy.engine match {
-      case "haproxy" =>
-        val file = ProxyGenerator.genHaproxy(container, workdir)
-        println(s"Generate ${workdir}" + / + "conf" + / + "haproxy.cfg")
-        println("Execute:\n    cp " + file.getAbsolutePath + " /etc/haproxy/haproxy.cfg")
-      case "nginx" =>
-        val file = ProxyGenerator.genNginx(container, workdir)
-        println(s"Generate ${workdir}/conf/nginx.conf")
-        println("Execute:\n    cp " + file.getAbsolutePath + " /etc/nginx/nginx.conf")
-      case _ =>
-        println("only support haproxy and nginx.")
+    read() foreach { container =>
+      container.proxy.engine match {
+        case "haproxy" =>
+          val file = ProxyGenerator.genHaproxy(container, workdir)
+          println(s"Generate ${workdir}" + / + "conf" + / + "haproxy.cfg")
+          println("Execute:\n    cp " + file.getAbsolutePath + " /etc/haproxy/haproxy.cfg")
+        case "nginx" =>
+          val file = ProxyGenerator.genNginx(container, workdir)
+          println(s"Generate ${workdir}/conf/nginx.conf")
+          println("Execute:\n    cp " + file.getAbsolutePath + " /etc/nginx/nginx.conf")
+        case _ =>
+          println("only support haproxy and nginx.")
+      }
     }
-
   }
 }
