@@ -227,37 +227,33 @@ object Container {
         throw new RuntimeException("Cannot find hostname,when https enabled")
       }
 
-      val backends = new mutable.HashMap[Farm, mutable.HashSet[Set[Server]]]
+      val backends = new mutable.HashSet[Set[Server]]
       val backendMapping = new mutable.HashMap[Set[Server], mutable.HashSet[Webapp]]
       conf.webapps foreach { webapp =>
         if webapp.runAt.nonEmpty then
-          val farm = webapp.runAt.head.farm
           val servers = webapp.runAt.toSet
-          val farmBackends = backends.getOrElseUpdate(farm, new mutable.HashSet[Set[Server]])
-          farmBackends.addOne(servers)
+          backends.addOne(servers)
           backendMapping.getOrElseUpdate(servers, new mutable.HashSet[Webapp]).addOne(webapp)
       }
-      backends foreach { case (farm, serverLists) =>
-        var i = 1
-        val farmBackends = serverLists map { servers =>
-          val backendName =
-            if servers.size == 1 then
-              servers.head.qualifiedName.replace('.', '_')
-            else
-              i = i + 1
-              s"${farm.name}$i"
-          val backend = new Proxy.Backend(backendName)
-          servers foreach { s => backend.addServer(s.name, s.host.ip, s.proxyHttpPort.getOrElse(s.http), s.proxyOptions) }
 
-          backend.options = farm.proxyOptions
-          proxy.addBackend(backend)
-          backendMapping(servers) foreach { webapp => webapp.entryPoint = backend }
-          backend
-        }
-        if farmBackends.size == 1 then farmBackends.head.name = farm.name
+      val nameUsedCount = new mutable.HashMap[String, Int]
+      backends foreach { servers =>
+        val farmName = servers.map(_.farm.name).mkString("_")
+        val used = nameUsedCount.getOrElseUpdate(farmName, 0)
+        val backendName =
+          if used == 0 then farmName
+          else
+            nameUsedCount.update(farmName, used + 1)
+            farmName + s"$nameUsedCount"
+
+        val backend = new Proxy.Backend(backendName)
+        servers foreach { s => backend.addServer(s.qualifiedName.replace('.', '_'), s.host.ip, s.proxyHttpPort.getOrElse(s.http), s.proxyOptions) }
+        val farmProxyOptions = servers.map(_.farm.proxyOptions).flatten
+        backend.options = if farmProxyOptions.nonEmpty then Some(farmProxyOptions.mkString("\n")) else None
+        proxy.addBackend(backend)
+        backendMapping(servers) foreach { webapp => webapp.entryPoint = backend }
       }
     }
-
     conf
   }
 

@@ -29,9 +29,7 @@ object Firewall extends ShellEnv {
 
   def main(args: Array[String]): Unit = {
     workdir = if (args.length == 0) SystemInfo.user.dir else args(0)
-    read()
-
-    if (null != container) {
+    read() foreach { container =>
       info()
       shell("firewall> ", Set("exit", "quit", "q"), command => command match {
         case "?" => printHelp()
@@ -41,8 +39,6 @@ object Firewall extends ShellEnv {
         case "apply" => apply()
         case t => if (isNotEmpty(t)) println(t + ": command not found...")
       })
-    } else {
-      logger.info("Cannot find conf/server.xml")
     }
   }
 
