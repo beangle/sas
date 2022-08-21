@@ -82,7 +82,9 @@ public class TomcatServerBuilder {
 
   protected void configHost(StandardHost host) {
     host.setAutoDeploy(false);
-    host.setErrorReportValveClass("org.beangle.sas.engine.tomcat.SwallowErrorValve");
+    if (!config.devMode) {
+      host.setErrorReportValveClass("org.beangle.sas.engine.tomcat.SwallowErrorValve");
+    }
   }
 
   protected void prepareContext(Host host) {

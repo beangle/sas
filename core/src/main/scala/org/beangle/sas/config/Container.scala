@@ -238,13 +238,21 @@ object Container {
 
       val nameUsedCount = new mutable.HashMap[String, Int]
       backends foreach { servers =>
-        val farmName = servers.map(_.farm.name).mkString("_")
-        val used = nameUsedCount.getOrElseUpdate(farmName, 0)
         val backendName =
-          if used == 0 then farmName
+          if servers.size == 1 then
+            val first = servers.head
+            if first.farm.servers.size > 1 then
+              first.qualifiedName.replace('.', '_')
+            else first.farm.name
           else
-            nameUsedCount.update(farmName, used + 1)
-            farmName + s"$nameUsedCount"
+            val farms = servers.map(_.farm)
+            if farms.size == 1 && farms.head.servers.toSet == servers then
+              farms.head.name
+            else
+              val farmName = servers.map(_.farm.name).mkString("_")
+              val used = nameUsedCount.getOrElseUpdate(farmName, 0)
+              nameUsedCount.update(farmName, used + 1)
+              farmName + s"$used"
 
         val backend = new Proxy.Backend(backendName)
         servers foreach { s => backend.addServer(s.qualifiedName.replace('.', '_'), s.host.ip, s.proxyHttpPort.getOrElse(s.http), s.proxyOptions) }
