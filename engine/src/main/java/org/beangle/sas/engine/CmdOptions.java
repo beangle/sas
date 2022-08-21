@@ -17,18 +17,12 @@
 
 package org.beangle.sas.engine;
 
-import java.io.File;
-import java.util.Enumeration;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
-
 public class CmdOptions {
   public static Server.Config parse(String[] args) {
     String docBase = null;
     String path = "";
     int port = 8080;
-    boolean devMode = true;
+    boolean devMode = false;
     for (String arg : args) {
       if (arg.startsWith("--")) {
         if (arg.startsWith("--path=")) {
@@ -42,11 +36,15 @@ public class CmdOptions {
         docBase = arg;
       }
     }
+    if (!devMode) {
+      String cdiProfiles = System.getProperty("beangle.cdi.profiles");
+      if (null != cdiProfiles && cdiProfiles.contains("dev")) {
+        devMode = true;
+      }
+    }
     Server.Config config = new Server.Config(path, port, docBase);
     if (null != docBase) {
-      if (Tools.isLibEmpty(docBase)) {
-        config.unpack = "false";
-      }
+      if (Tools.isLibEmpty(docBase)) config.unpack = "false";
     }
     config.devMode = devMode;
     return config;

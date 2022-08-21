@@ -59,6 +59,7 @@ public class SwallowErrorValve extends ErrorReportValve {
     } else {
       StringBuilder sb = new StringBuilder();
       sb.append("HTTP Status ").append(statusCode);
+      if (null != throwable) sb.append("  Error:").append(throwable.getMessage());
       try {
         Writer writer = response.getReporter();
         if (writer != null) {
