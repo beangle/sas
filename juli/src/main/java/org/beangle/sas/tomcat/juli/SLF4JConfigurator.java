@@ -31,7 +31,7 @@ import java.net.URL;
 public class SLF4JConfigurator extends ContextAwareBase implements Configurator {
 
   @Override
-  public void configure(LoggerContext lc) {
+  public ExecutionStatus configure(LoggerContext lc) {
     JoranConfigurator configurator = new JoranConfigurator();
     configurator.setContext(lc);
     try {
@@ -69,6 +69,7 @@ public class SLF4JConfigurator extends ContextAwareBase implements Configurator 
     } catch (JoranException | MalformedURLException e) {
       e.printStackTrace();
     }
+    return ExecutionStatus.NEUTRAL;
   }
 
 }

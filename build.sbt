@@ -2,7 +2,7 @@ import org.beangle.parent.Dependencies._
 import org.beangle.parent.Settings._
 
 ThisBuild / organization := "org.beangle.sas"
-ThisBuild / version := "0.10.7-SNAPSHOT"
+ThisBuild / version := "0.11.0"
 
 ThisBuild / scmInfo := Some(
   ScmInfo(
@@ -25,16 +25,16 @@ ThisBuild / homepage := Some(url("https://beangle.github.io/sas/index.html"))
 ThisBuild / crossPaths := false
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-val beangle_template_ver = "0.0.38"
-val beangle_boot_ver = "0.0.32"
-val apache_tomcat_ver = "10.0.23"
-val io_undertow_ver = "2.2.18.Final"
+val beangle_template_ver = "0.1.0"
+val beangle_boot_ver = "0.1.0"
+val apache_tomcat_ver = "10.1.0"
+val io_undertow_ver = "2.3.0.Beta1"
 
 val beangle_boot = "org.beangle.boot" %% "beangle-boot" % beangle_boot_ver
 val beangle_template_freemarker = "org.beangle.template" %% "beangle-template-freemarker" % beangle_template_ver
 
 val tomcat_juli = "org.apache.tomcat" % "tomcat-juli" % apache_tomcat_ver
-val undertow_servlet = "io.undertow" % "undertow-servlet-jakarta" % io_undertow_ver % "optional"
+val undertow_servlet = "io.undertow" % "undertow-servlet" % io_undertow_ver % "optional"
 val tomcat_embeded_core = "org.apache.tomcat.embed" % "tomcat-embed-core" % apache_tomcat_ver % "optional" exclude("org.apache.tomcat", "tomcat-annotations-api")
 val commonDeps = Seq(beangle_boot, scalaxml, scalatest)
 
@@ -82,7 +82,7 @@ lazy val juli = (project in file("juli"))
     ),
     assemblyMergeStrategy := {
       case PathList("META-INF", xs@_*) =>
-        xs map (_.toLowerCase) match {
+        xs map (_.toLowerCase) match {//这里转成了小写，后面判断也使用小写
           case ("manifest.mf" :: Nil) | ("notice" :: Nil) | ("license" :: Nil) => MergeStrategy.discard
           case "maven" :: xs => MergeStrategy.discard
           case "services" :: "jakarta.servlet.servletcontainerinitializer" :: Nil => MergeStrategy.discard

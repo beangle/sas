@@ -67,7 +67,7 @@ checkEnv() {
     abort "Install apr first."
   fi
 
-  if [ ! -f "/usr/lib64/libtcnative-1.so" ]; then
+  if [ ! -f "/usr/lib64/libtcnative-1.so" ] && [ ! -f "/usr/lib64/libtcnative-2.so" ]; then
     abort "Install tomcat-native first."
   fi
 }

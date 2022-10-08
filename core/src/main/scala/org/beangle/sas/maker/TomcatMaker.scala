@@ -60,10 +60,12 @@ object TomcatMaker {
       scanner.properties.put("scanManifest", "false")
       context.jarScanner = scanner
     }
-    //添加beangle-sas-engine and logback-access
+    //添加beangle-sas-engine and logback-access(bump version)
     engine.jars += Jar.gav("org.beangle.sas:beangle-sas-engine:" + container.version)
-    engine.jars += Jar.gav("ch.qos.logback:logback-access:1.3.0-alpha14")
-    engine.jars += Jar.gav("ch.qos.logback:logback-core:1.3.0-alpha14")
+    if (engine.typ == EngineType.Tomcat) {
+      engine.jars += Jar.gav("ch.qos.logback:logback-access:1.4.3")
+      engine.jars += Jar.gav("ch.qos.logback:logback-core:1.4.3")
+    }
   }
 
   /** 创建一个引擎
