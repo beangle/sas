@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 PRGDIR=$(dirname "$0")
 export SAS_HOME=$(cd "$PRGDIR/../" >/dev/null; pwd)
 . "$SAS_HOME/bin/env.sh"

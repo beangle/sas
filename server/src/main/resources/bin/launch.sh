@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 if [ $# -eq 0 ]; then
   echo "Usage:
    launch.sh [jvm_options] /path/to/war [--port=8080] [--path=/yourbase] [other_args]

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ -z "$M2_REMOTE_REPO" ]; then
   export M2_REMOTE_REPO="https://maven.aliyun.com/nexus/content/groups/public"
