@@ -43,9 +43,10 @@ elif [ "$sas_command" = "pull" ] ; then
     echo "define SAS_ADMIN and SAS_PROFILE in setenv.sh"
     exit 1
   fi
-  echo "fetching $SAS_ADMIN/${SAS_PROFILE}/server.xml..."
+  echo "fetching $SAS_ADMIN/api/${SAS_PROFILE}/configs/server.xml..."
+  mkdir -p $SAS_HOME/conf
   ip_addresses=$(hostname -I)
-  wget -q $SAS_ADMIN/${SAS_PROFILE}/server.xml --header="ip:$ip_addresses" -O $SAS_HOME/conf/server_newer.xml || rm $SAS_HOME/conf/server_newer.xml
+  wget -q $SAS_ADMIN/api/${SAS_PROFILE}/configs/server.xml --header="ip:$ip_addresses" -O $SAS_HOME/conf/server_newer.xml || rm $SAS_HOME/conf/server_newer.xml
   if [ -f $SAS_HOME/conf/server_newer.xml ]; then
     rm -rf $SAS_HOME/conf/server_old.xml
     if [ -f $SAS_HOME/conf/server.xml ]; then
@@ -55,7 +56,7 @@ elif [ "$sas_command" = "pull" ] ; then
     mv $SAS_HOME/conf/server_newer.xml $SAS_HOME/conf/server.xml
     echo "conf/server.xml was updated."
   else
-    echo "cannot get $SAS_ADMIN/${SAS_PROFILE}/server.xml"
+    echo "cannot get $SAS_ADMIN/api/${SAS_PROFILE}/configs/server.xml"
   fi
 
 elif [ "$sas_command" = "status" ] ; then

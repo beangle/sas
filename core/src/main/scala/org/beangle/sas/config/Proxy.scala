@@ -61,7 +61,9 @@ object Proxy {
   class Https {
     var certificate: String = _
     var certificateKey: String = _
+    /** ssl密码套件 */
     var ciphers: String = _
+    /** ssl协议,TLSv1.1 TLSv1.2 */
     var protocols: String = _
     var port: Int = 443
     var forceHttps: Boolean = true

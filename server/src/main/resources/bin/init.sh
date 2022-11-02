@@ -7,8 +7,9 @@ if [ -x "$SAS_HOME/bin/setenv.sh" ]; then
   . "$SAS_HOME/bin/setenv.sh"
 fi
 
+mkdir -p $SAS_HOME/conf
 if [ ! -f $SAS_HOME/conf/server.xml ] && [ $SAS_ADMIN ] && [ $SAS_PROFILE ]; then
-  wget -q $SAS_ADMIN/${SAS_PROFILE}/server.xml -O $SAS_HOME/conf/server.xml
+  wget -q $SAS_ADMIN/api/${SAS_PROFILE}/configs/server.xml -O $SAS_HOME/conf/server.xml
 fi
 
 # download groupId artifactId version
@@ -63,12 +64,13 @@ checkEnv() {
     abort "Find java version $version,but at least 11 needed."
   fi
 
-  if [ ! -f "/usr/lib64/libapr-1.so.0" ]; then
-    abort "Install apr first."
-  fi
-
-  if [ ! -f "/usr/lib64/libtcnative-1.so" ] && [ ! -f "/usr/lib64/libtcnative-2.so" ]; then
-    abort "Install tomcat-native first."
+  result=$(ldconfig -p | grep libtcnative-1.so)
+  if [ "$result" = "" ]; then
+    result=$(ldconfig -p | grep libtcnative-2.so)
+    if [ "$result" = "" ]; then
+      abort "Install tomcat-native first."
+      exit 1
+    fi
   fi
 }
 
