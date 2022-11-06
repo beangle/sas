@@ -2,7 +2,7 @@ import org.beangle.parent.Dependencies._
 import org.beangle.parent.Settings._
 
 ThisBuild / organization := "org.beangle.sas"
-ThisBuild / version := "0.11.2-SNAPSHOT"
+ThisBuild / version := "0.11.2"
 
 ThisBuild / scmInfo := Some(
   ScmInfo(
@@ -25,8 +25,8 @@ ThisBuild / homepage := Some(url("https://beangle.github.io/sas/index.html"))
 ThisBuild / crossPaths := false
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-val beangle_template_ver = "0.1.1"
-val beangle_boot_ver = "0.1.1"
+val beangle_template_ver = "0.1.2"
+val beangle_boot_ver = "0.1.2"
 val apache_tomcat_ver = "10.1.1"
 val io_undertow_ver = "2.3.0.Final"
 
