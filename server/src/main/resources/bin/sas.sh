@@ -39,14 +39,14 @@ elif [ "$sas_command" = "resolve" ] ; then
 
 elif [ "$sas_command" = "pull" ] ; then
 
-  if [ -z "$SAS_ADMIN" ]; then
-    echo "define SAS_ADMIN and SAS_PROFILE in setenv.sh"
+  if [ -z "$sas_remote_url" ]; then
+    echo "define Ssas_remote_url in setenv.sh"
     exit 1
   fi
-  echo "fetching $SAS_ADMIN/api/${SAS_PROFILE}/configs/server.xml..."
+  echo "fetching $sas_remote_url/config/server.xml..."
   mkdir -p $SAS_HOME/conf
   ip_addresses=$(hostname -I)
-  wget -q $SAS_ADMIN/api/${SAS_PROFILE}/configs/server.xml --header="ip:$ip_addresses" -O $SAS_HOME/conf/server_newer.xml || rm $SAS_HOME/conf/server_newer.xml
+  wget -q $sas_remote_url/config/server.xml --header="ip:$ip_addresses" -O $SAS_HOME/conf/server_newer.xml || rm $SAS_HOME/conf/server_newer.xml
   if [ -f $SAS_HOME/conf/server_newer.xml ]; then
     rm -rf $SAS_HOME/conf/server_old.xml
     if [ -f $SAS_HOME/conf/server.xml ]; then
@@ -56,7 +56,7 @@ elif [ "$sas_command" = "pull" ] ; then
     mv $SAS_HOME/conf/server_newer.xml $SAS_HOME/conf/server.xml
     echo "conf/server.xml was updated."
   else
-    echo "cannot get $SAS_ADMIN/api/${SAS_PROFILE}/configs/server.xml"
+    echo "cannot get $sas_remote_url/config/server.xml"
   fi
 
 elif [ "$sas_command" = "status" ] ; then

@@ -8,8 +8,8 @@ if [ -x "$SAS_HOME/bin/setenv.sh" ]; then
 fi
 
 mkdir -p $SAS_HOME/conf
-if [ ! -f $SAS_HOME/conf/server.xml ] && [ $SAS_ADMIN ] && [ $SAS_PROFILE ]; then
-  wget -q $SAS_ADMIN/api/${SAS_PROFILE}/configs/server.xml -O $SAS_HOME/conf/server.xml
+if [ ! -f $SAS_HOME/conf/server.xml ] && [ $sas_remote_url ]; then
+  wget -q $sas_remote_url/config/server.xml -O $SAS_HOME/conf/server.xml
 fi
 
 # download groupId artifactId version

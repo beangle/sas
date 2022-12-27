@@ -120,8 +120,14 @@ object Container {
       (farmElem \ "@enableAccessLog") foreach { n =>
         farm.enableAccessLog = java.lang.Boolean.valueOf(n.text)
       }
-      val serverOpts = (farmElem \ "ServerOptions").text
-      farm.serverOptions = if (isEmpty(serverOpts)) None else Some(serverOpts)
+      var serverOpts = (farmElem \ "ServerOptions").text
+      if (!isEmpty(serverOpts)) {
+        if (serverOpts.contains("${sas_remote_url}")) {
+          val remoteUrl = System.getenv("sas_remote_url")
+          if (null != remoteUrl) serverOpts = Strings.replace(serverOpts, "${sas_remote_url}", remoteUrl)
+        }
+        farm.serverOptions = Some(serverOpts)
+      }
       val proxyOpts = (farmElem \ "ProxyOptions").text
       farm.proxyOptions = if (isEmpty(proxyOpts)) None else Some(proxyOpts)
 
