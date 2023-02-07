@@ -30,6 +30,7 @@ import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.util.scan.StandardJarScanner;
 import org.beangle.sas.engine.Server;
 
+import java.io.File;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
@@ -91,8 +92,7 @@ public class TomcatServerBuilder {
     StandardContext context = new StandardContext();
     context.setName(config.contextPath);
     context.setPath(config.contextPath);
-    // disable scanning
-    skipScanning(context);
+    skipScanning(context); // disable scanning
     // container sci support
     if (!config.jspSupport && !config.websocketSupport) {
       context.setContainerSciFilter("apache");
@@ -104,25 +104,33 @@ public class TomcatServerBuilder {
     //embeded or as server
     WebappLoader loader = new WebappLoader();
     if (config.docBase == null) {
+      String targetClassPath = Thread.currentThread().getContextClassLoader().getResource("").getFile();
+      int targetIdx = targetClassPath.indexOf("/target/");
+      if (targetIdx > 0) {
+        String projectWebapp = targetClassPath.substring(0, targetIdx) + "/src/main/webapp";
+        if (new File(projectWebapp).exists()) {
+          context.setDocBase(projectWebapp);
+        }
+      }
+      if (null == context.getDocBase()) {
+        context.setDocBase(config.createTempDir("tomcat-docbase").getAbsolutePath());
+      }
       loader.setLoaderClass(EmbeddedWebappClassLoader.class.getName());
       loader.setDelegate(true);
       context.addLifecycleListener(new FixContextListener());
-      context.setDocBase(config.createTempDir("tomcat-docbase").getAbsolutePath());
       addInitializers(context);
     } else {
+      context.setDocBase(config.docBase);
       loader.setLoaderClass(DependencyClassLoader.class.getName());
       loader.setDelegate(false);
       context.addLifecycleListener(new ContextConfig());
-      context.setDocBase(config.docBase);
     }
     context.setLoader(loader);
 
     // default servlet and jsp
     addDefaults(context);
 
-    if (config.devMode) {
-      context.setReloadable(true);
-    }
+    if (config.devMode) context.setReloadable(true);
     if (config.unpack.equals("true")) {
       context.setUnpackWAR(true);
     } else if (config.unpack.equals("false")) {

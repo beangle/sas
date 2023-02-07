@@ -36,7 +36,7 @@ object Farm {
     if (1 == serverCount) farm.servers.head.name = "server"
     import EngineType.*
     engine.typ match {
-      case Jetty | Undertow | Tomcat => Some("-noverify -Xmx1G -Xms1G")
+      case Jetty | Undertow | Tomcat => Some("-Xmx1G -Xms1G")
       case _ => None
     }
     farm
