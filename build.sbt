@@ -2,7 +2,7 @@ import org.beangle.parent.Dependencies._
 import org.beangle.parent.Settings._
 
 ThisBuild / organization := "org.beangle.sas"
-ThisBuild / version := "0.12.2-SNAPSHOT"
+ThisBuild / version := "0.12.2"
 
 ThisBuild / scmInfo := Some(
   ScmInfo(
@@ -63,6 +63,8 @@ lazy val juli = (project in file("juli"))
   .settings(
     name := "beangle-sas-juli",
     common,
+    scalacOptions := Seq("-Xtarget:11", "-deprecation", "-feature"),
+    javacOptions := Seq("--release", "11", "-encoding", "utf-8"),
     crossPaths := false,
     libraryDependencies ++= Seq(slf4j, jcl_over_slf4j, logback_core, logback_classic, tomcat_juli),
     assemblyPackageScala / assembleArtifact := false,
