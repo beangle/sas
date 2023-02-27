@@ -1,4 +1,5 @@
 #!/bin/bash
+
 PRGDIR=$(dirname "$0")
 export SAS_HOME=$(cd "$PRGDIR/../" >/dev/null; pwd)
 . "$SAS_HOME/bin/env.sh"
@@ -60,17 +61,8 @@ checkEnv() {
   fi
 
   version=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
-  if  [[ "$version" < "11" ]]; then
-    abort "Find java version $version,but at least 11 needed."
-  fi
-
-  result=$(ldconfig -p | grep libtcnative-1.so)
-  if [ "$result" = "" ]; then
-    result=$(ldconfig -p | grep libtcnative-2.so)
-    if [ "$result" = "" ]; then
-      abort "Install tomcat-native first."
-      exit 1
-    fi
+  if  [[ "$version" < "17" ]]; then
+    abort "Find java version $version,but at least 17 needed."
   fi
 }
 
