@@ -44,7 +44,7 @@ frontend main
     bind *:${proxy.httpPort}
     [#if proxy.enableHttps]
     [#assign https=proxy.https/]
-    bind *:${https.port} ssl crt ${https.certificate!"/etc/haproxy/${proxy.hostname}.pem"} [#if https.ciphers??]ciphers ${https.ciphers}[/#if] ${https.protocols!"no-sslv3 no-tlsv10"}
+    bind *:${https.port} ssl crt ${https.certificate!"/etc/haproxy/${proxy.hostname}.pem"} [#if https.ciphers??]ciphers ${https.ciphers}[/#if] ${https.protocols!"no-sslv3 no-tlsv10 no-tlsv11"}
     http-request set-header X-Forwarded-Proto https if { ssl_fc }
     http-request set-header X-Forwarded-Port %[dst_port]
     [#if https.forceHttps]
