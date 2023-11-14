@@ -76,12 +76,12 @@ object TomcatMaker {
    * @param remote
    * @param local
    */
-  def makeEngine(sasHome: String, engine: Engine, remote: Repo.Remote, local: Repo.Local): Unit = {
+  def makeEngine(sasHome: String, engine: Engine, remotes: Seq[Repo.Remote], local: Repo.Local): Unit = {
     val tomcat = engine.dir(sasHome)
     // tomcat not exists or empty dir
     if (!tomcat.exists() || tomcat.list().length == 0) {
       val artifact = Artifact("org.apache.tomcat:tomcat:zip:" + engine.version)
-      new ArtifactDownloader(remote, local, true).download(List(artifact))
+      new ArtifactDownloader(remotes, local, true).download(List(artifact))
       val tomcatZip = new File(local.url(artifact))
       if (tomcatZip.exists()) {
         doMakeEngine(sasHome, engine, tomcatZip)
@@ -97,7 +97,7 @@ object TomcatMaker {
           SasTool.download(jar.uri, tomcat.getAbsolutePath + "/lib")
         } else if (ArchiveURI.isGav(jar.uri)) {
           val artifact = ArchiveURI.toArtifact(jar.uri)
-          new ArtifactDownloader(remote, local, true).download(List(artifact))
+          new ArtifactDownloader(remotes, local, true).download(List(artifact))
           Dirs.on(tomcat, "lib").ln(local.url(artifact))
         } else {
           Dirs.on(tomcat, "lib").copyFrom(jar.uri)

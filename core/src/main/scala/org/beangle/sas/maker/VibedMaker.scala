@@ -26,7 +26,7 @@ import java.io.{File, StringWriter}
 
 object VibedMaker {
 
-  def makeEngine(sasHome: String, engine: Engine, remote: Repo.Remote, local: Repo.Local): Unit = {
+  def makeEngine(sasHome: String, engine: Engine, remote: Seq[Repo.Remote], local: Repo.Local): Unit = {
 
   }
 

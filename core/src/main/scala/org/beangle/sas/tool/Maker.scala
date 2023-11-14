@@ -42,9 +42,10 @@ object Maker {
 
   def make(container: Container, sasHome: String, serverPattern: String): Unit = {
     val repository = container.repository
-    val remote =
-      if (repository.remote.isEmpty) new Repo.Remote("remote", Repo.Remote.AliyunURL)
-      else new Repo.Remote("remote", repository.remote.get)
+    var remoteUrl = if (repository.remote.isEmpty) Repo.Remote.AliyunURL else repository.remote.get
+    if !remoteUrl.contains(Repo.Remote.CentralURL) then remoteUrl += "," + Repo.Remote.CentralURL
+    val remotes = Repo.remotes(remoteUrl)
+
     val local = new Repo.Local(repository.local.orNull)
 
     //1. catch ips servers and engines
@@ -60,16 +61,16 @@ object Maker {
       }
     }
     //2. resolve server webapps
-    val missings = servers.map(s => s -> Resolver.resolve(sasHome, remote, local, container.getWebapps(s))).toMap
+    val missings = servers.map(s => s -> Resolver.resolve(sasHome, remotes, local, container.getWebapps(s))).toMap
 
     //make engine and servers
     engines foreach { engine =>
       engine.typ match {
         case EngineType.Tomcat =>
           TomcatMaker.applyEngineDefault(container, engine)
-          TomcatMaker.makeEngine(sasHome, engine, remote, local)
+          TomcatMaker.makeEngine(sasHome, engine, remotes, local)
         case EngineType.Vibed =>
-          VibedMaker.makeEngine(sasHome, engine, remote, local)
+          VibedMaker.makeEngine(sasHome, engine, remotes, local)
         case _ =>
           System.err.println("Cannot recognize engine type " + engine.typ)
           System.exit(1)
