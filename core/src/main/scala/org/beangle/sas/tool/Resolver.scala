@@ -17,7 +17,7 @@
 
 package org.beangle.sas.tool
 
-import org.beangle.boot.artifact.{Archive, Artifact, ArtifactDownloader, Repo}
+import org.beangle.boot.artifact.{Artifact, ArtifactDownloader, Repo}
 import org.beangle.boot.dependency.AppResolver
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.io.IOs
@@ -44,10 +44,10 @@ object Resolver {
     val sasHome = configFile.getParentFile.getParentFile.getCanonicalPath
 
     val repository = container.repository
-    val remote =
-      if (repository.remote.isEmpty) new Repo.Remote("remote", Repo.Remote.AliyunURL)
-      else new Repo.Remote("remote", repository.remote.get)
+    var remoteUrl = if (repository.remote.isEmpty) Repo.Remote.AliyunURL else repository.remote.get
 
+    if !remoteUrl.contains(Repo.Remote.CentralURL) then remoteUrl += "," + Repo.Remote.CentralURL
+    val remotes = Repo.remotes(remoteUrl)
     //try to find webapps which run at these ips
     val ips = SasTool.getLocalIPs()
     val webapps = Collections.newSet[Webapp]
@@ -57,11 +57,11 @@ object Resolver {
       }
     }
     val local = new Repo.Local(repository.local.orNull)
-    val missing = resolve(sasHome, remote, local, webapps.toSeq)
+    val missing = resolve(sasHome, remotes, local, webapps.toSeq)
     System.exit(if missing.nonEmpty then -1 else 0)
   }
 
-  def resolve(sasHome: String, remote: Repo.Remote, local: Repo.Local, webapps: collection.Seq[Webapp]): collection.Seq[String] = {
+  def resolve(sasHome: String, remotes: Seq[Repo.Remote], local: Repo.Local, webapps: collection.Seq[Webapp]): collection.Seq[String] = {
     val missings = new mutable.ArrayBuffer[String]
     webapps foreach { webapp =>
       //locate snapshot artifact in webapps
@@ -81,7 +81,7 @@ object Resolver {
         if (gav.packaging == "jar") {
           gav = Artifact(gav.groupId, gav.artifactId, gav.version, gav.classifier, "war")
         }
-        new ArtifactDownloader(remote, local, true).download(List(gav))
+        new ArtifactDownloader(remotes, local, true).download(List(gav))
         webapp.docBase = local.url(gav)
       } else if (ArchiveURI.isRemote(webapp.uri)) {
         val fileName = download(webapp.uri, sasHome + "/webapps/")
@@ -99,7 +99,7 @@ object Resolver {
       //2.resolve war
       if new File(webapp.docBase).exists() then
         if webapp.resolveSupport && resolvable(webapp.docBase) then
-          val result = AppResolver.process(new File(webapp.docBase), remote, local)
+          val result = AppResolver.process(new File(webapp.docBase), remotes, local)
           if result._2.nonEmpty then
             println("Missing:" + result._2.mkString(","))
             println("Cannot launch webapp:" + webapp.docBase)
