@@ -63,8 +63,8 @@ object TomcatMaker {
     //添加beangle-sas-engine and logback-access(bump version)
     engine.jars += Jar.gav("org.beangle.sas:beangle-sas-engine:" + container.version)
     if (engine.typ == EngineType.Tomcat) {
-      engine.jars += Jar.gav("ch.qos.logback:logback-access:1.4.4")
-      engine.jars += Jar.gav("ch.qos.logback:logback-core:1.4.4")
+      engine.jars += Jar.gav("ch.qos.logback:logback-access:1.4.14")
+      engine.jars += Jar.gav("ch.qos.logback:logback-core:1.4.14")
     }
   }
 
