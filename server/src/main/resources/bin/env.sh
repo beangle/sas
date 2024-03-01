@@ -1,4 +1,8 @@
 #!/bin/bash
+if [ $(id -u) = 0 ]; then
+  echo -e "\033[31m Please run this command in a non root environment. \033[0m"
+  exit 1
+fi
 
 if [ -z "$M2_REMOTE_REPO" ]; then
   export M2_REMOTE_REPO="https://maven.aliyun.com/nexus/content/groups/public"
