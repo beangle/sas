@@ -21,5 +21,5 @@ export beangle_boot_ver=0.1.8
 export slf4j_ver=2.0.10
 export logback_ver=1.4.14
 export freemarker_ver=2.3.32
-export commons_compress_ver=1.25.0
+export commons_compress_ver=1.26.0
 export tomcat_ver=10.1.17
