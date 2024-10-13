@@ -27,6 +27,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.net.Socket;
 
 public class Tools {
   public static boolean isLibEmpty(String path) {
@@ -74,6 +75,15 @@ public class Tools {
       return true;
     } catch (IOException e) {
       throw new RuntimeException("Failed to delete " + path, e);
+    }
+  }
+
+  public static boolean isPortFree(int port) {
+    try {
+      new Socket("localhost", port).close();
+      return false;
+    } catch (IOException e) {
+      return true;
     }
   }
 }

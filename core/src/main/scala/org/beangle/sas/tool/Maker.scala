@@ -20,6 +20,7 @@ package org.beangle.sas.tool
 import org.beangle.boot.artifact.Repo
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.io.Dirs
+import org.beangle.commons.net.Networks
 import org.beangle.sas.config.{Container, Engine, EngineType, Server}
 import org.beangle.sas.maker.{TomcatMaker, VibedMaker}
 
@@ -49,7 +50,7 @@ object Maker {
     val local = new Repo.Local(repository.local.orNull)
 
     //1. catch ips servers and engines
-    val ips = SasTool.getLocalIPs()
+    val ips = Networks.localIPs
     val engines = Collections.newSet[Engine]
     val servers = Collections.newBuffer[Server]
     container.farms foreach { farm =>

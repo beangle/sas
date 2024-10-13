@@ -1,8 +1,8 @@
-import org.beangle.parent.Dependencies._
-import org.beangle.parent.Settings._
+import org.beangle.parent.Dependencies.*
+import org.beangle.parent.Settings.*
 
 ThisBuild / organization := "org.beangle.sas"
-ThisBuild / version := "0.12.7-SNAPSHOT"
+ThisBuild / version := "0.12.7"
 
 ThisBuild / scmInfo := Some(
   ScmInfo(
@@ -25,18 +25,20 @@ ThisBuild / homepage := Some(url("https://beangle.github.io/sas/index.html"))
 ThisBuild / crossPaths := false
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-val beangle_template_ver = "0.1.11"
-val beangle_boot_ver = "0.1.9"
-val apache_tomcat_ver = "10.1.18"
-val io_undertow_ver = "2.3.10.Final"
+val beangle_commons_ver = "5.6.18"
+val beangle_template_ver = "0.1.19"
+val beangle_boot_ver = "0.1.13"
+val apache_tomcat_ver = "10.1.30"
+val io_undertow_ver = "2.3.17.Final"
 
-val beangle_boot = "org.beangle.boot" %% "beangle-boot" % beangle_boot_ver
-val beangle_template_freemarker = "org.beangle.template" %% "beangle-template-freemarker" % beangle_template_ver
+val beangle_commons = "org.beangle.commons" % "beangle-commons" % beangle_commons_ver
+val beangle_boot = "org.beangle.boot" % "beangle-boot" % beangle_boot_ver
+val beangle_template = "org.beangle.template" % "beangle-template" % beangle_template_ver
 
 val tomcat_juli = "org.apache.tomcat" % "tomcat-juli" % apache_tomcat_ver
 val undertow_servlet = "io.undertow" % "undertow-servlet" % io_undertow_ver % "optional"
 val tomcat_embeded_core = "org.apache.tomcat.embed" % "tomcat-embed-core" % apache_tomcat_ver % "optional" exclude("org.apache.tomcat", "tomcat-annotations-api")
-val commonDeps = Seq(beangle_boot, scalaxml, scalatest)
+val commonDeps = Seq(beangle_commons, beangle_boot, scalaxml, scalatest)
 
 lazy val root = (project in file("."))
   .settings()
@@ -47,7 +49,7 @@ lazy val core = (project in file("core"))
     name := "beangle-sas-core",
     common,
     libraryDependencies ++= commonDeps,
-    libraryDependencies ++= Seq(beangle_template_freemarker),
+    libraryDependencies ++= Seq(beangle_template, freemarker),
     crossPaths := false
   )
 
@@ -63,8 +65,8 @@ lazy val juli = (project in file("juli"))
   .settings(
     name := "beangle-sas-juli",
     common,
-    scalacOptions := Seq("-Xtarget:11", "-deprecation", "-feature"),
-    javacOptions := Seq("--release", "11", "-encoding", "utf-8"),
+    scalacOptions := Seq("-deprecation", "-feature"),
+    javacOptions := Seq("-encoding", "utf-8"),
     crossPaths := false,
     libraryDependencies ++= Seq(slf4j, jcl_over_slf4j, logback_core, logback_classic, tomcat_juli),
     assemblyPackageScala / assembleArtifact := false,
@@ -84,7 +86,7 @@ lazy val juli = (project in file("juli"))
     ),
     assemblyMergeStrategy := {
       case PathList("META-INF", xs@_*) =>
-        xs map (_.toLowerCase) match {//这里转成了小写，后面判断也使用小写
+        xs map (_.toLowerCase) match { //这里转成了小写，后面判断也使用小写
           case ("manifest.mf" :: Nil) | ("notice" :: Nil) | ("license" :: Nil) => MergeStrategy.discard
           case "maven" :: xs => MergeStrategy.discard
           case "services" :: "jakarta.servlet.servletcontainerinitializer" :: Nil => MergeStrategy.discard

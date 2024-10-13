@@ -19,6 +19,7 @@ package org.beangle.sas.maker
 
 import org.beangle.boot.artifact.Repo
 import org.beangle.commons.io.{Dirs, Files}
+import org.beangle.commons.net.Networks
 import org.beangle.sas.config.{Container, Engine, Server}
 import org.beangle.sas.tool.SasTool
 
@@ -58,7 +59,7 @@ object VibedMaker {
     data.put("container", container)
     data.put("farm", server.farm)
     data.put("server", server)
-    data.put("ips", SasTool.getLocalIPs())
+    data.put("ips", Networks.localIPs)
     data.put("webapps", container.getWebapps(server))
     val sw = new StringWriter()
     val freemarkerTemplate = SasTool.templateCfg.getTemplate(s"${farm.engine.typ}/conf/server.xml.ftl")

@@ -22,12 +22,13 @@ import org.beangle.commons.collection.Collections
 import org.beangle.commons.io.{Files, IOs}
 import org.beangle.commons.lang.Strings
 import org.beangle.commons.lang.Strings.substringAfterLast
+import org.beangle.commons.net.Networks
 import org.beangle.sas.config.{Container, Server}
 import org.beangle.sas.daemon.ServerStatus
 import org.beangle.template.freemarker.Configurer
 
-import java.io.{File, FileInputStream, FileOutputStream}
-import java.net.{Inet4Address, NetworkInterface, URL}
+import java.io.{File, FileInputStream, FileOutputStream, IOException}
+import java.net.{Inet4Address, NetworkInterface, Socket, URL}
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -79,28 +80,10 @@ object SasTool {
     val destFile = new File(dir + fileName)
     if (!destFile.exists) {
       val destOs = new FileOutputStream(destFile)
-      val warurl = new URL(url)
+      val warurl = Networks.url(url)
       IOs.copy(warurl.openStream(), destOs)
       destOs.close()
     }
     fileName
-  }
-
-  def getLocalIPs(): Set[String] = {
-    val niEnum = NetworkInterface.getNetworkInterfaces
-    val ips = Collections.newBuffer[String]("127.0.0.1")
-    while (niEnum.hasMoreElements) {
-      val ni = niEnum.nextElement()
-      if (ni.isUp && !ni.isLoopback) {
-        val ipEnum = ni.getInetAddresses
-        while (ipEnum.hasMoreElements) {
-          ipEnum.nextElement() match {
-            case ip: Inet4Address => ips += ip.getHostAddress
-            case _ =>
-          }
-        }
-      }
-    }
-    ips.toSet
   }
 }

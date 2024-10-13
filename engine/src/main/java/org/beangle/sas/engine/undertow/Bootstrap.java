@@ -35,6 +35,10 @@ public class Bootstrap {
       return;
     }
     Server.Config config = CmdOptions.parse(args);
+    if (!Tools.isPortFree(config.port)) {
+      logger.severe("port " + config.port + " is not available.");
+      return;
+    }
     File baseDir = config.createTempDir("undertow");
     logger.info("create base dir: " + baseDir.getAbsolutePath());
     new File(baseDir, "webapps").mkdirs();

@@ -22,6 +22,7 @@ import org.beangle.boot.dependency.AppResolver
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.io.IOs
 import org.beangle.commons.lang.Strings.substringAfterLast
+import org.beangle.commons.net.Networks
 import org.beangle.sas.config.{ArchiveURI, Container, Webapp}
 
 import java.io.{File, FileInputStream, FileOutputStream}
@@ -49,7 +50,7 @@ object Resolver {
     if !remoteUrl.contains(Repo.Remote.CentralURL) then remoteUrl += "," + Repo.Remote.CentralURL
     val remotes = Repo.remotes(remoteUrl)
     //try to find webapps which run at these ips
-    val ips = SasTool.getLocalIPs()
+    val ips = Networks.localIPs
     val webapps = Collections.newSet[Webapp]
     container.farms foreach { farm =>
       for (server <- farm.servers; if ips.contains(server.host.ip)) {
@@ -122,7 +123,7 @@ object Resolver {
     val destFile = new File(dir + fileName)
     if (!destFile.exists) {
       val destOs = new FileOutputStream(destFile)
-      val warurl = new URL(url)
+      val warurl = Networks.url(url)
       IOs.copy(warurl.openStream(), destOs)
       destOs.close()
     }

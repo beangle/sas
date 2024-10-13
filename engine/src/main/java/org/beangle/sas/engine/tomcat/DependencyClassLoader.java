@@ -44,6 +44,9 @@ public class DependencyClassLoader extends ParallelWebappClassLoader {
   @Override
   public void start() throws LifecycleException {
     super.start();
+    if("true".equals(System.getProperty("sas.disableDependencyLoader"))){
+      return;
+    }
     @SuppressWarnings("resource")
     URL resource = getResource(Dependency.OldDependenciesFile);
     if (null == resource) {

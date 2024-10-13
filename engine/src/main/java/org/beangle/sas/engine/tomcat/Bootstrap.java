@@ -18,7 +18,6 @@
 package org.beangle.sas.engine.tomcat;
 
 import org.apache.catalina.startup.Tomcat;
-import org.beangle.sas.engine.AbstractServer;
 import org.beangle.sas.engine.CmdOptions;
 import org.beangle.sas.engine.Server;
 import org.beangle.sas.engine.Tools;
@@ -36,12 +35,17 @@ public class Bootstrap {
       return;
     }
     Server.Config config = CmdOptions.parse(args);
+    if (!Tools.isPortFree(config.port)) {
+      logger.severe("port " + config.port + " is not available.");
+      return;
+    }
     File baseDir = config.createTempDir("tomcat");
     logger.info("create base dir: " + baseDir.getAbsolutePath());
     new File(baseDir, "webapps").mkdirs();
     Tomcat tomcat = new TomcatServerBuilder(config).build(baseDir.getAbsolutePath());
     final TomcatServer ts = new TomcatServer(tomcat);
     ts.start();
+    logger.info("server started:http://localhost:" + config.port + config.contextPath);
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
       @Override
       public void run() {
