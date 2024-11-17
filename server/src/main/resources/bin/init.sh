@@ -88,9 +88,7 @@ abort(){
              "org.freemarker:freemarker:$freemarker_ver"
              "org.slf4j:slf4j-api:$slf4j_ver"
              "ch.qos.logback:logback-core:$logback_ver"
-             "ch.qos.logback:logback-classic:$logback_ver"
-             "ch.qos.logback.access:logback-access-common:$logback_access_ver"
-             "ch.qos.logback.access:logback-access-tomcat:$logback_access_ver")
+             "ch.qos.logback:logback-classic:$logback_ver")
 
   echo "Downloading and link libraries..."
   for artifact in ${artifacts[@]}; do
