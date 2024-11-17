@@ -34,6 +34,7 @@ public class Bootstrap {
       System.out.println("Usage:org.beangle.sas.engine.tomcat.Bootstrap [--port=8081] [--path=/test] /path/to/your/war");
       return;
     }
+    var startAt = System.currentTimeMillis();
     Server.Config config = CmdOptions.parse(args);
     if (!Tools.isPortFree(config.port)) {
       logger.severe("port " + config.port + " is not available.");
@@ -45,7 +46,8 @@ public class Bootstrap {
     Tomcat tomcat = new TomcatServerBuilder(config).build(baseDir.getAbsolutePath());
     final TomcatServer ts = new TomcatServer(tomcat);
     ts.start();
-    logger.info("server started:http://localhost:" + config.port + config.contextPath);
+    var duration = (System.currentTimeMillis() - startAt) / 1000.0;
+    logger.info("Tomcat started(" + duration + "s):http://localhost:" + config.port + config.contextPath);
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
       @Override
       public void run() {

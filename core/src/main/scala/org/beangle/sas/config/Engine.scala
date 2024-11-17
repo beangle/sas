@@ -18,6 +18,7 @@
 package org.beangle.sas.config
 
 import org.beangle.commons.lang.Strings
+import org.beangle.commons.net.Networks
 
 import java.io.File
 import java.net.URL
@@ -93,11 +94,10 @@ object Jar {
 class Jar(val uri: String) {
   def name: String = {
     if (ArchiveURI.isGav(uri)) {
-      //val a = ArchiveURI.toArtifact(uri)
-      //a.artifactId + "-" + a.version + "." + a.packaging
-      "FIXME"
+      val a = ArchiveURI.toArtifact(uri)
+      a.artifactId + "-" + a.version + "." + a.packaging
     } else if (ArchiveURI.isRemote(uri)) {
-      val f = new URL(uri).getFile
+      val f = Networks.url(uri).getFile
       Strings.substringAfterLast(f, "/")
     } else {
       new File(uri).getName

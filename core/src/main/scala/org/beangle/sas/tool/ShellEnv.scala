@@ -19,7 +19,7 @@ package org.beangle.sas.tool
 
 import org.beangle.commons.logging.Logging
 import org.beangle.sas.config.Container
-import org.beangle.template.freemarker.Configurer
+import org.beangle.template.freemarker.Configurator
 
 import java.io.{File, FileInputStream, StringWriter}
 
@@ -45,7 +45,7 @@ trait ShellEnv extends Logging {
   }
 
   def toXml: String = {
-    val cfg = Configurer.newConfig
+    val cfg = Configurator.newConfig
     val data = new collection.mutable.HashMap[String, Any]()
     data.put("container", container)
     val sw = new StringWriter()

@@ -19,14 +19,26 @@ package org.beangle.sas.engine;
 
 import java.util.logging.Logger;
 
+/**
+ * Abstract Server
+ */
 public abstract class AbstractServer implements Server {
 
+  /**
+   * static logger
+   */
   protected Logger logger = Logger.getLogger(AbstractServer.class.toString());
 
+  /**
+   * whether it started
+   */
   protected boolean started = false;
 
   private Object monitor = new Object();
 
+  /**
+   * start server
+   */
   public final void start() {
     synchronized (this.monitor) {
       if (this.started) return;
@@ -44,6 +56,9 @@ public abstract class AbstractServer implements Server {
     }
   }
 
+  /**
+   * shutdown the server
+   */
   public final void shutdown() {
     synchronized (this.monitor) {
       if (!this.started) return;
@@ -56,8 +71,18 @@ public abstract class AbstractServer implements Server {
     }
   }
 
+  /**
+   * actual start start process
+   *
+   * @throws Exception
+   */
   public abstract void doStart() throws Exception;
 
+  /**
+   * concrete server shutdown process
+   *
+   * @throws Exception
+   */
   public abstract void doStop() throws Exception;
 
 }

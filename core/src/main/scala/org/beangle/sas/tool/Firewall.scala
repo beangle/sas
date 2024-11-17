@@ -21,7 +21,7 @@ import org.beangle.commons.io.IOs
 import org.beangle.commons.lang.Consoles.{prompt, shell}
 import org.beangle.commons.lang.Strings.isNotEmpty
 import org.beangle.commons.lang.SystemInfo
-import org.beangle.template.freemarker.Configurer
+import org.beangle.template.freemarker.Configurator
 
 import java.io.StringWriter
 
@@ -31,7 +31,7 @@ object Firewall extends ShellEnv {
     workdir = if (args.length == 0) SystemInfo.user.dir else args(0)
     read() foreach { container =>
       info()
-      shell("firewall> ", Set("exit", "quit", "q"), command => command match {
+      shell("firewall> ", Set("exit", "quit", "q"), {
         case "?" => printHelp()
         case "info" => info()
         case "help" => printHelp()
@@ -84,7 +84,7 @@ object Firewall extends ShellEnv {
   }
 
   def generate(): String = {
-    val cfg = Configurer.newConfig
+    val cfg = Configurator.newConfig
     cfg.setNumberFormat("0.##")
     val data = new collection.mutable.HashMap[String, Any]()
     data.put("ports", container.ports)

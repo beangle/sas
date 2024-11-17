@@ -34,6 +34,7 @@ public class Bootstrap {
       System.out.println("Usage:org.beangle.sas.engine.undertow.Bootstrap [--port=8081] [--path=/test] /path/to/your/war");
       return;
     }
+    var startAt = System.currentTimeMillis();
     Server.Config config = CmdOptions.parse(args);
     if (!Tools.isPortFree(config.port)) {
       logger.severe("port " + config.port + " is not available.");
@@ -46,6 +47,8 @@ public class Bootstrap {
     Undertow undertow = new UndertowServerBuilder(config).build(baseDir.getAbsolutePath());
     final UndertowServer ts = new UndertowServer(undertow);
     ts.start();
+    var duration = (System.currentTimeMillis() - startAt) / 1000.0;
+    logger.info("Undertow started(" + duration + "s):http://localhost:" + config.port + config.contextPath);
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
       @Override
       public void run() {

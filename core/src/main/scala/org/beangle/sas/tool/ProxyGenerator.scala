@@ -20,12 +20,12 @@ package org.beangle.sas.tool
 import freemarker.cache.{ClassTemplateLoader, FileTemplateLoader, MultiTemplateLoader}
 import freemarker.template.Configuration
 import org.beangle.sas.config.Container
-import org.beangle.template.freemarker.Configurer
+import org.beangle.template.freemarker.Configurator
 import org.beangle.commons.io.{Files => IOFiles}
 import java.io.{File, StringWriter}
 
 object ProxyGenerator {
-  private val cfg = Configurer.newConfig
+  private val cfg = Configurator.newConfig
   cfg.setTagSyntax(Configuration.SQUARE_BRACKET_TAG_SYNTAX)
   cfg.setNumberFormat("0.##")
 

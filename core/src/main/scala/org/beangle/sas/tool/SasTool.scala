@@ -25,7 +25,7 @@ import org.beangle.commons.lang.Strings.substringAfterLast
 import org.beangle.commons.net.Networks
 import org.beangle.sas.config.{Container, Server}
 import org.beangle.sas.daemon.ServerStatus
-import org.beangle.template.freemarker.Configurer
+import org.beangle.template.freemarker.Configurator
 
 import java.io.{File, FileInputStream, FileOutputStream, IOException}
 import java.net.{Inet4Address, NetworkInterface, Socket, URL}
@@ -34,7 +34,7 @@ import java.time.format.DateTimeFormatter
 
 object SasTool {
 
-  val templateCfg = Configurer.newConfig
+  val templateCfg = Configurator.newConfig
   templateCfg.setTagSyntax(Configuration.SQUARE_BRACKET_TAG_SYNTAX)
   templateCfg.setDefaultEncoding("UTF-8")
   templateCfg.setNumberFormat("0.##")
