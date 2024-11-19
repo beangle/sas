@@ -34,6 +34,8 @@ public class DependencyClassLoader extends ParallelWebappClassLoader {
   private static final Log log = LogFactory.getLog(DependencyClassLoader.class);
   private String base;
 
+  private boolean enableNotFoundClassResourceCache = false;
+
   public DependencyClassLoader() {
   }
 
@@ -44,8 +46,11 @@ public class DependencyClassLoader extends ParallelWebappClassLoader {
   @Override
   public void start() throws LifecycleException {
     super.start();
-    if("true".equals(System.getProperty("sas.disableDependencyLoader"))){
+    if ("true".equals(System.getProperty("sas.disableDependencyLoader"))) {
       return;
+    }
+    if (!enableNotFoundClassResourceCache) {
+      this.setNotFoundClassResourceCacheSize(0);
     }
     @SuppressWarnings("resource")
     URL resource = getResource(Dependency.OldDependenciesFile);
@@ -74,7 +79,7 @@ public class DependencyClassLoader extends ParallelWebappClassLoader {
       }
     }
     StringBuilder sb = new StringBuilder("Append ");
-    sb.append(artifacts.size()).append(" jars (listed in "+resource.toString()+")");
+    sb.append(artifacts.size()).append(" jars (listed in " + resource.toString() + ")");
     log.info(sb.toString());
     if (missings.size() > 0) {
       throw new RuntimeException("Cannot find " + missings);
@@ -92,5 +97,14 @@ public class DependencyClassLoader extends ParallelWebappClassLoader {
       if (base.endsWith("/")) this.base = base.substring(0, base.length() - 1);
     }
     new File(this.base).mkdirs();
+  }
+
+  public void setEnableNotFoundClassResourceCache(boolean enableNotFoundClassResourceCache) {
+    this.enableNotFoundClassResourceCache = enableNotFoundClassResourceCache;
+  }
+
+  @Override
+  public void setNotFoundClassResourceCacheSize(int notFoundClassResourceCacheSize) {
+    super.setNotFoundClassResourceCacheSize(enableNotFoundClassResourceCache ? notFoundClassResourceCacheSize : 0);
   }
 }
