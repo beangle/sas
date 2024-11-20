@@ -19,11 +19,14 @@ package org.beangle.sas.engine.tomcat;
 
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.loader.ParallelWebappClassLoader;
+import org.apache.catalina.loader.WebappClassLoaderBase;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 import org.beangle.sas.engine.Dependency;
 
 import java.io.File;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -48,9 +51,6 @@ public class DependencyClassLoader extends ParallelWebappClassLoader {
     super.start();
     if ("true".equals(System.getProperty("sas.disableDependencyLoader"))) {
       return;
-    }
-    if (!enableNotFoundClassResourceCache) {
-      this.setNotFoundClassResourceCacheSize(0);
     }
     @SuppressWarnings("resource")
     URL resource = getResource(Dependency.OldDependenciesFile);
@@ -103,8 +103,18 @@ public class DependencyClassLoader extends ParallelWebappClassLoader {
     this.enableNotFoundClassResourceCache = enableNotFoundClassResourceCache;
   }
 
-  @Override
   public void setNotFoundClassResourceCacheSize(int notFoundClassResourceCacheSize) {
-    super.setNotFoundClassResourceCacheSize(enableNotFoundClassResourceCache ? notFoundClassResourceCacheSize : 0);
+    var size = enableNotFoundClassResourceCache ? notFoundClassResourceCacheSize : 0;
+    try {
+      var lookup = MethodHandles.lookup();
+      var h1 = lookup.findSpecial(WebappClassLoaderBase.class, "setNotFoundClassResourceCacheSize", MethodType.methodType(void.class, int.class), getClass());
+      h1.invoke(this, size);
+      if (notFoundClassResourceCacheSize > 0 && 0 == size) {
+        log.info("Disable Tomcat NotFoundClassResourceCache");
+      }
+    } catch (Throwable e) {
+      //ignore ,maybe tomcat 10 or lower
+      e.printStackTrace();
+    }
   }
 }
