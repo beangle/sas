@@ -31,8 +31,9 @@ import org.apache.tomcat.util.scan.StandardJarScanner;
 import org.beangle.sas.engine.Server;
 
 import java.io.File;
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.ServiceLoader;
+import java.util.regex.Pattern;
 
 public class TomcatServerBuilder {
   private final Server.Config config;
@@ -93,14 +94,17 @@ public class TomcatServerBuilder {
     context.setName(config.contextPath);
     context.setPath(config.contextPath);
     skipScanning(context); // disable scanning
-    // container sci support
-    if (!config.jspSupport && !config.websocketSupport) {
-      context.setContainerSciFilter("apache");
-    } else if (!config.jspSupport) {
-      context.setContainerSciFilter("JasperInitializer");
-    } else if (!config.websocketSupport) {
-      context.setContainerSciFilter("WsSci");
+    String sciFilter = null;
+    // container sci support,which one should be filtered and ignored
+    if (!config.jspSupport) {
+      sciFilter = "JasperInitializer";
     }
+    Pattern sciFilterPattern = null;
+    if (null != sciFilter) {
+      context.setContainerSciFilter(sciFilter);
+      sciFilterPattern = Pattern.compile(sciFilter);
+    }
+
     //embeded or as server
     WebappLoader loader = new WebappLoader();
     if (config.docBase == null) {
@@ -118,7 +122,7 @@ public class TomcatServerBuilder {
       loader.setLoaderClass(EmbeddedWebappClassLoader.class.getName());
       loader.setDelegate(true);
       context.addLifecycleListener(new FixContextListener());
-      addInitializers(context);
+      addInitializers(context, sciFilterPattern);
     } else {
       context.setDocBase(config.docBase);
       loader.setLoaderClass(DependencyClassLoader.class.getName());
@@ -151,12 +155,20 @@ public class TomcatServerBuilder {
     context.setIgnoreAnnotations(true);
   }
 
-  private void addInitializers(StandardContext context) {
+  private void addInitializers(StandardContext context, Pattern filter) {
     try {
       ServiceLoader<ServletContainerInitializer> loader = ServiceLoader.load(ServletContainerInitializer.class);
-      Iterator<ServletContainerInitializer> iter = loader.iterator();
+      var services = new ArrayList<ServletContainerInitializer>();
+      var iter = loader.iterator();
       while (iter.hasNext()) {
-        context.addServletContainerInitializer(iter.next(), null);
+        var s = iter.next();
+        var clazzName = s.getClass().getName();
+        if (null == filter || !filter.matcher(clazzName).find()) {
+          services.add(s);
+        }
+      }
+      for (var s : services) {
+        context.addServletContainerInitializer(s, null);
       }
     } catch (Exception e) {
       e.printStackTrace();

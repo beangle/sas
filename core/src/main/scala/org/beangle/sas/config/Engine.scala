@@ -21,7 +21,6 @@ import org.beangle.commons.lang.Strings
 import org.beangle.commons.net.Networks
 
 import java.io.File
-import java.net.URL
 
 object EngineType {
   val Tomcat = "tomcat"
@@ -36,7 +35,6 @@ class Engine(var name: String, var typ: String, var version: String) {
   val jars = new collection.mutable.ListBuffer[Jar]
   var context: Context = _
   var jspSupport = false
-  var websocketSupport = false
 
   override def toString: String = {
     name

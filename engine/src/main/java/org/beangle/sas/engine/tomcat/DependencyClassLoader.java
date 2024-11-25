@@ -70,6 +70,7 @@ public class DependencyClassLoader extends ParallelWebappClassLoader {
       }
       //ignore container artifacts
       if (artifact.groupId.equals("jakarta.servlet")) continue;
+      if (artifact.groupId.equals("jakarta.websocket")) continue;
       if (artifact.groupId.equals("org.apache.tomcat")) continue;
       if (artifact.groupId.equals("org.beangle.sas")) continue;
       try {

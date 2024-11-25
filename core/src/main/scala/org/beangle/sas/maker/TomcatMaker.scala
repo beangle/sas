@@ -154,9 +154,6 @@ object TomcatMaker {
       Dirs.on(engineDir, "lib").delete("jsp-api.jar", "el-api.jar", "ecj-4.6.3.jar",
         "ecj-4.7.3a.jar", "jasper.jar", "jasper-el.jar")
     }
-    if (!engine.websocketSupport) {
-      Dirs.on(engineDir, "lib").delete("websocket-api.jar", "tomcat-websocket.jar")
-    }
     genEngineConfig(engine, engineDir.getAbsolutePath)
   }
 

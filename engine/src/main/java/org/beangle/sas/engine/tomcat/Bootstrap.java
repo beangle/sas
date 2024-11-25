@@ -19,6 +19,7 @@ package org.beangle.sas.engine.tomcat;
 
 import org.apache.catalina.startup.Tomcat;
 import org.beangle.sas.engine.CmdOptions;
+import org.beangle.sas.engine.Desktops;
 import org.beangle.sas.engine.Server;
 import org.beangle.sas.engine.Tools;
 
@@ -30,10 +31,6 @@ public class Bootstrap {
   private static Logger logger = Logger.getLogger(Bootstrap.class.toString());
 
   public static void main(String[] args) {
-    if (args.length < 1) {
-      System.out.println("Usage:org.beangle.sas.engine.tomcat.Bootstrap [--port=8081] [--path=/test] /path/to/your/war");
-      return;
-    }
     var startAt = System.currentTimeMillis();
     Server.Config config = CmdOptions.parse(args);
     if (!Tools.isPortFree(config.port)) {
@@ -47,7 +44,8 @@ public class Bootstrap {
     final TomcatServer ts = new TomcatServer(tomcat);
     ts.start();
     var duration = (System.currentTimeMillis() - startAt) / 1000.0;
-    logger.info("Tomcat started(" + duration + "s):http://localhost:" + config.port + config.contextPath);
+    var url = "http://localhost:" + config.port + config.contextPath;
+    logger.info("Tomcat started(" + duration + "s):" + url);
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
       @Override
       public void run() {
@@ -55,6 +53,7 @@ public class Bootstrap {
         Tools.delete(baseDir);
       }
     }));
+    Desktops.openBrowser(url);
   }
 
 }

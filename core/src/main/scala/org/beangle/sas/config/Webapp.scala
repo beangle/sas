@@ -29,7 +29,6 @@ class Webapp(var uri: String) {
   var docBase: String = _
   var realms: String = _
   var jspSupport: Boolean = false
-  var websocketSupport: Boolean = false
   var runAt: mutable.ArrayBuffer[Server] = new mutable.ArrayBuffer[Server]
   var entryPoint: Proxy.Backend = _
   var contextPath: String = _
@@ -40,10 +39,7 @@ class Webapp(var uri: String) {
   def getContainerSciFilter(engine: Engine): Option[String] = {
     engine.typ match {
       case "tomcat" =>
-        if !jspSupport && !websocketSupport then Some("apache")
-        else if !jspSupport then Some("JasperInitializer")
-        else if !websocketSupport then Some("WsSci")
-        else None
+        if !jspSupport then Some("JasperInitializer") else None
       case _ => None
     }
   }

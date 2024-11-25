@@ -53,10 +53,6 @@ object Container {
       (engineElem \ "@jspSupport") foreach { j =>
         engine.jspSupport = j.text == "true"
       }
-      (engineElem \ "@websocketSupport") foreach { j =>
-        engine.websocketSupport = j.text == "true"
-      }
-
       (engineElem \ "Listener").foreach { lsnElem =>
         val listener = new Listener((lsnElem \ "@className").text)
         for ((k, v) <- lsnElem.attributes.asAttrMap -- Set("className")) {

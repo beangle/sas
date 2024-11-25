@@ -34,7 +34,6 @@ public interface Server {
     public boolean devMode = false;
     public boolean jspSupport = false;
     public boolean defaultServletSupport = true;
-    public boolean websocketSupport = false;
     public int defaultSessionTimeout = 30;//minutes
     public String unpack = "";
     public Map<String, String> properties = new HashMap<String, String>();

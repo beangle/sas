@@ -23,7 +23,7 @@ public class CmdOptions {
   public static Server.Config parse(String[] args) {
     String docBase = null;
     String path = "";
-    int port = 8080;
+    int port = -1;
     boolean devMode = false;
     for (String arg : args) {
       if (arg.startsWith("--")) {
@@ -36,6 +36,12 @@ public class CmdOptions {
         }
       } else {
         docBase = arg;
+      }
+    }
+    if (port == -1) {
+      for (int i = 0; i < 100; i++) {
+        port = 8080 + i;
+        if (Tools.isPortFree(port)) break;
       }
     }
     Server.Config config = new Server.Config(path, port, docBase);
