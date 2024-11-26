@@ -33,8 +33,8 @@ public class Bootstrap {
   public static void main(String[] args) throws Exception {
     var startAt = System.currentTimeMillis();
     Server.Config config = CmdOptions.parse(args);
-    if (!Tools.isPortFree(config.port)) {
-      logger.severe("port " + config.port + " is not available.");
+    if (config.port < 0) {
+      logger.severe("port " + Math.abs(config.port) + " is not available.");
       return;
     }
     File baseDir = config.createTempDir("undertow");

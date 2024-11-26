@@ -43,6 +43,10 @@ public class CmdOptions {
         port = 8080 + i;
         if (Tools.isPortFree(port)) break;
       }
+    } else {
+      if (Tools.isPortFree(port)) {
+        port = 0 - Math.abs(port);
+      }
     }
     Server.Config config = new Server.Config(path, port, docBase);
     if (null != docBase) {
