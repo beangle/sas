@@ -105,10 +105,12 @@ public class TomcatServerBuilder {
       sciFilterPattern = Pattern.compile(sciFilter);
     }
 
+    var parentClassLoader = Thread.currentThread().getContextClassLoader();
+    context.setParentClassLoader(parentClassLoader);
     //embeded or as server
     WebappLoader loader = new WebappLoader();
-    if (config.docBase == null) {
-      String targetClassPath = Thread.currentThread().getContextClassLoader().getResource("").getFile();
+    if (config.docBase == null) {//run in IDE
+      String targetClassPath = parentClassLoader.getResource("").getFile();
       int targetIdx = targetClassPath.indexOf("/target/");
       if (targetIdx > 0) {
         String projectWebapp = targetClassPath.substring(0, targetIdx) + "/src/main/webapp";
@@ -119,11 +121,11 @@ public class TomcatServerBuilder {
       if (null == context.getDocBase()) {
         context.setDocBase(config.createTempDir("tomcat-docbase").getAbsolutePath());
       }
-      loader.setLoaderClass(EmbeddedWebappClassLoader.class.getName());
+      loader.setLoaderInstance(new EmbeddedClassLoader(parentClassLoader));
       loader.setDelegate(true);
       context.addLifecycleListener(new FixContextListener());
       addInitializers(context, sciFilterPattern);
-    } else {
+    } else {//run as server
       context.setDocBase(config.docBase);
       loader.setLoaderClass(DependencyClassLoader.class.getName());
       loader.setDelegate(false);

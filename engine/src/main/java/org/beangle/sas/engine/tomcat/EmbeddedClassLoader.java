@@ -27,14 +27,12 @@ import java.util.Enumeration;
 
 /**
  * Extension of Tomcat's {@link ParallelWebappClassLoader} that does not consider the
- * {@link ClassLoader#getSystemClassLoader() system classloader}
+ * {@link ClassLoader#getSystemClassLoader() system classloader},
+ * Migrate from springboot TomcatEmbeddedWebappClassLoader.
  */
-public class EmbeddedWebappClassLoader extends ParallelWebappClassLoader {
+public class EmbeddedClassLoader extends ParallelWebappClassLoader {
 
-  public EmbeddedWebappClassLoader() {
-  }
-
-  public EmbeddedWebappClassLoader(ClassLoader parent) {
+  public EmbeddedClassLoader(ClassLoader parent) {
     super(parent);
   }
 
@@ -69,10 +67,10 @@ public class EmbeddedWebappClassLoader extends ParallelWebappClassLoader {
 
   private Class<?> doLoadClass(String name) throws ClassNotFoundException {
     if ((this.delegate || filter(name, true))) {
-      Class<?> result = find(name, this.parent);
+      var result = find(name, this.parent);
       return (result != null) ? result : find(name);
     } else {
-      Class<?> result = find(name);
+      var result = find(name);
       return (result != null) ? result : find(name, this.parent);
     }
   }
