@@ -54,6 +54,9 @@ public class CmdOptions {
     }
 
     config.devMode = devMode || isDevMode();
+    if (config.devMode) {
+      System.out.println("Server is running under dev mode,");
+    }
     return config;
   }
 
@@ -61,9 +64,8 @@ public class CmdOptions {
     String cdiProfiles = System.getProperty("beangle.cdi.profiles");
     if (null != cdiProfiles && cdiProfiles.contains("dev")) {
       return true;
-    } else {
-      return ManagementFactory.getRuntimeMXBean().getInputArguments().toString().indexOf("-agentlib:jdwp") > 0;
     }
+    return ManagementFactory.getRuntimeMXBean().getInputArguments().toString().indexOf("-agentlib:jdwp") > 0;
   }
 
 }
