@@ -20,10 +20,10 @@ import org.beangle.sas.engine.Dependency;
 public class DependencyTest {
   public static void main(String[] args) {
     var gavs = "org.beangle.commons:beangle-commons-core:5.5.0\norg.beangle.data:beangle-model:3.0.0;";
-    var first = Dependency.Resolver.resolve(gavs);
+    var first = Dependency.Resolver.parse(gavs);
 
     var gavs2 = "org.beangle.commons:beangle-commons-core:5.6.0\norg.beangle.data:beangle-orm:3.0.0;";
-    var second = Dependency.Resolver.resolve(gavs2);
+    var second = Dependency.Resolver.parse(gavs2);
 
     var result = Dependency.Resolver.merge(first,second);
     System.out.println(result);
