@@ -39,9 +39,6 @@ public class DependencyClassLoader extends ParallelWebappClassLoader {
 
   private boolean enableNotFoundClassResourceCache = false;
 
-  public DependencyClassLoader() {
-  }
-
   public DependencyClassLoader(ClassLoader parent) {
     super(parent);
   }
@@ -52,16 +49,25 @@ public class DependencyClassLoader extends ParallelWebappClassLoader {
     if ("true".equals(System.getProperty("sas.disableDependencyLoader"))) {
       return;
     }
-    @SuppressWarnings("resource")
+    var ctx = this.resources.getContext();
+    var libs = ctx.findParameter(ExtendableWebappLoader.ExtendedLibsName);
+    ctx.removeParameter(ExtendableWebappLoader.ExtendedLibsName);
+
     URL resource = getResource(Dependency.OldDependenciesFile);
     if (null == resource) {
       resource = getResource(Dependency.DependenciesFile);
       if (null == resource) return;
     }
     normalizeBase();
-    List<Dependency.Artifact> artifacts = Dependency.Resolver.resolve(resource);
+
+    //合并启动参数和war中的依赖
+    List<Dependency.Artifact> prefixes = Dependency.Resolver.parse(libs);
+    List<Dependency.Artifact> dependencyJars = Dependency.Resolver.resolve(resource);
+    List<Dependency.Artifact> artifacts = Dependency.Resolver.merge(prefixes, dependencyJars);
+
     Dependency.LocalRepo local = new Dependency.LocalRepo(base);
     List<Dependency.Artifact> missings = new ArrayList<Dependency.Artifact>();
+    List<Dependency.Artifact> added = new ArrayList<Dependency.Artifact>();
     for (Dependency.Artifact artifact : artifacts) {
       File file = new File(local.path(artifact));
       if (!file.exists()) {
@@ -75,14 +81,14 @@ public class DependencyClassLoader extends ParallelWebappClassLoader {
       if (artifact.groupId.equals("org.beangle.sas")) continue;
       try {
         this.addURL(file.toURI().toURL());
+        added.add(artifact);
       } catch (MalformedURLException e) {
         e.printStackTrace();
       }
     }
-    StringBuilder sb = new StringBuilder("Append ");
-    sb.append(artifacts.size()).append(" jars (listed in " + resource.toString() + ")");
-    log.info(sb.toString());
-    if (missings.size() > 0) {
+
+    log.info("Append " + added.size() + " jars (listed in " + resource + ")");
+    if (!missings.isEmpty()) {
       throw new RuntimeException("Cannot find " + missings);
     }
   }
@@ -104,6 +110,11 @@ public class DependencyClassLoader extends ParallelWebappClassLoader {
     this.enableNotFoundClassResourceCache = enableNotFoundClassResourceCache;
   }
 
+  /**
+   * Override missing cache size,when enabled,It cannot find suitable resources and classes.
+   *
+   * @param notFoundClassResourceCacheSize
+   */
   public void setNotFoundClassResourceCacheSize(int notFoundClassResourceCacheSize) {
     var size = enableNotFoundClassResourceCache ? notFoundClassResourceCacheSize : 0;
     try {
@@ -115,7 +126,6 @@ public class DependencyClassLoader extends ParallelWebappClassLoader {
       }
     } catch (Throwable e) {
       //ignore ,maybe tomcat 10 or lower
-      e.printStackTrace();
     }
   }
 }

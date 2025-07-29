@@ -46,12 +46,9 @@ public class Bootstrap {
     var duration = (System.currentTimeMillis() - startAt) / 1000.0;
     var url = "http://localhost:" + config.port + config.contextPath;
     logger.info("Tomcat started(" + duration + "s):" + url);
-    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-      @Override
-      public void run() {
-        ts.shutdown();
-        Tools.delete(baseDir);
-      }
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+      ts.shutdown();
+      Tools.delete(baseDir);
     }));
     Desktops.openBrowser(url);
   }

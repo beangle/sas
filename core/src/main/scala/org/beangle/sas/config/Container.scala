@@ -19,7 +19,7 @@ package org.beangle.sas.config
 
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.lang.Numbers.toInt
-import org.beangle.commons.lang.Strings.{isEmpty, isNotBlank}
+import org.beangle.commons.lang.Strings.isEmpty
 import org.beangle.commons.lang.{Numbers, Strings}
 
 import scala.collection.mutable
@@ -174,10 +174,13 @@ object Container {
     // 6. register webapps and deployments
     (xml \ "Webapps" \ "Webapp").foreach { webappElem =>
       val app = new Webapp((webappElem \ "@uri").text)
-      for ((k, v) <- webappElem.attributes.asAttrMap -- Set("name", "uri", "reloadable", "path", "runAt", "docBase")) {
+      for ((k, v) <- webappElem.attributes.asAttrMap -- Set("name", "uri", "reloadable", "path", "runAt", "docBase", "libs")) {
         app.properties.put(k, v)
       }
-
+      val libs = (webappElem \ "@libs").text
+      if (null != libs && !libs.isBlank) {
+        app.libs = Some(libs.trim)
+      }
       (webappElem \ "ResourceRef").foreach { dsElem => app.resources += conf.resources((dsElem \ "@ref").text) }
       (webappElem \ "Realm").foreach { realmElem =>
         app.realms = realmElem.toString()

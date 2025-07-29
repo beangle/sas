@@ -26,7 +26,6 @@ import org.beangle.commons.net.Networks
 import org.beangle.sas.config.{ArchiveURI, Container, Webapp}
 
 import java.io.{File, FileInputStream, FileOutputStream}
-import java.net.URL
 import scala.collection.mutable
 
 /**
@@ -97,7 +96,11 @@ object Resolver {
         webapp.docBase = docBase
       }
 
-      //2.resolve war
+      //2.depend extention libs
+      if (webapp.libs.nonEmpty) {
+        new ArtifactDownloader(remotes, local, true).download(parse(webapp.libs.get))
+      }
+      //3.resolve war
       if new File(webapp.docBase).exists() then
         if webapp.resolveSupport && resolvable(webapp.docBase) then
           val result = AppResolver.process(new File(webapp.docBase), remotes, local)
@@ -116,6 +119,20 @@ object Resolver {
 
   private def resolvable(path: String): Boolean = {
     path.endsWith(".jar") || path.endsWith(".war") || new File(path).isDirectory
+  }
+
+  private def parse(gavs: String): collection.Seq[Artifact] = {
+    val artifacts = new mutable.ArrayBuffer[Artifact]
+    if (null == gavs || gavs.isBlank) return artifacts
+    var newGavs = gavs.replace(';', ',')
+    newGavs = newGavs.replaceAll("\n", ",")
+    newGavs = newGavs.replaceAll("\r", "")
+    newGavs = newGavs.replaceAll(",,", ",")
+    val gavArray: Array[String] = newGavs.trim.split(",")
+    for (line <- gavArray) {
+      artifacts.addOne(Artifact(line.trim))
+    }
+    artifacts
   }
 
   private def download(url: String, dir: String): String = {

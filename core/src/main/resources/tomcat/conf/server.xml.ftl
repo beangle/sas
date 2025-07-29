@@ -61,7 +61,7 @@
           [#if farm.engine.context??]
           [#assign ctx=farm.engine.context/]
           [#if ctx.jarScanner??]<JarScanner [@spawnProps ctx.jarScanner/]/>[/#if]
-          [#if ctx.loader??]<Loader className="${ctx.loader.className}" [@spawnProps ctx.loader/]/>[/#if]
+          [#if ctx.loader??]<Loader className="${ctx.loader.className}"[#if webapp.libs??] libs="${webapp.libs}"[/#if] [@spawnProps ctx.loader/]/>[/#if]
           [/#if]
           ${webapp.realms!}[#t/]
         </Context>

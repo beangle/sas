@@ -45,7 +45,7 @@ public class CmdOptions {
       }
     } else {
       if (!Tools.isPortFree(port)) {
-        port = 0 - Math.abs(port);
+        port = -Math.abs(port);
       }
     }
     Server.Config config = new Server.Config(path, port, docBase);

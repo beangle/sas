@@ -33,6 +33,8 @@ class Webapp(var uri: String) {
   var entryPoint: Proxy.Backend = _
   var contextPath: String = _
   var unpack: Option[Boolean] = None
+  /** prefix extension libraries */
+  var libs: Option[String] = None
 
   def resourceNames: Set[String] = resources.map(d => d.name).toSet
 

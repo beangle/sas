@@ -48,7 +48,7 @@ object TomcatMaker {
 
     val context = engine.context
     if (context.loader == null) {
-      context.loader = new Loader("org.apache.catalina.loader.WebappLoader")
+      context.loader = new Loader("org.beangle.sas.engine.tomcat.ExtendableWebappLoader")
       context.loader.properties.put("loaderClass", "org.beangle.sas.engine.tomcat.DependencyClassLoader")
     }
     if (context.jarScanner == null) {

@@ -22,6 +22,7 @@ import java.io.LineNumberReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 public class Dependency {
@@ -29,6 +30,51 @@ public class Dependency {
   public static final String OldDependenciesFile = "META-INF/beangle/container.dependencies";
 
   public static class Resolver {
+    /**
+     * 将两组工件进行合并，相同名称的以第一个集合出现的为准。
+     *
+     * @param first
+     * @param second
+     * @return
+     */
+    public static List<Artifact> merge(List<Artifact> first, List<Artifact> second) {
+      if (second.isEmpty()) {
+        return first;
+      } else if (first.isEmpty()) {
+        return second;
+      } else {
+        var keys = new HashSet<String>();
+        List<Artifact> results = new ArrayList<>();
+        results.addAll(first);
+        for (Artifact a : first) {
+          var key = a.groupId + ":" + a.artifactId;
+          keys.add(key);
+        }
+        for (Artifact a : second) {
+          var key = a.groupId + ":" + a.artifactId;
+          if (!keys.contains(key)) {
+            keys.add(key);
+            results.add(a);
+          }
+        }
+        return results;
+      }
+    }
+
+    public static List<Artifact> parse(String gavs) {
+      List<Artifact> artifacts = new ArrayList<Artifact>();
+      if (null == gavs || gavs.isBlank()) return artifacts;
+      var newGavs = gavs.replace(';', ',');
+      newGavs = newGavs.replaceAll("\n", ",");
+      newGavs = newGavs.replaceAll("\r", "");
+      newGavs = newGavs.replaceAll(",,", ",");
+      var gavArray = newGavs.trim().split(",");
+      for (String line : gavArray) {
+        artifacts.add(new Artifact(line.trim()));
+      }
+      return artifacts;
+    }
+
     public static List<Artifact> resolve(URL resource) {
       List<Artifact> artifacts = new ArrayList<Artifact>();
       if (null == resource) return Collections.emptyList();
