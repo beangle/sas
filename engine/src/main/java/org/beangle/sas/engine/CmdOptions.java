@@ -44,7 +44,7 @@ public class CmdOptions {
         if (Tools.isPortFree(port)) break;
       }
     } else {
-      if (Tools.isPortFree(port)) {
+      if (!Tools.isPortFree(port)) {
         port = 0 - Math.abs(port);
       }
     }
