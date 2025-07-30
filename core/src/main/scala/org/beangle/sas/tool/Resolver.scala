@@ -98,7 +98,7 @@ object Resolver {
 
       //2.depend extention libs
       if (webapp.libs.nonEmpty) {
-        new ArtifactDownloader(remotes, local, true).download(parse(webapp.libs.get))
+        new ArtifactDownloader(remotes, local, true).download(parse(webapp.libs.get).filter(!_.isSnapshot))
       }
       //3.resolve war
       if new File(webapp.docBase).exists() then

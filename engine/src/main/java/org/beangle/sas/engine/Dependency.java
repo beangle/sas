@@ -100,13 +100,20 @@ public class Dependency {
 
     public final String base;
 
-    public LocalRepo(String base) {
+    public final String snapshotBase;
+
+    public LocalRepo(String base, String snapshotBase) {
       this.base = base;
+      this.snapshotBase = snapshotBase;
     }
 
     public String path(Artifact artifact) {
-      return base + "/" + artifact.groupId.replace('.', '/') + "/" + artifact.artifactId + "/"
-        + artifact.version + "/" + artifact.artifactId + "-" + artifact.version + "." + artifact.packaging;
+      if (artifact.version.endsWith("SNAPSHOT")) {
+        return snapshotBase + "/" + artifact.artifactId + "-" + artifact.version + "." + artifact.packaging;
+      } else {
+        return base + "/" + artifact.groupId.replace('.', '/') + "/" + artifact.artifactId + "/"
+          + artifact.version + "/" + artifact.artifactId + "-" + artifact.version + "." + artifact.packaging;
+      }
     }
   }
 

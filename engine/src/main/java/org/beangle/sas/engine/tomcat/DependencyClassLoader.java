@@ -65,7 +65,9 @@ public class DependencyClassLoader extends ParallelWebappClassLoader {
     List<Dependency.Artifact> dependencyJars = Dependency.Resolver.resolve(resource);
     List<Dependency.Artifact> artifacts = Dependency.Resolver.merge(prefixes, dependencyJars);
 
-    Dependency.LocalRepo local = new Dependency.LocalRepo(base);
+    var sasHome = System.getProperty("sas.home");
+    var snapshotBase = (null == sasHome) ? getDefaultSnapshotBase() : sasHome + "/webapps";
+    Dependency.LocalRepo local = new Dependency.LocalRepo(base, snapshotBase);
     List<Dependency.Artifact> missings = new ArrayList<Dependency.Artifact>();
     List<Dependency.Artifact> added = new ArrayList<Dependency.Artifact>();
     for (Dependency.Artifact artifact : artifacts) {
@@ -83,7 +85,6 @@ public class DependencyClassLoader extends ParallelWebappClassLoader {
         this.addURL(file.toURI().toURL());
         added.add(artifact);
       } catch (MalformedURLException e) {
-        e.printStackTrace();
       }
     }
 
@@ -95,6 +96,10 @@ public class DependencyClassLoader extends ParallelWebappClassLoader {
 
   public void setBase(String base) {
     this.base = base;
+  }
+
+  private String getDefaultSnapshotBase() {
+    return System.getProperty("user.home") + "/.m2/snapshots";
   }
 
   private void normalizeBase() {
