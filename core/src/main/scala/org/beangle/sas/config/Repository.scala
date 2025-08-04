@@ -17,6 +17,22 @@
 
 package org.beangle.sas.config
 
-class Repository(val local: Option[String], val remote: Option[String]) {
+import org.beangle.boot.artifact.{Repo, Repos}
 
+case class Repository(local: Option[String], remote: Option[String]) {
+  def toRelease: Repos.Release = {
+    var remoteUrl = if (this.remote.isEmpty) Repo.Remote.AliyunURL else this.remote.get
+    if !remoteUrl.contains(Repo.Remote.CentralURL) then remoteUrl += "," + Repo.Remote.CentralURL
+    val remotes = Repo.remotes(remoteUrl)
+    val local = new Repo.Local(this.local.orNull)
+    Repos.Release(local, remotes)
+  }
+}
+
+case class SnapshotRepo(local: Option[String], remote: Option[String]) {
+  def toSnapshot: Repos.Snapshot = {
+    val remote = if (this.remote.isEmpty) null else Repo.remote(this.remote.get)
+    val local = Repo.LocalSnapshot(this.local.orNull)
+    Repos.Snapshot(local, remote)
+  }
 }

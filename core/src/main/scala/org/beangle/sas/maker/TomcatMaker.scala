@@ -17,7 +17,7 @@
 
 package org.beangle.sas.maker
 
-import org.beangle.boot.artifact.{Artifact, ArtifactDownloader, Repo, War}
+import org.beangle.boot.artifact.*
 import org.beangle.commons.activation.MediaTypes
 import org.beangle.commons.config.Resources
 import org.beangle.commons.file.zip.Zipper
@@ -77,7 +77,9 @@ object TomcatMaker {
    * @param remote
    * @param local
    */
-  def makeEngine(sasHome: String, engine: Engine, remotes: Seq[Repo.Remote], local: Repo.Local): Unit = {
+  def makeEngine(sasHome: String, engine: Engine, repos: Repos.Release): Unit = {
+    val remotes = repos.remotes
+    val local = repos.local
     val tomcat = engine.dir(sasHome)
     // tomcat not exists or empty dir
     if (!tomcat.exists() || tomcat.list().length == 0) {

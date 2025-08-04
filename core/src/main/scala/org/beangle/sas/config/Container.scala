@@ -39,9 +39,16 @@ object Container {
     (xml \ "Repository") foreach { repoElem =>
       val local = (repoElem \ "@local").text
       val remote = (repoElem \ "@remote").text
-      conf.repository = new Repository(if (isEmpty(local)) None else Some(local), if (isEmpty(remote)) None else Some(remote))
+      conf.repository = Repository(if (isEmpty(local)) None else Some(local), if (isEmpty(remote)) None else Some(remote))
     }
-    if null == conf.repository then conf.repository = new Repository(None, None)
+    if null == conf.repository then conf.repository = Repository(None, None)
+
+    (xml \ "SnapshotRepo") foreach { repoElem =>
+      val local = (repoElem \ "@local").text
+      val remote = (repoElem \ "@remote").text
+      conf.snapshotRepo = SnapshotRepo(if (isEmpty(local)) None else Some(local), if (isEmpty(remote)) None else Some(remote))
+    }
+    if null == conf.snapshotRepo then conf.snapshotRepo = SnapshotRepo(None, None)
 
     //2. identify engines
     (xml \ "Engines" \ "Engine") foreach { engineElem =>
@@ -298,6 +305,7 @@ class Container {
   val resources = new collection.mutable.HashMap[String, Resource]
   var version: String = _
   var repository: Repository = _
+  var snapshotRepo: SnapshotRepo = _
   var proxy: Proxy = _
 
   /** 可运行的webapp

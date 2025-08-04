@@ -17,15 +17,18 @@
 
 package org.beangle.sas.tool
 
-import org.beangle.boot.artifact.{Artifact, ArtifactDownloader, Repo}
+import org.beangle.boot.artifact.{Artifact, ArtifactDownloader, Repos}
 import org.beangle.boot.dependency.AppResolver
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.io.IOs
+import org.beangle.commons.lang.Strings
 import org.beangle.commons.lang.Strings.substringAfterLast
 import org.beangle.commons.net.Networks
-import org.beangle.sas.config.{ArchiveURI, Container, Webapp}
+import org.beangle.commons.net.http.{HttpMethods, HttpUtils, ResourceStatus}
+import org.beangle.sas.config.{ArchiveURI, Container, SnapshotRepo, Webapp}
 
 import java.io.{File, FileInputStream, FileOutputStream}
+import java.net.URL
 import scala.collection.mutable
 
 /**
@@ -34,7 +37,7 @@ import scala.collection.mutable
  */
 object Resolver {
 
-  def main(args: Array[String]): Unit = {
+  def main1(args: Array[String]): Unit = {
     if (args.length < 1) {
       println("Usage: Resolve /path/to/server.xml")
       System.exit(-1)
@@ -43,11 +46,6 @@ object Resolver {
     val container = Container(scala.xml.XML.load(new FileInputStream(configFile)))
     val sasHome = configFile.getParentFile.getParentFile.getCanonicalPath
 
-    val repository = container.repository
-    var remoteUrl = if (repository.remote.isEmpty) Repo.Remote.AliyunURL else repository.remote.get
-
-    if !remoteUrl.contains(Repo.Remote.CentralURL) then remoteUrl += "," + Repo.Remote.CentralURL
-    val remotes = Repo.remotes(remoteUrl)
     //try to find webapps which run at these ips
     val ips = Networks.localIPs
     val webapps = Collections.newSet[Webapp]
@@ -56,33 +54,41 @@ object Resolver {
         webapps ++= container.getWebapps(server)
       }
     }
-    val local = new Repo.Local(repository.local.orNull)
-    val missing = resolve(sasHome, remotes, local, webapps.toSeq)
+
+    val missing = resolve(sasHome, container.repository.toRelease, container.snapshotRepo.toSnapshot, webapps.toSeq)
     System.exit(if missing.nonEmpty then -1 else 0)
   }
 
-  def resolve(sasHome: String, remotes: Seq[Repo.Remote], local: Repo.Local, webapps: collection.Seq[Webapp]): collection.Seq[String] = {
+  def main(args: Array[String]): Unit = {
+    val a = Artifact("org.beangle.commons:beangle-commons:6.0.0-SNAPSHOT")
+    val s = SnapshotRepo(None, Some("http://sas.openurp.net/sas/repo/snapshot/")).toSnapshot
+    download(null, s, List(a))
+  }
+
+  def resolve(sasHome: String, releaseRepos: Repos.Release, snapshotRepos: Repos.Snapshot, webapps: collection.Seq[Webapp]): collection.Seq[String] = {
     val missings = new mutable.ArrayBuffer[String]
     webapps foreach { webapp =>
-      //locate snapshot artifact in webapps
-      if (ArchiveURI.isGav(webapp.uri) && webapp.uri.contains("SNAPSHOT")) {
-        val gav = ArchiveURI.toArtifact(webapp.uri)
-        val snapshortJar = "${sas.home}/webapps/" + s"${gav.artifactId}-${gav.version}.jar"
-        val snapshortWar = "${sas.home}/webapps/" + s"${gav.artifactId}-${gav.version}.war"
-        webapp.uri =
-          if new File(snapshortWar).exists then snapshortWar
-          else if new File(snapshortJar).exists then snapshortJar
-          else snapshortWar
-      }
-
       //1. download and translate gav/url to docBase
       if (ArchiveURI.isGav(webapp.uri)) {
         var gav = ArchiveURI.toArtifact(webapp.uri)
         if (gav.packaging == "jar") {
           gav = Artifact(gav.groupId, gav.artifactId, gav.version, gav.classifier, "war")
         }
-        new ArtifactDownloader(remotes, local, true).download(List(gav))
-        webapp.docBase = local.url(gav)
+        download(releaseRepos, snapshotRepos, List(gav))
+
+        if (gav.isSnapshot) {
+          webapp.docBase = snapshotRepos.local.latest(gav).getAbsolutePath
+          val snapshortWar = s"${sasHome}/webapps/" + s"${gav.artifactId}-${gav.version}.war"
+          val lw = new File(snapshortWar)
+          val rw = new File(webapp.docBase)
+          if (lw.exists()) {
+            if (!rw.exists() || rw.exists() && rw.lastModified() < lw.lastModified()) {
+              webapp.docBase = lw.getAbsolutePath
+            }
+          }
+        } else {
+          webapp.docBase = releaseRepos.local.url(gav)
+        }
       } else if (ArchiveURI.isRemote(webapp.uri)) {
         val fileName = download(webapp.uri, sasHome + "/webapps/")
         webapp.docBase = sasHome + "/webapps/" + fileName
@@ -98,12 +104,12 @@ object Resolver {
 
       //2.depend extention libs
       if (webapp.libs.nonEmpty) {
-        new ArtifactDownloader(remotes, local, true).download(parse(webapp.libs.get).filter(!_.isSnapshot))
+        download(releaseRepos, snapshotRepos, parse(webapp.libs.get))
       }
       //3.resolve war
       if new File(webapp.docBase).exists() then
         if webapp.resolveSupport && resolvable(webapp.docBase) then
-          val result = AppResolver.process(new File(webapp.docBase), remotes, local)
+          val result = AppResolver.process(new File(webapp.docBase), releaseRepos.remotes, releaseRepos.local)
           if result._2.nonEmpty then
             println("Missing:" + result._2.mkString(","))
             println("Cannot launch webapp:" + webapp.docBase)
@@ -115,6 +121,45 @@ object Resolver {
         println(s"""Missing ${webapp.docBase}""")
     }
     missings
+  }
+
+  def download(releaseRepos: Repos.Release, snapshotRepos: Repos.Snapshot, gav: Iterable[Artifact]): Unit = {
+    val releaseArtifacts = gav.filter(!_.isSnapshot)
+    val snapshotArtifacts = gav.filter(_.isSnapshot)
+    if (releaseArtifacts.nonEmpty) {
+      new ArtifactDownloader(releaseRepos.remotes, releaseRepos.local, true).download(releaseArtifacts)
+    }
+    if (null != snapshotRepos.remote) {
+      snapshotArtifacts foreach { a =>
+        val localFile = snapshotRepos.local.latest(a)
+        val status = access(Networks.url(snapshotRepos.remote.url(a)))
+        if (status._1 > 0) {
+          if (!localFile.exists() || status._1 > localFile.lastModified()) {
+            var remoteUrl = snapshotRepos.remote.url(a)
+            HttpUtils.download(Networks.openURL(Strings.substringBeforeLast(remoteUrl, "/") + "/" + status._2), new File(localFile.getParent + "/" + status._2))
+          }
+        }
+      }
+    }
+  }
+
+  private def access(url: URL): (Long, String) = {
+    try {
+      val hc = HttpUtils.followRedirect(url.openConnection(), HttpMethods.HEAD)
+      val rc = hc.getResponseCode
+      import java.net.HttpURLConnection.*
+      rc match {
+        case HTTP_OK =>
+          val latest = hc.getHeaderField("latest")
+          if (Strings.isBlank(latest)) {
+            throw new RuntimeException("snapshot server didnot return [latest] head.")
+          }
+          (hc.getLastModified, latest)
+        case _ => (-1, null)
+      }
+    } catch {
+      case _: Exception => (-1, null)
+    }
   }
 
   private def resolvable(path: String): Boolean = {

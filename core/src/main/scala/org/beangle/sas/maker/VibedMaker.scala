@@ -17,7 +17,7 @@
 
 package org.beangle.sas.maker
 
-import org.beangle.boot.artifact.Repo
+import org.beangle.boot.artifact.Repos
 import org.beangle.commons.io.{Dirs, Files}
 import org.beangle.commons.net.Networks
 import org.beangle.sas.config.{Container, Engine, Server}
@@ -27,7 +27,7 @@ import java.io.{File, StringWriter}
 
 object VibedMaker {
 
-  def makeEngine(sasHome: String, engine: Engine, remote: Seq[Repo.Remote], local: Repo.Local): Unit = {
+  def makeEngine(sasHome: String, engine: Engine, repos: Repos.Release): Unit = {
 
   }
 
