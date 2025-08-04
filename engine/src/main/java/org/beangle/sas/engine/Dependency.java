@@ -17,13 +17,11 @@
 
 package org.beangle.sas.engine;
 
+import java.io.File;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 public class Dependency {
   public static final String DependenciesFile = "META-INF/beangle/dependencies";
@@ -109,11 +107,43 @@ public class Dependency {
 
     public String path(Artifact artifact) {
       if (artifact.version.endsWith("SNAPSHOT")) {
-        return snapshotBase + "/" + artifact.artifactId + "-" + artifact.version + "." + artifact.packaging;
+        return findLatest(artifact);
       } else {
         return base + "/" + artifact.groupId.replace('.', '/') + "/" + artifact.artifactId + "/"
           + artifact.version + "/" + artifact.artifactId + "-" + artifact.version + "." + artifact.packaging;
       }
+    }
+
+    private String findLatest(Artifact artifact) {
+      var tmpFile = new File(snapshotBase + "/" + artifact.artifactId + "-" + artifact.version + "." + artifact.packaging);
+      var parent =
+        new File(getDefaultSnapshotBase() + "/" + artifact.groupId.replace('.', '/') + "/" + artifact.artifactId + "/"
+          + artifact.version + "/");
+      if (parent.exists()) {
+        var versions = parent.list();
+        if (null == versions) {
+          return tmpFile.getAbsolutePath();
+        } else {
+          Arrays.sort(versions);
+          var newest = new File(parent.getAbsolutePath() + "/" + versions[versions.length - 1]);
+          if (tmpFile.exists()) {
+            if (tmpFile.lastModified() > newest.lastModified()) {
+              return tmpFile.getAbsolutePath();
+            } else {
+              return newest.getAbsolutePath();
+            }
+          } else {
+            return newest.getAbsolutePath();
+          }
+
+        }
+      } else {
+        return tmpFile.getAbsolutePath();
+      }
+    }
+
+    private String getDefaultSnapshotBase() {
+      return new File(base).getParent() + "/snapshots";
     }
   }
 

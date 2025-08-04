@@ -25,8 +25,11 @@ public class DependencyTest {
     var gavs2 = "org.beangle.commons:beangle-commons-core:5.6.0\norg.beangle.data:beangle-orm:3.0.0;";
     var second = Dependency.Resolver.parse(gavs2);
 
-    var result = Dependency.Resolver.merge(first,second);
+    var result = Dependency.Resolver.merge(first, second);
     System.out.println(result);
 
+    var local = new Dependency.LocalRepo(System.getProperty("user.home") + "/.m2/repository", "d:\\");
+    var a = new Dependency.Artifact("org.beangle.commons:beangle-commons:5.0.0-SNAPSHOT");
+    System.out.println(local.path(a));
   }
 }
