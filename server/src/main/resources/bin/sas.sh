@@ -40,7 +40,7 @@ elif [ "$sas_command" = "resolve" ] ; then
 elif [ "$sas_command" = "pull" ] ; then
 
   if [ -z "$sas_remote_url" ]; then
-    echo "define Ssas_remote_url in setenv.sh"
+    echo "define sas_remote_url in setenv.sh"
     exit 1
   fi
   echo "fetching $sas_remote_url/config/server.xml..."

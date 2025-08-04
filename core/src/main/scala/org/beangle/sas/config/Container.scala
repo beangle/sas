@@ -19,12 +19,13 @@ package org.beangle.sas.config
 
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.lang.Numbers.toInt
-import org.beangle.commons.lang.Strings.isEmpty
+import org.beangle.commons.lang.Strings.{isEmpty, isNotEmpty}
 import org.beangle.commons.lang.{Numbers, Strings}
+import org.beangle.commons.logging.Logging
 
 import scala.collection.mutable
 
-object Container {
+object Container extends Logging {
 
   def apply(xml: scala.xml.Elem): Container = {
     val conf = new Container
@@ -45,7 +46,17 @@ object Container {
 
     (xml \ "SnapshotRepo") foreach { repoElem =>
       val local = (repoElem \ "@local").text
-      val remote = (repoElem \ "@remote").text
+      var remote = (repoElem \ "@remote").text
+      if (isNotEmpty(remote) && remote.contains("${sas_remote_url}")) {
+        var remoteUrl = System.getenv("sas_remote_url")
+        if (isNotEmpty(remoteUrl)) {
+          remoteUrl = Strings.substringBefore(remoteUrl, "/api/")
+          remote = Strings.replace(remote, "${sas_remote_url}", remoteUrl)
+        } else {
+          logger.warn("Cannot resolve $sas_remote_url,due to offline mode,Remote repo " + remote + " was disabled.")
+          remote = null
+        }
+      }
       conf.snapshotRepo = SnapshotRepo(if (isEmpty(local)) None else Some(local), if (isEmpty(remote)) None else Some(remote))
     }
     if null == conf.snapshotRepo then conf.snapshotRepo = SnapshotRepo(None, None)
