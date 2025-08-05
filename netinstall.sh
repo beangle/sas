@@ -1,6 +1,6 @@
 #!/bin/bash
 
-beangle_sas_version="0.13.1"
+beangle_sas_version="0.13.2"
 if [ "$1" != "" ]; then
   beangle_sas_version="$1"
 fi
