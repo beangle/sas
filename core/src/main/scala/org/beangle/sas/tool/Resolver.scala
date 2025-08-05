@@ -24,7 +24,7 @@ import org.beangle.commons.io.IOs
 import org.beangle.commons.lang.Strings
 import org.beangle.commons.lang.Strings.substringAfterLast
 import org.beangle.commons.net.Networks
-import org.beangle.commons.net.http.{HttpMethods, HttpUtils, ResourceStatus}
+import org.beangle.commons.net.http.{HttpMethods, HttpUtils}
 import org.beangle.sas.config.{ArchiveURI, Container, SnapshotRepo, Webapp}
 
 import java.io.{File, FileInputStream, FileOutputStream}
@@ -135,8 +135,11 @@ object Resolver {
         val status = access(Networks.url(snapshotRepos.remote.url(a)))
         if (status._1 > 0) {
           if (!localFile.exists() || status._1 > localFile.lastModified()) {
-            var remoteUrl = snapshotRepos.remote.url(a)
-            HttpUtils.download(Networks.openURL(Strings.substringBeforeLast(remoteUrl, "/") + "/" + status._2), new File(localFile.getParent + "/" + status._2))
+            val remoteUrl = snapshotRepos.remote.url(a)
+            localFile.getParentFile.mkdirs()
+            val snapshotUrl = Strings.substringBeforeLast(remoteUrl, "/") + "/" + status._2
+            println(s"Downloading ${snapshotUrl}")
+            HttpUtils.download(Networks.openURL(snapshotUrl), new File(localFile.getParent + "/" + status._2))
           }
         }
       }

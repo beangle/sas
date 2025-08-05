@@ -2,7 +2,7 @@ import org.beangle.parent.Dependencies.*
 import org.beangle.parent.Settings.*
 
 ThisBuild / organization := "org.beangle.sas"
-ThisBuild / version := "0.13.3-SNAPSHOT"
+ThisBuild / version := "0.13.3"
 
 ThisBuild / scmInfo := Some(
   ScmInfo(
@@ -27,7 +27,7 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 
 val beangle_commons_ver = "5.6.30"
 val beangle_template_ver = "0.1.27"
-val beangle_boot_ver = "0.1.17"
+val beangle_boot_ver = "0.1.18"
 val apache_tomcat_ver = "11.0.9"
 val io_undertow_ver = "2.3.18.Final"
 
