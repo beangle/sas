@@ -27,7 +27,7 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 
 val beangle_commons_ver = "5.6.30"
 val beangle_template_ver = "0.1.27"
-val beangle_boot_ver = "0.1.16"
+val beangle_boot_ver = "0.1.17"
 val apache_tomcat_ver = "11.0.9"
 val io_undertow_ver = "2.3.18.Final"
 
