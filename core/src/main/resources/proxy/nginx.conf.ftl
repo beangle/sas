@@ -85,6 +85,7 @@ http {
     [#if webapp.contextPath?length>1]
         location ${webapp.contextPath} {
             proxy_pass http://${webapp.entryPoint.name};
+            proxy_set_header Host $host:$server_port;
         }
     [/#if]
     [/#list]
