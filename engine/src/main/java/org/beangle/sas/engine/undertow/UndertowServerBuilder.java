@@ -77,8 +77,11 @@ public class UndertowServerBuilder {
         var is = url.openStream();
         var serviceName = new String(is.readAllBytes()).trim();
         is.close();
-        var clazz = (Class<? extends ServletContainerInitializer>) classLoader.loadClass(serviceName);
-        deployment.addServletContainerInitializer(new ServletContainerInitializerInfo(clazz, Collections.emptySet()));
+        //不是竞品的初始化服务
+        if (!serviceName.startsWith("org.apache.tomcat.") && !serviceName.startsWith("org.eclipse.jetty.")) {
+          var clazz = (Class<? extends ServletContainerInitializer>) classLoader.loadClass(serviceName);
+          deployment.addServletContainerInitializer(new ServletContainerInitializerInfo(clazz, Collections.emptySet()));
+        }
       }
     } catch (Exception e) {
       e.printStackTrace();
