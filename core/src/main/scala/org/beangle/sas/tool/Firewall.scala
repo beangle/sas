@@ -20,7 +20,7 @@ package org.beangle.sas.tool
 import org.beangle.commons.io.IOs
 import org.beangle.commons.lang.Consoles.{prompt, shell}
 import org.beangle.commons.lang.Strings.isNotEmpty
-import org.beangle.commons.lang.SystemInfo
+import org.beangle.commons.lang.{Strings, SystemInfo}
 import org.beangle.template.freemarker.Configurator
 
 import java.io.StringWriter
@@ -75,7 +75,7 @@ object Firewall extends ShellEnv {
       val cmd = "firewall-cmd --permanent --zone=public" + sb.mkString
       if (isRoot) {
         println("executing:" + cmd)
-        Runtime.getRuntime.exec(cmd)
+        Runtime.getRuntime.exec(Strings.split(cmd,' '))
         println("firewalld changed successfully.")
       } else {
         println("Please execute the command:\n sudo " + cmd)

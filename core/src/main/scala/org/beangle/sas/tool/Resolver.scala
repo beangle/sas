@@ -37,7 +37,7 @@ import scala.collection.mutable
  */
 object Resolver {
 
-  def main1(args: Array[String]): Unit = {
+  def main(args: Array[String]): Unit = {
     if (args.length < 1) {
       println("Usage: Resolve /path/to/server.xml")
       System.exit(-1)
@@ -57,12 +57,6 @@ object Resolver {
 
     val missing = resolve(sasHome, container.repository.toRelease, container.snapshotRepo.toSnapshot, webapps.toSeq)
     System.exit(if missing.nonEmpty then -1 else 0)
-  }
-
-  def main(args: Array[String]): Unit = {
-    val a = Artifact("org.beangle.commons:beangle-commons:6.0.0-SNAPSHOT")
-    val s = SnapshotRepo(None, Some("http://sas.openurp.net/sas/repo/snapshot/")).toSnapshot
-    download(null, s, List(a))
   }
 
   def resolve(sasHome: String, releaseRepos: Repos.Release, snapshotRepos: Repos.Snapshot, webapps: collection.Seq[Webapp]): collection.Seq[String] = {
