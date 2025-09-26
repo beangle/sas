@@ -46,7 +46,7 @@ elif [ "$sas_command" = "pull" ] ; then
   echo "fetching $sas_remote_url/config/server.xml..."
   mkdir -p $SAS_HOME/conf
   ip_addresses=$(hostname -I)
-  wget -q $sas_remote_url/config/server.xml --header="ip:$ip_addresses" -O $SAS_HOME/conf/server_newer.xml || rm $SAS_HOME/conf/server_newer.xml
+  wget -q $sas_remote_url/config/server.xml --header="ip:$ip_addresses" -O $SAS_HOME/conf/server_newer.xml || rm -rf $SAS_HOME/conf/server_newer.xml
   if [ -f $SAS_HOME/conf/server_newer.xml ]; then
     rm -rf $SAS_HOME/conf/server_old.xml
     if [ -f $SAS_HOME/conf/server.xml ]; then
