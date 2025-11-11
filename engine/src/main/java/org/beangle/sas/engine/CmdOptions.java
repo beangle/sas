@@ -17,9 +17,8 @@
 
 package org.beangle.sas.engine;
 
-import java.lang.management.ManagementFactory;
-
 public class CmdOptions {
+
   public static Server.Config parse(String[] args) {
     String docBase = null;
     String path = "";
@@ -53,19 +52,8 @@ public class CmdOptions {
       if (Tools.isLibEmpty(docBase)) config.unpack = "false";
     }
 
-    config.devMode = devMode || isDevMode();
-    if (config.devMode) {
-      System.out.println("Server is running under dev mode,");
-    }
+    config.devMode = devMode || EnvProfile.isDevMode();
     return config;
-  }
-
-  private static boolean isDevMode() {
-    String cdiProfiles = System.getProperty("beangle.cdi.profiles");
-    if (null != cdiProfiles && cdiProfiles.contains("dev")) {
-      return true;
-    }
-    return ManagementFactory.getRuntimeMXBean().getInputArguments().toString().indexOf("-agentlib:jdwp") > 0;
   }
 
 }

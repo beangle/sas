@@ -27,6 +27,7 @@ import org.apache.catalina.startup.ContextConfig;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
+import org.apache.tomcat.util.compat.JreCompat;
 import org.apache.tomcat.util.scan.StandardJarScanner;
 import org.beangle.sas.engine.Server;
 
@@ -52,7 +53,7 @@ public class TomcatServerBuilder {
     configConnector(tomcat);
     configEngine(tomcat.getEngine());
     configHost((StandardHost) tomcat.getHost());
-    prepareContext(tomcat.getHost());
+    prepareContext(tomcat, tomcat.getHost());
     return tomcat;
   }
 
@@ -89,7 +90,7 @@ public class TomcatServerBuilder {
     }
   }
 
-  protected void prepareContext(Host host) {
+  protected void prepareContext(Tomcat tomcat, Host host) {
     StandardContext context = new StandardContext();
     context.setName(config.contextPath);
     context.setPath(config.contextPath);
@@ -107,29 +108,47 @@ public class TomcatServerBuilder {
 
     var parentClassLoader = Thread.currentThread().getContextClassLoader();
     context.setParentClassLoader(parentClassLoader);
-    //embeded or as server
+
     WebappLoader loader = new WebappLoader();
-    if (config.docBase == null) {//run in IDE
-      String targetClassPath = parentClassLoader.getResource("").getFile();
-      int targetIdx = targetClassPath.indexOf("/target/");
-      if (targetIdx > 0) {
-        String projectWebapp = targetClassPath.substring(0, targetIdx) + "/src/main/webapp";
-        if (new File(projectWebapp).exists()) {
-          context.setDocBase(projectWebapp);
-        }
-      }
-      if (null == context.getDocBase()) {
-        context.setDocBase(config.createTempDir("tomcat-docbase").getAbsolutePath());
-      }
+    //under graalvm or jvm
+    if (JreCompat.isGraalAvailable()) {
+      System.setProperty("org.apache.tomcat.util.modeler.disable", "true");
+      context.setDocBase("classpath:webapp");
       loader.setLoaderInstance(new EmbeddedClassLoader(parentClassLoader));
       loader.setDelegate(true);
       context.addLifecycleListener(new FixContextListener());
       addInitializers(context, sciFilterPattern);
-    } else {//run as server
-      context.setDocBase(config.docBase);
-      loader.setLoaderClass(DependencyClassLoader.class.getName());
-      loader.setDelegate(false);
-      context.addLifecycleListener(new ContextConfig());
+      context.setResourceOnlyServlets("default");
+      disableTomcatSSL();
+    } else {
+      //embedded(开发环境) or as server(生产环境)
+      if (config.docBase == null) {//run in IDE
+        //禁用监控
+        System.setProperty("org.apache.tomcat.util.modeler.disable", "true");
+        disableTomcatSSL();
+        String targetClassPath = parentClassLoader.getResource("").getFile();
+        int targetIdx = targetClassPath.indexOf("/target/");
+        if (targetIdx > 0) {
+          String projectWebapp = targetClassPath.substring(0, targetIdx) + "/src/main/webapp";
+          if (new File(projectWebapp).exists()) {
+            context.setDocBase(projectWebapp);
+          }
+        }
+        if (null == context.getDocBase()) {
+          context.setDocBase(config.createTempDir("tomcat-docbase").getAbsolutePath());
+        }
+        loader.setLoaderInstance(new EmbeddedClassLoader(parentClassLoader));
+        loader.setDelegate(true);
+        context.addLifecycleListener(new FixContextListener());
+        context.setUseNaming(false);//禁用JNDI
+
+        addInitializers(context, sciFilterPattern);
+      } else {//run as server
+        context.setDocBase(config.docBase);
+        loader.setLoaderClass(DependencyClassLoader.class.getName());
+        loader.setDelegate(false);
+        context.addLifecycleListener(new ContextConfig());
+      }
     }
     context.setLoader(loader);
 
@@ -144,6 +163,17 @@ public class TomcatServerBuilder {
     }
     context.setDefaultWebXml(Constants.NoDefaultWebXml);
     host.addChild(context);
+  }
+
+  private static void disableTomcatSSL() {
+    // 禁用 OpenSSL 检测（Tomcat 不会尝试加载 libtcnative-1.dll 等 OpenSSL 库）
+    System.setProperty("org.apache.tomcat.util.net.openssl.OpenSSL.disable", "true");
+    // 禁用 JSSE SSL 实现（若无需 JSSE 提供的 SSL 功能）
+    System.setProperty("org.apache.tomcat.util.net.jsse.JSSESocketFactory.disable", "true");
+    // 禁用 SSL 主机配置自动初始化
+    System.setProperty("org.apache.catalina.connector.Connector.SSL_HOST_CONFIG_DISABLED", "true");
+    // 禁用 Tomcat 对 SSL 协议的检测
+    System.setProperty("org.apache.tomcat.util.net.SSLProtocol.disable", "true");
   }
 
   private void skipScanning(StandardContext context) {

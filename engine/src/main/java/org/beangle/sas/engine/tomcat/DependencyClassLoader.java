@@ -32,6 +32,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 在Tomcat容器环境下，加载war中的依赖，扩充原本的classpath
+ * 所需要运行在sas环境中
+ */
 public class DependencyClassLoader extends ParallelWebappClassLoader {
 
   private static final Log log = LogFactory.getLog(DependencyClassLoader.class);
@@ -46,7 +50,7 @@ public class DependencyClassLoader extends ParallelWebappClassLoader {
   @Override
   public void start() throws LifecycleException {
     super.start();
-    if ("true".equals(System.getProperty("sas.disableDependencyLoader"))) {
+    if ("true".equals(System.getProperty("beangle.sas.disableDependencyLoader"))) {
       return;
     }
     var ctx = this.resources.getContext();
@@ -76,11 +80,13 @@ public class DependencyClassLoader extends ParallelWebappClassLoader {
         missings.add(artifact);
         continue;
       }
-      //ignore container artifacts
+      //ignore container and sas artifacts
       if (artifact.groupId.equals("jakarta.servlet")) continue;
       if (artifact.groupId.equals("jakarta.websocket")) continue;
       if (artifact.groupId.equals("org.apache.tomcat")) continue;
+      if (artifact.groupId.equals("org.apache.tomcat.embed")) continue;
       if (artifact.groupId.equals("org.beangle.sas")) continue;
+      if (artifact.groupId.equals("io.undertow")) continue;
       try {
         this.addURL(file.toURI().toURL());
         added.add(artifact);

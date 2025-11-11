@@ -28,7 +28,7 @@ import java.util.Enumeration;
 /**
  * Extension of Tomcat's {@link ParallelWebappClassLoader} that does not consider the
  * {@link ClassLoader#getSystemClassLoader() system classloader},
- * Migrate from springboot TomcatEmbeddedWebappClassLoader.
+ * Migrate from spring-boot TomcatEmbeddedWebappClassLoader.
  */
 public class EmbeddedClassLoader extends ParallelWebappClassLoader {
 
