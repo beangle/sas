@@ -25,8 +25,10 @@ import java.util.Map;
 
 public interface Server {
   void start();
+
   void shutdown();
-  public static class Config {
+
+  class Config {
     public final String contextPath;
     public final String docBase;
     public final int port;
@@ -54,7 +56,7 @@ public interface Server {
 
     public Integer getInt(String propertyName) {
       String v = properties.get(propertyName);
-      if (null == v || v.length() == 0) return null;
+      if (null == v || v.isEmpty()) return null;
       else return Integer.valueOf(v);
     }
 

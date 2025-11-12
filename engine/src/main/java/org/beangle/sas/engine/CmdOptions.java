@@ -32,9 +32,12 @@ public class CmdOptions {
           port = Integer.parseInt(arg.substring("--port=".length()));
         } else if (arg.startsWith("--dev=")) {
           devMode = Boolean.parseBoolean(arg.substring("--dev=".length()));
+          if (devMode) EnvProfile.enableDevMode();
         }
       } else {
-        docBase = arg;
+        if (!arg.startsWith("-")) {
+          docBase = arg;
+        }
       }
     }
     if (port == -1) {

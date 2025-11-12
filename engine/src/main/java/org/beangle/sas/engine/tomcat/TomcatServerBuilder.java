@@ -25,8 +25,6 @@ import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.startup.Constants;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.catalina.startup.Tomcat;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.util.compat.JreCompat;
 import org.apache.tomcat.util.scan.StandardJarScanner;
 import org.beangle.sas.engine.Server;
@@ -38,7 +36,6 @@ import java.util.regex.Pattern;
 
 public class TomcatServerBuilder {
   private final Server.Config config;
-  private static final Log log = LogFactory.getLog(TomcatServerBuilder.class);
 
   public TomcatServerBuilder(Server.Config config) {
     this.config = config;
@@ -64,13 +61,44 @@ public class TomcatServerBuilder {
     }
   }
 
+  /**
+   * 在这里配置线程
+   *
+   * @param tomcat
+   */
   protected void configConnector(Tomcat tomcat) {
     Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
     connector.setThrowOnFailure(true);
     connector.setPort(config.port);
+    connector.setScheme("http");
     connector.setURIEncoding("UTF-8"); //设置编码
     connector.setXpoweredBy(false);
     connector.setProperty("bindOnInit", "false");
+
+    org.apache.coyote.http11.Http11NioProtocol protocol =
+      (org.apache.coyote.http11.Http11NioProtocol) connector.getProtocolHandler();
+
+    protocol.setSSLEnabled(false);
+    if (config.devMode) {
+      protocol.setTcpNoDelay(true);// 禁用 TCP 延迟（Nagle 算法），提升实时性
+    }
+    //最大工作线程数
+    var maxThreads = config.getInt("connector.maxThreads");
+    if (null != maxThreads) protocol.setMaxThreads(maxThreads);
+
+    //等待队列大小，超过最大线程时，最多排队 acceptCount 个请求
+    var acceptCount = config.getInt("connector.acceptCount");
+    if (null != acceptCount) protocol.setAcceptCount(acceptCount);
+
+    var connectionTimeout = config.getInt("connector.connectionTimeout");
+    if (null != connectionTimeout) protocol.setConnectionTimeout(connectionTimeout);
+
+    var keepAliveTimeout = config.getInt("connector.keepAliveTimeout");
+    if (null != keepAliveTimeout) protocol.setKeepAliveTimeout(keepAliveTimeout);
+
+    var maxKeepAliveRequests = config.getInt("connector.maxKeepAliveRequests");
+    if (null != maxKeepAliveRequests) protocol.setMaxKeepAliveRequests(maxKeepAliveRequests);
+
     tomcat.getService().addConnector(connector);
     tomcat.setConnector(connector);
   }

@@ -21,17 +21,29 @@ import java.lang.management.ManagementFactory;
 
 public class EnvProfile {
 
+  private static final String devKey = "beangle.cdi.profiles";
+
   public static boolean isDebugMode() {
     var args = ManagementFactory.getRuntimeMXBean().getInputArguments();
     return args.toString().indexOf("-agentlib:jdwp") > 0;
   }
 
   public static boolean isDevMode() {
-    String cdiProfiles = System.getProperty("beangle.cdi.profiles");
+    String cdiProfiles = System.getProperty(devKey);
     if (null != cdiProfiles && cdiProfiles.contains("dev")) {
       return true;
     }
     return isDebugMode();
   }
 
+  public static void enableDevMode() {
+    String p = System.getProperty(devKey);
+    if (null == p) {
+      System.setProperty(devKey, "true");
+    } else {
+      if (!p.contains("dev")) {
+        System.setProperty(devKey, p + ",dev");
+      }
+    }
+  }
 }
