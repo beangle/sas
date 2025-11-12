@@ -59,9 +59,6 @@ public class TomcatServerBuilder {
 
   protected void configServer(StandardServer server) {
     if (!config.devMode) {
-      AprLifecycleListener apr = new AprLifecycleListener();
-      apr.setSSLEngine("on");
-      server.addLifecycleListener(apr);
       server.addLifecycleListener(new JreMemoryLeakPreventionListener());
       server.addLifecycleListener(new ThreadLocalLeakPreventionListener());
     }
@@ -71,7 +68,7 @@ public class TomcatServerBuilder {
     Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
     connector.setThrowOnFailure(true);
     connector.setPort(config.port);
-    connector.setURIEncoding("UTF-8");
+    connector.setURIEncoding("UTF-8"); //设置编码
     connector.setXpoweredBy(false);
     connector.setProperty("bindOnInit", "false");
     tomcat.getService().addConnector(connector);
@@ -85,6 +82,7 @@ public class TomcatServerBuilder {
 
   protected void configHost(StandardHost host) {
     host.setAutoDeploy(false);
+    host.setDeployOnStartup(false);
     if (!config.devMode) {
       host.setErrorReportValveClass("org.beangle.sas.engine.tomcat.SwallowErrorValve");
     }

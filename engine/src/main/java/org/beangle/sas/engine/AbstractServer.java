@@ -17,18 +17,10 @@
 
 package org.beangle.sas.engine;
 
-import java.util.logging.Logger;
-
 /**
  * Abstract Server
  */
 public abstract class AbstractServer implements Server {
-
-  /**
-   * static logger
-   */
-  protected Logger logger = Logger.getLogger(AbstractServer.class.toString());
-
   /**
    * whether it started
    */
@@ -45,7 +37,6 @@ public abstract class AbstractServer implements Server {
       try {
         doStart();
         this.started = true;
-        logger.info(getClass().getSimpleName() + " started.");
       } catch (Exception ex) {
         try {
           doStop();

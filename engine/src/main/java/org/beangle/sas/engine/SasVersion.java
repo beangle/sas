@@ -24,7 +24,7 @@ public class SasVersion {
       / __)  /__\\  / __)
       \\__ \\ /(__)\\ \\__ \\
       (___/(__)(__)(___/
-      version 0.13.5""";
+      beangle sas 0.13.5""";
     if (EnvProfile.isDevMode()) {
       str += "(DEV mode)";
     }
