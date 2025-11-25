@@ -39,6 +39,7 @@ val tomcat_juli = "org.apache.tomcat" % "tomcat-juli" % apache_tomcat_ver
 val undertow_servlet = "io.undertow" % "undertow-servlet" % io_undertow_ver % "optional"
 val tomcat_embeded_core = "org.apache.tomcat.embed" % "tomcat-embed-core" % apache_tomcat_ver % "optional" exclude("org.apache.tomcat", "tomcat-annotations-api")
 val commonDeps = Seq(beangle_commons, beangle_boot, scalaxml, scalatest)
+val jcl_over_slf4j = "org.slf4j" % "jcl-over-slf4j" % "2.0.17"
 
 lazy val root = (project in file("."))
   .settings()

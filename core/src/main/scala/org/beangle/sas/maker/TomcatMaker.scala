@@ -148,14 +148,26 @@ object TomcatMaker {
       i += 1
     }
 
-    //clean up lib
-    Dirs.on(engineDir, "lib").delete("tomcat-i18n-cs.jar", "tomcat-i18n-es.jar", "tomcat-i18n-de.jar",
-      "tomcat-i18n-fr.jar", "tomcat-i18n-ja.jar", "tomcat-i18n-ko.jar", "tomcat-i18n-pt-BR.jar", "tomcat-i18n-ru.jar",
-      "tomcat-i18n-zh-CN.jar")
+    //clean up config lib
+    Dirs.on(engineDir, "lib").delete("catalina-ant.jar", "catalina-storeconfig.jar")
+    //clean up jdbc lib
+    Dirs.on(engineDir, "lib").delete("tomcat-dbcp.jar", "tomcat-jdbc.jar")
+    //clean up high available lib
+    Dirs.on(engineDir, "lib").delete("catalina-tribes.jar")
+    //clean up extension lib
+    Dirs.on(engineDir, "lib").delete("catalina-ssi.jar", "tomcat-coyote-ffm.jar")
+
+    // cleanup i18n and migration libs
+    Dirs.on(engineDir, "lib").ls().foreach { jar =>
+      if (jar.startsWith("tomcat-i18n-")) Dirs.on(engineDir, "lib").delete(jar)
+      if (jar.startsWith("jakartaee-migration")) Dirs.on(engineDir, "lib").delete(jar)
+    }
 
     if (!engine.jspSupport) {
-      Dirs.on(engineDir, "lib").delete("jsp-api.jar", "el-api.jar", "ecj-4.6.3.jar",
-        "ecj-4.7.3a.jar","ecj-4.33.jar", "jasper.jar", "jasper-el.jar")
+      Dirs.on(engineDir, "lib").delete("jsp-api.jar", "el-api.jar", "jasper.jar", "jasper-el.jar")
+      Dirs.on(engineDir, "lib").ls().foreach { jar =>
+        if (jar.startsWith("ecj")) Dirs.on(engineDir, "lib").delete(jar)
+      }
     }
     genEngineConfig(engine, engineDir.getAbsolutePath)
   }
