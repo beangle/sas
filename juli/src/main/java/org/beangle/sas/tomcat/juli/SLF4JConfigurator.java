@@ -28,48 +28,38 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+/**
+ * 查找logback-catalina.xml位置，进行配置，并且禁止其他内置的Configurator
+ */
 public class SLF4JConfigurator extends ContextAwareBase implements Configurator {
 
   @Override
   public ExecutionStatus configure(LoggerContext lc) {
-    JoranConfigurator configurator = new JoranConfigurator();
-    configurator.setContext(lc);
+    String confProperty = System.getProperty("juli.logback.configurationFile");
+    var sasHome = System.getProperty("sas.home");
+    String url = null;
     try {
-      String confProperty = System.getProperty("juli.logback.configurationFile");
-      String catalinaBase = System.getProperty("catalina.base");
-
-      URL url = null;
       if (null == confProperty) {
-        if (null != catalinaBase) {
-          File confFile = new File(catalinaBase + "/conf/logback-catalina.xml");
-          if (confFile.exists()) {
-            url = confFile.toURI().toURL();
-          }
-        }
-        if (null == url) {
-          url = getClass().getClassLoader().getResource("logback-catalina.xml");
-        }
-        if (null == url) {
-          throw new RuntimeException("Cannot load logback-catalina.xml");
-        }
-      } else {
-        if (new File(confProperty).exists()) {
-          url = new File(confProperty).toURI().toURL();
+        File confFile = new File(sasHome + "/conf/logback-catalina.xml");
+        if (confFile.exists()) {
+          url = confFile.toURI().toURL().toString();
         } else {
-          throw new RuntimeException("Cannot find " + confProperty);
+          url = getClass().getClassLoader().getResource("logback-catalina.xml").toString();
         }
       }
+      JoranConfigurator configurator = new JoranConfigurator();
+      configurator.setContext(lc);
       lc.getStatusManager().add(new InfoStatus("Found resource [" + url.toString() + "]", this));
       lc.reset();
-      // for testing when launch log outer of tomcat
-      if (catalinaBase == null) {
-        System.setProperty("catalina.base", System.getProperty("java.io.tmpdir"));
-      }
-      configurator.doConfigure(url);
+
+      configurator.doConfigure(new URL(url));
+      lc.start();
     } catch (JoranException | MalformedURLException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
-    return ExecutionStatus.NEUTRAL;
+
+    //这一个可以禁用其他配置
+    return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
   }
 
 }

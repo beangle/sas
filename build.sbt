@@ -2,7 +2,7 @@ import org.beangle.parent.Dependencies.*
 import org.beangle.parent.Settings.*
 
 ThisBuild / organization := "org.beangle.sas"
-ThisBuild / version := "0.13.6-SNAPSHOT"
+ThisBuild / version := "0.13.6"
 
 ThisBuild / scmInfo := Some(
   ScmInfo(
@@ -75,6 +75,7 @@ lazy val juli = (project in file("juli"))
       cp filter { f => f.data.getName.contains("scala") }
     },
     assemblyShadeRules := Seq(
+      ShadeRule.zap("scala.**").inAll,
       ShadeRule.zap("org.apache.juli.logging.**").inAll,
       ShadeRule.zap("org.apache.juli.**Handler**").inAll,
       ShadeRule.zap("org.apache.juli.**Format**").inAll,

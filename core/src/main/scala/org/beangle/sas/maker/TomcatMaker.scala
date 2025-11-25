@@ -38,9 +38,7 @@ object TomcatMaker {
    */
   def applyEngineDefault(container: Container, engine: Engine): Unit = {
     if (engine.listeners.isEmpty) {
-      engine.listeners += new Listener("org.apache.catalina.core.AprLifecycleListener").property("SSLEngine", "on")
       engine.listeners += new Listener("org.apache.catalina.core.JreMemoryLeakPreventionListener")
-      engine.listeners += new Listener("org.apache.catalina.mbeans.GlobalResourcesLifecycleListener")
       engine.listeners += new Listener("org.apache.catalina.core.ThreadLocalLeakPreventionListener")
     }
 
@@ -63,7 +61,7 @@ object TomcatMaker {
     //添加beangle-sas-engine and logback-access(bump version)
     engine.jars += Jar.gav("org.beangle.sas:beangle-sas-engine:" + container.version)
     if (engine.typ == EngineType.Tomcat) {
-      engine.jars += Jar.gav("ch.qos.logback:logback-core:1.5.18")
+      engine.jars += Jar.gav("ch.qos.logback:logback-core:1.5.21")
       engine.jars += Jar.gav("ch.qos.logback.access:logback-access-common:2.0.6")
       engine.jars += Jar.gav("ch.qos.logback.access:logback-access-tomcat:2.0.6")
     }
@@ -134,6 +132,7 @@ object TomcatMaker {
     }
 
     //clean bin
+    //remove tomcat-juli,using beangle-sas-juli
     Dirs.on(engineDir, "bin").delete("startup.sh", "shutdown.sh", "configtest.sh", "version.sh", "migrate.sh",
       "digest.sh", "tool-wrapper.sh", "catalina.sh", "setclasspath.sh", "makebase.sh", "ciphers.sh", "tomcat-juli.jar")
 
@@ -150,11 +149,13 @@ object TomcatMaker {
     }
 
     //clean up lib
-    Dirs.on(engineDir, "lib").delete("tomcat-i18n-es.jar", "tomcat-i18n-fr.jar", "tomcat-i18n-ja.jar")
+    Dirs.on(engineDir, "lib").delete("tomcat-i18n-cs.jar", "tomcat-i18n-es.jar", "tomcat-i18n-de.jar",
+      "tomcat-i18n-fr.jar", "tomcat-i18n-ja.jar", "tomcat-i18n-ko.jar", "tomcat-i18n-pt-BR.jar", "tomcat-i18n-ru.jar",
+      "tomcat-i18n-zh-CN.jar")
 
     if (!engine.jspSupport) {
       Dirs.on(engineDir, "lib").delete("jsp-api.jar", "el-api.jar", "ecj-4.6.3.jar",
-        "ecj-4.7.3a.jar", "jasper.jar", "jasper-el.jar")
+        "ecj-4.7.3a.jar","ecj-4.33.jar", "jasper.jar", "jasper-el.jar")
     }
     genEngineConfig(engine, engineDir.getAbsolutePath)
   }
