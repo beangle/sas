@@ -18,13 +18,16 @@
 package org.beangle.sas.engine;
 
 public class SasVersion {
-  public static String logo() {
+  public static String logo(String comments) {
     var str = """
        ___    __    ___
       / __)  /__\\  / __)
       \\__ \\ /(__)\\ \\__ \\
       (___/(__)(__)(___/
       beangle sas 0.13.6""";
+    if (null != comments && !comments.isEmpty()) {
+      str += "(" + comments + ")";
+    }
     if (EnvProfile.isDevMode()) {
       str += "(DEV mode)";
     }

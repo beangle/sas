@@ -18,20 +18,21 @@
 package org.beangle.sas.engine.undertow;
 
 import io.undertow.Undertow;
-import org.beangle.sas.engine.CmdOptions;
-import org.beangle.sas.engine.Desktops;
-import org.beangle.sas.engine.Server;
-import org.beangle.sas.engine.Tools;
+import org.beangle.sas.engine.*;
 
 import java.io.File;
 import java.util.logging.Logger;
 
 public class Bootstrap {
 
-  private static Logger logger = Logger.getLogger(Bootstrap.class.toString());
-
   public static void main(String[] args) throws Exception {
     var startAt = System.currentTimeMillis();
+    SLF4J.enableLogbackDevConfig();
+    SLF4J.bridgeJul2Slf4j();
+    if (EnvProfile.isDevMode()) {
+      System.out.println(SasVersion.logo("undertow"));
+    }
+    var logger = Logger.getLogger(org.beangle.sas.engine.tomcat.Bootstrap.class.toString());
     Server.Config config = CmdOptions.parse(args);
     if (config.port < 0) {
       logger.severe("port " + Math.abs(config.port) + " is not available.");
@@ -46,7 +47,7 @@ public class Bootstrap {
     ts.start();
     var duration = (System.currentTimeMillis() - startAt) / 1000.0;
     var url = "http://localhost:" + config.port + config.contextPath;
-    logger.info("Undertow started(" + duration + "s):" + url);
+    logger.info("Undertow started in " + duration + "s, open " + url);
 
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
       @Override
