@@ -31,7 +31,9 @@ import jakarta.servlet.ServletContainerInitializer;
 import jakarta.servlet.ServletException;
 import org.beangle.sas.engine.Server;
 
-import java.io.File;
+import java.io.*;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 public class UndertowServerBuilder {
@@ -74,11 +76,9 @@ public class UndertowServerBuilder {
       var urls = classLoader.getResources("META-INF/services/jakarta.servlet.ServletContainerInitializer");
       while (urls.hasMoreElements()) {
         var url = urls.nextElement();
-        var is = url.openStream();
-        var serviceName = new String(is.readAllBytes()).trim();
-        is.close();
+        var serviceName = readServiceName(url);
         //不是竞品的初始化服务
-        if (!serviceName.startsWith("org.apache.tomcat.") && !serviceName.startsWith("org.eclipse.jetty.")) {
+        if (null != serviceName && !serviceName.startsWith("org.apache.tomcat.") && !serviceName.startsWith("org.eclipse.jetty.")) {
           var clazz = (Class<? extends ServletContainerInitializer>) classLoader.loadClass(serviceName);
           deployment.addServletContainerInitializer(new ServletContainerInitializerInfo(clazz, Collections.emptySet()));
         }
@@ -115,6 +115,24 @@ public class UndertowServerBuilder {
     var h = manager.start();
     Handlers.path().addPrefixPath(config.contextPath, h);
     return h;
+  }
+
+  private String readServiceName(URL url) {
+    String serviceName = null;
+    try (InputStream inputStream = url.openStream();
+         InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+         LineNumberReader lineNumberReader = new LineNumberReader(reader)) {
+      String line;
+      while ((line = lineNumberReader.readLine()) != null) {
+        line = line.trim();
+        if (!line.startsWith("#")) {
+          serviceName = line;
+        }
+      }
+
+    } catch (IOException e) {
+    }
+    return serviceName;
   }
 
 }

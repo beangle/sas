@@ -34,7 +34,7 @@ import java.time.format.DateTimeFormatter
 
 object SasTool {
 
-  val templateCfg = Configurator.newConfig
+  val templateCfg: Configuration = Configurator.newConfig
   templateCfg.setTagSyntax(Configuration.SQUARE_BRACKET_TAG_SYNTAX)
   templateCfg.setDefaultEncoding("UTF-8")
   templateCfg.setNumberFormat("0.##")

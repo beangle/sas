@@ -46,42 +46,6 @@ if [ -z "$sas_restart" ]; then
   export sas_restart="0"
 fi
 
-stop(){
-  SERVER_NAME="$1"
-  SERVER_BASE="$SAS_HOME"/servers/$SERVER_NAME
-  SERVER_PID="$SERVER_BASE"/SERVER_PID
-
-  SLEEP=5
-  FORCE=1
-
-  if [  -s "$SERVER_PID" ]; then
-    PID=$(cat "$SERVER_PID")
-    kill -15 $PID >/dev/null 2>&1
-  else
-    return 1
-  fi
-
-  while [ $SLEEP -ge 0 ]; do
-    kill -0 $PID >/dev/null 2>&1
-    if [ $? -gt 0 ]; then
-      rm -f "$SERVER_PID" >/dev/null 2>&1
-      FORCE=0
-      echo "$SERVER_NAME stopped."
-      break
-    fi
-    if [ $SLEEP -gt 0 ]; then
-      sleep 1
-    fi
-    SLEEP=$(expr $SLEEP - 1 )
-  done
-
-  if [ $FORCE -eq 1 ]; then
-      echo "$SERVER_NAME stopped(killing $PID)"
-      kill -9 $PID
-  fi
-  rm -f "$SERVER_PID"
-  return 0
-}
 
 # start servername
 start(){
@@ -92,20 +56,16 @@ start(){
   export SERVER_TMPDIR="$SERVER_BASE"/temp
 
   if [ -s "$SERVER_PID" ]; then
-    if [ "$sas_restart" == "1" ]; then
-      stop "$1"
+    PID=$(cat "$SERVER_PID")
+    ps -p $PID >/dev/null 2>&1
+    if [ $? -eq 0 ] ; then
+      ps  --no-headers -f -p $PID
+      echo "$SERVER_NAME appears to still be running with PID $PID. Start aborted."
+      return 1
     else
-      PID=$(cat "$SERVER_PID")
-      ps -p $PID >/dev/null 2>&1
-      if [ $? -eq 0 ] ; then
-        ps  --no-headers -f -p $PID
-        echo "$SERVER_NAME appears to still be running with PID $PID. Start aborted."
-        return 1
-      else
-        rm -f "$SERVER_PID" >/dev/null 2>&1
-        if [ $? != 0 ]; then
-          cat /dev/null > "$SERVER_PID"
-        fi
+      rm -f "$SERVER_PID" >/dev/null 2>&1
+      if [ $? != 0 ]; then
+        cat /dev/null > "$SERVER_PID"
       fi
     fi
   else
