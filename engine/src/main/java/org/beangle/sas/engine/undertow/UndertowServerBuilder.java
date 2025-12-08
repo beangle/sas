@@ -115,7 +115,8 @@ public class UndertowServerBuilder {
     sm.setDefaultSessionTimeout(config.defaultSessionTimeout);
 
     var h = manager.start();
-    Handlers.path().addPrefixPath(config.contextPath, h);
+    var ctxPath = config.contextPath.isEmpty() ? "/" : config.contextPath;
+    Handlers.path().addPrefixPath(ctxPath, h);
     return h;
   }
 

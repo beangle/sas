@@ -20,7 +20,6 @@ package org.beangle.sas.engine.tomcat;
 import org.apache.catalina.startup.Tomcat;
 import org.beangle.sas.engine.*;
 
-import java.io.File;
 import java.util.logging.Logger;
 
 public class Bootstrap {
