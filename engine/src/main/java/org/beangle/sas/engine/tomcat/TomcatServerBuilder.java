@@ -28,7 +28,6 @@ import org.apache.tomcat.util.compat.JreCompat;
 import org.apache.tomcat.util.scan.StandardJarScanner;
 import org.beangle.sas.engine.Server;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.ServiceLoader;
 import java.util.regex.Pattern;
@@ -40,9 +39,9 @@ public class TomcatServerBuilder {
     this.config = config;
   }
 
-  public Tomcat build(String baseDir) {
+  public Tomcat build() {
     Tomcat tomcat = new Tomcat();
-    tomcat.setBaseDir(baseDir);
+    tomcat.setBaseDir(config.base);
     //tomcat is startup class
     //server{service{engine{host{context}}}}
     configServer((StandardServer) tomcat.getServer());
@@ -144,20 +143,7 @@ public class TomcatServerBuilder {
       //禁用监控
       System.setProperty("org.apache.tomcat.util.modeler.disable", "true");
       disableTomcatSSL();
-      //是否处于IDE开发环境
-      String targetClassPath = parentClassLoader.getResource("").getFile();
-      int targetIdx = targetClassPath.indexOf("/target/");
-      if (targetIdx > 0) {
-        String projectWebapp = targetClassPath.substring(0, targetIdx) + "/src/main/webapp";
-        if (new File(projectWebapp).exists()) {
-          config.docBase = projectWebapp;
-          context.setDocBase(projectWebapp);
-        }
-      }
-      if (null == context.getDocBase()) {
-        config.docBase = config.getDefaultDocBase();
-        context.setDocBase(config.getDefaultDocBase());
-      }
+      context.setDocBase(config.docBase);
       loader.setLoaderInstance(new EmbeddedClassLoader(parentClassLoader));
       loader.setDelegate(true);
       context.addLifecycleListener(new FixContextListener());

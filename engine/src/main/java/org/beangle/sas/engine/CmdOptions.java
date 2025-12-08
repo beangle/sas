@@ -53,6 +53,7 @@ public class CmdOptions {
 
     Server.Config config = new Server.Config(Server.Config.initBase(base).getAbsolutePath(), path, port);
     config.devMode = devMode || EnvProfile.isDevMode();
+    config.guessDocBase();
     return config;
   }
 

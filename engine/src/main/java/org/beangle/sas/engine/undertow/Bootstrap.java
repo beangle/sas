@@ -37,7 +37,7 @@ public class Bootstrap {
       logger.severe("port " + Math.abs(config.port) + " is not available.");
       return;
     }
-    Undertow undertow = new UndertowServerBuilder(config).build(config.base);
+    Undertow undertow = new UndertowServerBuilder(config).build();
     final UndertowServer ts = new UndertowServer(undertow);
     ts.start();
     var duration = (System.currentTimeMillis() - startAt) / 1000.0;

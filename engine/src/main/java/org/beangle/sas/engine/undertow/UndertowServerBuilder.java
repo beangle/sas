@@ -21,6 +21,7 @@ import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.UndertowOptions;
 import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.ServletContainer;
@@ -43,7 +44,7 @@ public class UndertowServerBuilder {
     this.config = config;
   }
 
-  public Undertow build(String baseDir) throws ServletException {
+  public Undertow build() throws ServletException {
     Undertow.Builder builder = Undertow.builder();
 
     Integer bufferSize = config.getInt("buffer-size");
@@ -60,9 +61,9 @@ public class UndertowServerBuilder {
 
     builder.addHttpListener(config.port, null);
     builder.setServerOption(UndertowOptions.SHUTDOWN_TIMEOUT, 0);
-//    builder.setServerOption(UndertowOptions.ENABLE_HTTP2, http2.isEnabled());
+    builder.setServerOption(UndertowOptions.ENABLE_HTTP2, false);
     ServletContainer sc = Servlets.newContainer();
-    builder.setHandler(createDeployments(sc, baseDir));
+    builder.setHandler(createDeployments(sc));
     return builder.build();
   }
 
@@ -88,7 +89,7 @@ public class UndertowServerBuilder {
     }
   }
 
-  private HttpHandler createDeployments(ServletContainer sc, String baseDir) throws ServletException {
+  private HttpHandler createDeployments(ServletContainer sc) throws ServletException {
     DeploymentInfo di = Servlets.deployment();
     addInitializers(di);
 
@@ -104,8 +105,9 @@ public class UndertowServerBuilder {
     }
     di.setServletStackTraces(ServletStackTraces.NONE);
     di.setEagerFilterInit(true);
-    di.setTempDir(new File(baseDir + File.separator + "temp"));
+    di.setTempDir(new File(config.base + File.separator + "temp"));
 
+    di.setResourceManager(new FileResourceManager(new File(config.docBase), 1024));
     //ignore mimetype registration
     var manager = sc.addDeployment(di);
     manager.deploy();

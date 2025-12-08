@@ -30,6 +30,7 @@ public interface Server {
   void shutdown();
 
   class Config {
+    private static boolean isTempBase = false;
     public final String base;
     public final String contextPath;
     public final int port;
@@ -67,6 +68,7 @@ public interface Server {
           baseDir = Files.createTempDirectory("sas").toFile();
           logger.info("create base dir: " + baseDir.getAbsolutePath());
           baseDir.deleteOnExit();
+          isTempBase = true;
         } else {
           baseDir = new File(base);
           baseDir.mkdirs();
@@ -79,12 +81,32 @@ public interface Server {
       }
     }
 
+    public void guessDocBase() {
+      var loader = Thread.currentThread().getContextClassLoader();
+      //是否处于IDE开发环境
+      String targetClassPath = loader.getResource("").getFile();
+      int targetIdx = targetClassPath.indexOf("/target/");
+      if (targetIdx > 0) {
+        String projectWebapp = targetClassPath.substring(0, targetIdx) + "/src/main/webapp";
+        if (new File(projectWebapp).exists()) {
+          this.docBase = projectWebapp;
+        }
+      }
+      if (null == this.docBase) {
+        this.docBase = this.getDefaultDocBase();
+      }
+      new File(this.docBase).mkdirs();
+    }
+
     public void cleanup() {
       if (null != docBase) {
         var dir = docBase;
         dir = dir.replace('\\', '/');
         if (docBase.startsWith(base) && !dir.contains("src/main/webapp")) {
           Tools.delete(new File(docBase));
+        }
+        if (isTempBase) {
+          Tools.delete(new File(base));
         }
       }
     }

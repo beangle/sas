@@ -38,7 +38,7 @@ public class Bootstrap {
       logger.severe("port " + Math.abs(config.port) + " is not available.");
       return;
     }
-    Tomcat tomcat = new TomcatServerBuilder(config).build(config.base);
+    Tomcat tomcat = new TomcatServerBuilder(config).build();
     final TomcatServer ts = new TomcatServer(tomcat);
     ts.start();
     var duration = (System.currentTimeMillis() - startAt) / 1000.0;

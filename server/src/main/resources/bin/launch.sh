@@ -2,7 +2,7 @@
 if [ $# -eq 0 ]; then
   echo "Usage:
    launch.sh [jvm_options] /path/to/war [--port=8080] [--path=/yourbase] [other_args]
-   launch.sh [jvm_options] group_id:artifact_id:version [other_args]
+   launch.sh [jvm_options] group_id:artifact_id:version [--engine=undertow/tomcat] [other_args]
    launch.sh [jvm_options] http://host.com/path/towar [other_args]"
   exit 1
 fi
@@ -18,13 +18,14 @@ opts="$*"
 # war file,may be groupid/file/url
 warfile=""
 #contextpath
-context_path="ROOT"
+app_name="ROOT"
 #java options
 options=""
 #java args
 args=""
 classpath=""
 sas_home="/tmp/sas"
+engine="tomcat"
 
 local_file(){
   group_id=$(echo "$1" | tr . /)
@@ -75,9 +76,11 @@ parse_args(){
     if [ "$arg" = "${arg#"-"}" ]; then
       warfile="$arg"
     elif [[ "$arg" == --path* ]] ; then
-      context_path=$(extract_arg_value "$arg")
-      context_path=$(echo "$context_path" | tr '/' '#')
-      context_path=${context_path#"#"}
+      app_name=$(extract_arg_value "$arg")
+      app_name=$(echo "$app_name" | tr '/' '#')
+      app_name=${app_name#"#"}
+    elif [[ "$arg" == --engine* ]] ; then
+      engine=$(extract_arg_value "$arg")
     fi
   done
 
@@ -102,9 +105,25 @@ download org.beangle.boot beangle-boot $beangle_boot_ver
 download org.slf4j slf4j-api $slf4j_ver
 download ch.qos.logback logback-core $logback_ver
 download ch.qos.logback logback-classic $logback_ver
+download org.beangle.sas beangle-sas-engine $beangle_sas_ver
+
 download org.apache.tomcat.embed tomcat-embed-core $tomcat_ver
 download org.apache.tomcat.embed tomcat-embed-websocket $tomcat_ver
-download org.beangle.sas beangle-sas-engine $beangle_sas_ver
+
+download io.undertow undertow-core $undertow_ver
+download io.undertow undertow-servlet $undertow_ver
+download org.jboss.logging jboss-logging 3.6.1.Final
+download org.jboss.threads jboss-threads 3.7.0.Final
+download org.jboss.xnio xnio-api 3.8.16.Final
+download org.jboss.xnio xnio-nio 3.8.16.Final
+download jakarta.annotation jakarta.annotation-api 2.1.1
+download org.wildfly.client wildfly-client-config 1.0.1.Final
+download org.wildfly.common wildfly-common 1.5.4.Final
+download io.smallrye.common smallrye-common-annotation 2.6.0
+download io.smallrye.common smallrye-common-constraint 2.6.0
+download io.smallrye.common smallrye-common-cpu 2.6.0
+download io.smallrye.common smallrye-common-function 2.6.0
+
 bootpath="${bootpath:1}" #omit head :
 
 #destfile is resolved absolute file path.
@@ -114,7 +133,7 @@ if [ $? -ne 0  ]; then
   exit
 fi
 
-doc_base="$sas_home/webapps/$context_path"
+doc_base="$sas_home/webapps/$app_name"
 rm -rf $doc_base
 mkdir -p $doc_base
 unzip $destfile -d $doc_base > /dev/null 2>&1
@@ -127,12 +146,35 @@ fi
 bootinfo=$(java -cp "$bootpath" org.beangle.boot.launcher.Classpath $doc_base --local=$M2_REPO)
 
 if [ $? = 0 ]; then
-  mainclass="org.beangle.sas.engine.tomcat.Bootstrap"
-  classpath="${bootinfo#*@}"
-  classpath=$classpath":"$(local_file org.apache.tomcat.embed tomcat-embed-core $tomcat_ver)
-  classpath=$classpath":"$(local_file org.apache.tomcat.embed tomcat-embed-websocket $tomcat_ver)
-  classpath=$classpath":"$(local_file org.beangle.sas beangle-sas-engine $beangle_sas_ver)
-  java -cp "$classpath" $options "$mainclass" --base=$sas_home $args
+  if [ "$engine" = "tomcat" ]; then
+    mainclass="org.beangle.sas.engine.tomcat.Bootstrap"
+    classpath="${bootinfo#*@}"
+    classpath=$classpath":"$(local_file org.apache.tomcat.embed tomcat-embed-core $tomcat_ver)
+    classpath=$classpath":"$(local_file org.apache.tomcat.embed tomcat-embed-websocket $tomcat_ver)
+    classpath=$classpath":"$(local_file org.beangle.sas beangle-sas-engine $beangle_sas_ver)
+    java -cp "$classpath" $options "$mainclass" --base=$sas_home $args
+  elif [ "$engine" = "undertow" ]; then
+    mainclass="org.beangle.sas.engine.undertow.Bootstrap"
+    classpath="${bootinfo#*@}"
+    classpath=$classpath":"$(local_file io.undertow undertow-core $undertow_ver)
+    classpath=$classpath":"$(local_file io.undertow undertow-servlet $undertow_ver)
+    classpath=$classpath":"$(local_file org.jboss.logging jboss-logging 3.6.1.Final)
+    classpath=$classpath":"$(local_file org.jboss.threads jboss-threads 3.7.0.Final)
+    classpath=$classpath":"$(local_file org.jboss.xnio xnio-api 3.8.16.Final)
+    classpath=$classpath":"$(local_file org.jboss.xnio xnio-nio 3.8.16.Final)
+    classpath=$classpath":"$(local_file jakarta.annotation jakarta.annotation-api 2.1.1)
+    classpath=$classpath":"$(local_file org.wildfly.client wildfly-client-config 1.0.1.Final)
+    classpath=$classpath":"$(local_file org.wildfly.common wildfly-common 1.5.4.Final)
+    classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-annotation 2.6.0)
+    classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-constraint 2.6.0)
+    classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-cpu 2.6.0)
+    classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-function 2.6.0)
+
+    classpath=$classpath":"$(local_file org.beangle.sas beangle-sas-engine $beangle_sas_ver)
+    java -cp "$classpath" $options "$mainclass" --base=$sas_home $args
+  else
+    echo "unknown engine $engine,launch failed."
+  fi
 else
    echo "launch failed."
 fi
