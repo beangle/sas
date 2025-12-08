@@ -20,7 +20,6 @@ package org.beangle.sas.engine.undertow;
 import io.undertow.Undertow;
 import org.beangle.sas.engine.*;
 
-import java.io.File;
 import java.util.logging.Logger;
 
 public class Bootstrap {
@@ -49,8 +48,7 @@ public class Bootstrap {
       @Override
       public void run() {
         ts.shutdown();
-        if (null != config.docBase)
-          Tools.delete(new File(config.docBase));
+        config.cleanup();
       }
     }));
     Desktops.openBrowser(url);

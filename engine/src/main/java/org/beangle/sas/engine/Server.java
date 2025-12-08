@@ -78,6 +78,16 @@ public interface Server {
         throw new RuntimeException("Unable to create baseDir. java.io.tmpdir is set to " + System.getProperty("java.io.tmpdir"), ex);
       }
     }
-  }
 
+    public void cleanup() {
+      if (null != docBase) {
+        var dir = docBase;
+        dir = dir.replace('\\', '/');
+        if (docBase.startsWith(base) && !dir.contains("src/main/webapp")) {
+          Tools.delete(new File(docBase));
+        }
+      }
+    }
+
+  }
 }

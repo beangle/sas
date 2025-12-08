@@ -47,8 +47,7 @@ public class Bootstrap {
 
     Runtime.getRuntime().addShutdownHook(new Thread(() -> {
       ts.shutdown();
-      if (null != config.docBase)
-        Tools.delete(new File(config.docBase));
+      config.cleanup();
     }));
     Desktops.openBrowser(url);
   }
