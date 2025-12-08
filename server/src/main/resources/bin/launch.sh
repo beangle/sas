@@ -15,10 +15,24 @@ export SAS_HOME=$(cd "$PRGDIR/../" >/dev/null; pwd)
 bootpath=""
 # full command line to java
 opts="$*"
-# war file
+# war file,may be groupid/file/url
 warfile=""
+#contextpath
+context_path="ROOT"
+#java options
+options=""
+#java args
+args=""
+classpath=""
+sas_home="/tmp/sas"
+
+local_file(){
+  group_id=$(echo "$1" | tr . /)
+  echo "$M2_REPO/$group_id/$2/$3/$2-$3.jar"
+}
 
 # download groupId artifactId version
+# add append bootpath
 download(){
   group_id=$(echo "$1" | tr . /)
   URL="$M2_REMOTE_REPO/$group_id/$2/$3/$2-$3.jar"
@@ -45,22 +59,40 @@ download(){
   fi
 }
 
-#find warfile in opts
-detect_warfile(){
+# extract_arg "--path = /tmp"
+extract_arg_value() {
+  local input="$1"
+  # 匹配 = 后的内容（去掉前面所有字符）
+  local temp=${input#*=}
+  # 去首尾空格
+  echo "$temp" | xargs  # 去首尾空格
+}
+
+#find warfile/content_path in all opts
+parse_args(){
   for arg in $opts
   do
-      if [ "$arg" = "${arg#"-"}" ]; then
-        warfile="$arg"
-        break;
-      fi
+    if [ "$arg" = "${arg#"-"}" ]; then
+      warfile="$arg"
+    elif [[ "$arg" == --path* ]] ; then
+      context_path=$(extract_arg_value "$arg")
+      context_path=$(echo "$context_path" | tr '/' '#')
+      context_path=${context_path#"#"}
+    fi
   done
 
-  # try to find jar file
+  # try to find warfile arg
   if [ -z "$warfile" ]; then
     echo "Cannot find jar file in args,launch was aborted."
     exit
   fi
+
+  #get options and args of java program,(format is options warfile args)
+  options="${opts%%$warfile*}"
+  args="${opts#*$warfile}"
 }
+
+parse_args
 
 download org.scala-lang scala3-library_3 $scala_ver
 download org.scala-lang scala-library $scala_lib_ver
@@ -70,26 +102,37 @@ download org.beangle.boot beangle-boot $beangle_boot_ver
 download org.slf4j slf4j-api $slf4j_ver
 download ch.qos.logback logback-core $logback_ver
 download ch.qos.logback logback-classic $logback_ver
-
-detect_warfile
-#get options and args of java program
-args="${opts#*$warfile}"
-options="${opts%%$warfile*}"
+download org.apache.tomcat.embed tomcat-embed-core $tomcat_ver
+download org.apache.tomcat.embed tomcat-embed-websocket $tomcat_ver
+download org.beangle.sas beangle-sas-engine $beangle_sas_ver
 bootpath="${bootpath:1}" #omit head :
+
 #destfile is resolved absolute file path.
-destfile=$(java -cp "$bootpath" org.beangle.boot.dependency.AppResolver $warfile --remote=$M2_REMOTE_REPO --local=$M2_REPO --quiet)
+destfile=$(java -cp "$bootpath" org.beangle.boot.dependency.AppResolver $warfile --remote=$M2_REMOTE_REPO --local=$M2_REPO --quiet --preferwar)
 if [ $? -ne 0  ]; then
-  echo "Cannot resolve $warfile, Launching aborted"
+  echo "Cannot resolve $warfile, Launching aborted."
   exit
 fi
 
-# reset bootpath
-bootpath=""
-download org.apache.tomcat.embed tomcat-embed-core $tomcat_ver
-download org.apache.tomcat.embed tomcat-embed-jasper $tomcat_ver
-download org.apache.tomcat.embed tomcat-embed-websocket $tomcat_ver
-download org.beangle.sas beangle-sas-engine $beangle_sas_ver
+doc_base="$sas_home/webapps/$context_path"
+rm -rf $doc_base
+mkdir -p $doc_base
+unzip $destfile -d $doc_base > /dev/null 2>&1
 
-bootpath="${bootpath:1}" #omit head :
-#echo java -server -cp "$bootpath" $options "org.beangle.sas.engine.tomcat.Bootstrap" $args $destfile
-java -server -cp "$bootpath" $options "org.beangle.sas.engine.tomcat.Bootstrap" $args $destfile
+if [ $? -ne 0 ]; then
+  echo "unzip failed: $destfile -d $doc_base" >&2
+  exit 1
+fi
+
+bootinfo=$(java -cp "$bootpath" org.beangle.boot.launcher.Classpath $doc_base --local=$M2_REPO)
+
+if [ $? = 0 ]; then
+  mainclass="org.beangle.sas.engine.tomcat.Bootstrap"
+  classpath="${bootinfo#*@}"
+  classpath=$classpath":"$(local_file org.apache.tomcat.embed tomcat-embed-core $tomcat_ver)
+  classpath=$classpath":"$(local_file org.apache.tomcat.embed tomcat-embed-websocket $tomcat_ver)
+  classpath=$classpath":"$(local_file org.beangle.sas beangle-sas-engine $beangle_sas_ver)
+  java -cp "$classpath" $options "$mainclass" --base=$sas_home $args
+else
+   echo "launch failed."
+fi

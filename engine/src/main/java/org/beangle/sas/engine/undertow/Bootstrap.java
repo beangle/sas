@@ -38,11 +38,7 @@ public class Bootstrap {
       logger.severe("port " + Math.abs(config.port) + " is not available.");
       return;
     }
-    File baseDir = config.createTempDir("undertow");
-    logger.info("create base dir: " + baseDir.getAbsolutePath());
-    new File(baseDir, "webapps").mkdirs();
-    new File(baseDir, "temp").mkdirs();
-    Undertow undertow = new UndertowServerBuilder(config).build(baseDir.getAbsolutePath());
+    Undertow undertow = new UndertowServerBuilder(config).build(config.base);
     final UndertowServer ts = new UndertowServer(undertow);
     ts.start();
     var duration = (System.currentTimeMillis() - startAt) / 1000.0;
@@ -53,7 +49,8 @@ public class Bootstrap {
       @Override
       public void run() {
         ts.shutdown();
-        Tools.delete(baseDir);
+        if (null != config.docBase)
+          Tools.delete(new File(config.docBase));
       }
     }));
     Desktops.openBrowser(url);

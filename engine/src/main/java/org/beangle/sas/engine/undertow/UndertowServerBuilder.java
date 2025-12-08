@@ -58,7 +58,7 @@ public class UndertowServerBuilder {
     Integer directBuffers = config.getInt("direct-buffers");
     if (null != directBuffers) builder.setBufferSize(directBuffers);
 
-    builder.addHttpListener(config.port, config.hostname);
+    builder.addHttpListener(config.port, null);
     builder.setServerOption(UndertowOptions.SHUTDOWN_TIMEOUT, 0);
 //    builder.setServerOption(UndertowOptions.ENABLE_HTTP2, http2.isEnabled());
     ServletContainer sc = Servlets.newContainer();

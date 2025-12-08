@@ -25,9 +25,9 @@ ThisBuild / homepage := Some(url("https://beangle.github.io/sas/index.html"))
 ThisBuild / crossPaths := false
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-val beangle_commons_ver = "5.6.32"
-val beangle_template_ver = "0.2.0"
-val beangle_boot_ver = "0.1.19"
+val beangle_commons_ver = "5.6.33"
+val beangle_template_ver = "0.2.1"
+val beangle_boot_ver = "0.1.21"
 val apache_tomcat_ver = "11.0.14"
 val io_undertow_ver = "2.3.20.Final"
 

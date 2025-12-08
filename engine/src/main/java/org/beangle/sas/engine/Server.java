@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public interface Server {
   void start();
@@ -29,29 +30,19 @@ public interface Server {
   void shutdown();
 
   class Config {
+    public final String base;
     public final String contextPath;
-    public final String docBase;
     public final int port;
-    public String hostname;
     public boolean devMode = false;
-    public boolean jspSupport = false;
     public boolean defaultServletSupport = true;
     public int defaultSessionTimeout = 30;//minutes
-    public String unpack = "";
     public Map<String, String> properties = new HashMap<String, String>();
+    public String docBase;
 
-    public Config(String contextPath, int port) {
-      this(contextPath, port, null);
-    }
-
-    public Config(String contextPath, int port, String docBase) {
+    public Config(String base, String contextPath, int port) {
+      this.base = base;
       this.contextPath = contextPath;
       this.port = port;
-      this.docBase = docBase;
-    }
-
-    public boolean embedMode() {
-      return null == docBase;
     }
 
     public Integer getInt(String propertyName) {
@@ -60,14 +51,31 @@ public interface Server {
       else return Integer.valueOf(v);
     }
 
-    public final File createTempDir(String prefix) {
+    public String getDefaultDocBase() {
+      if (contextPath.isEmpty() || contextPath.equals("/")) {
+        return base + "/webapps/ROOT";
+      } else {
+        return base + "/webapps/" + contextPath.substring(1).replace('/', '#');
+      }
+    }
+
+    public static File initBase(String base) {
+      var logger = Logger.getLogger(Server.class.toString());
       try {
-        File tempDir = Files.createTempDirectory(prefix + "." + port + ".").toFile();
-        tempDir.deleteOnExit();
-        return tempDir;
+        File baseDir = null;
+        if (null == base) {
+          baseDir = Files.createTempDirectory("sas").toFile();
+          logger.info("create base dir: " + baseDir.getAbsolutePath());
+          baseDir.deleteOnExit();
+        } else {
+          baseDir = new File(base);
+          baseDir.mkdirs();
+        }
+        new File(baseDir, "webapps").mkdirs();
+        new File(baseDir, "temp").mkdirs();
+        return baseDir;
       } catch (IOException ex) {
-        throw new RuntimeException(
-          "Unable to create tempDir. java.io.tmpdir is set to " + System.getProperty("java.io.tmpdir"), ex);
+        throw new RuntimeException("Unable to create baseDir. java.io.tmpdir is set to " + System.getProperty("java.io.tmpdir"), ex);
       }
     }
   }

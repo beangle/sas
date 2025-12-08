@@ -38,18 +38,17 @@ public class Bootstrap {
       logger.severe("port " + Math.abs(config.port) + " is not available.");
       return;
     }
-    File baseDir = config.createTempDir("tomcat");
-    logger.info("create base dir: " + baseDir.getAbsolutePath());
-    new File(baseDir, "webapps").mkdirs();
-    Tomcat tomcat = new TomcatServerBuilder(config).build(baseDir.getAbsolutePath());
+    Tomcat tomcat = new TomcatServerBuilder(config).build(config.base);
     final TomcatServer ts = new TomcatServer(tomcat);
     ts.start();
     var duration = (System.currentTimeMillis() - startAt) / 1000.0;
     var url = "http://localhost:" + config.port + config.contextPath;
     logger.info("Tomcat started in " + duration + "s, open " + url);
+
     Runtime.getRuntime().addShutdownHook(new Thread(() -> {
       ts.shutdown();
-      Tools.delete(baseDir);
+      if (null != config.docBase)
+        Tools.delete(new File(config.docBase));
     }));
     Desktops.openBrowser(url);
   }

@@ -20,7 +20,7 @@ package org.beangle.sas.engine;
 public class CmdOptions {
 
   public static Server.Config parse(String[] args) {
-    String docBase = null;
+    String base = null;
     String path = "";
     int port = -1;
     boolean devMode = false;
@@ -33,11 +33,11 @@ public class CmdOptions {
         } else if (arg.startsWith("--dev=")) {
           devMode = Boolean.parseBoolean(arg.substring("--dev=".length()));
           if (devMode) EnvProfile.enableDevMode();
+        } else if (arg.startsWith("--base=")) {
+          base = arg.substring("--base=".length()).trim();
         }
       } else {
-        if (!arg.startsWith("-")) {
-          docBase = arg;
-        }
+        System.out.println("ignore param " + arg);
       }
     }
     if (port == -1) {
@@ -50,11 +50,8 @@ public class CmdOptions {
         port = -Math.abs(port);
       }
     }
-    Server.Config config = new Server.Config(path, port, docBase);
-    if (null != docBase) {
-      if (Tools.isLibEmpty(docBase)) config.unpack = "false";
-    }
 
+    Server.Config config = new Server.Config(Server.Config.initBase(base).getAbsolutePath(), path, port);
     config.devMode = devMode || EnvProfile.isDevMode();
     return config;
   }
