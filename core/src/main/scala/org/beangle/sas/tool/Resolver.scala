@@ -25,7 +25,7 @@ import org.beangle.commons.lang.Strings
 import org.beangle.commons.lang.Strings.substringAfterLast
 import org.beangle.commons.net.Networks
 import org.beangle.commons.net.http.{HttpMethods, HttpUtils}
-import org.beangle.sas.config.{ArchiveURI, Container, SnapshotRepo, Webapp}
+import org.beangle.sas.config.{ArchiveURI, Container, Webapp}
 
 import java.io.{File, FileInputStream, FileOutputStream}
 import java.net.URL
@@ -55,6 +55,7 @@ object Resolver {
       }
     }
 
+    //两个repo会配置在server.xml中的Repository和SapshotRepo节点上
     val missing = resolve(sasHome, container.repository.toRelease, container.snapshotRepo.toSnapshot, webapps.toSeq)
     System.exit(if missing.nonEmpty then -1 else 0)
   }

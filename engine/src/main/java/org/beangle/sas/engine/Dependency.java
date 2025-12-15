@@ -25,7 +25,6 @@ import java.util.*;
 
 public class Dependency {
   public static final String DependenciesFile = "META-INF/beangle/dependencies";
-  public static final String OldDependenciesFile = "META-INF/beangle/container.dependencies";
 
   public static class Resolver {
     /**
@@ -105,6 +104,14 @@ public class Dependency {
       this.snapshotBase = snapshotBase;
     }
 
+    /**
+     * 查找工具的文件路径
+     * 如果是SNAPSHOT版本，从snapshotBase(webapps)和DefaultSnapshotBase(.m2/snapshots)中找出最新的
+     * 如果是常规版本，从base对应的maven本地仓库中查找
+     *
+     * @param artifact snapshot/normal
+     * @return
+     */
     public String path(Artifact artifact) {
       if (artifact.version.endsWith("SNAPSHOT")) {
         return findLatest(artifact);
@@ -114,17 +121,25 @@ public class Dependency {
       }
     }
 
+    /**
+     * 从本地仓库（snapshotBase/DefaultSnapshotBase）中，查找最新的工件对应的文件
+     *
+     * @param artifact
+     * @return
+     */
     private String findLatest(Artifact artifact) {
       var tmpFile = new File(snapshotBase + "/" + artifact.artifactId + "-" + artifact.version + "." + artifact.packaging);
       var parent =
         new File(getDefaultSnapshotBase() + "/" + artifact.groupId.replace('.', '/') + "/" + artifact.artifactId + "/"
           + artifact.version + "/");
+      //查找该SNAPSHOT版本对应的文件夹下的最新版本
       if (parent.exists()) {
         var versions = parent.list();
-        if (null == versions) {
+        if (null == versions || versions.length == 0) {
           return tmpFile.getAbsolutePath();
         } else {
           Arrays.sort(versions);
+          //查找版本最大的一个，最大即最新
           var newest = new File(parent.getAbsolutePath() + "/" + versions[versions.length - 1]);
           if (tmpFile.exists()) {
             if (tmpFile.lastModified() > newest.lastModified()) {
@@ -135,7 +150,6 @@ public class Dependency {
           } else {
             return newest.getAbsolutePath();
           }
-
         }
       } else {
         return tmpFile.getAbsolutePath();

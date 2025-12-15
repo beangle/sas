@@ -33,8 +33,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 在Tomcat容器环境下，加载war中的依赖，扩充原本的classpath
- * 所需要运行在sas环境中
+ * 在Tomcat容器环境下，加载war中的依赖，扩充原本的classpath,需要运行在sas环境中
+ * 加载分为loader上配置的libs额外jar以及META-INF/beangle/dependencies,两部分
+ * 该类只负责解析这个依赖，查找具体的文件路径，添加到classpath中，但不负责下载，遇到不存在的jar会直接报错
  */
 public class DependencyClassLoader extends ParallelWebappClassLoader {
 
@@ -57,11 +58,8 @@ public class DependencyClassLoader extends ParallelWebappClassLoader {
     var libs = ctx.findParameter(ExtendableWebappLoader.ExtendedLibsName);
     ctx.removeParameter(ExtendableWebappLoader.ExtendedLibsName);
 
-    URL resource = getResource(Dependency.OldDependenciesFile);
-    if (null == resource) {
-      resource = getResource(Dependency.DependenciesFile);
-      if (null == resource) return;
-    }
+    URL resource = getResource(Dependency.DependenciesFile);
+    if (null == resource) return;
     normalizeBase();
 
     //合并启动参数和war中的依赖
