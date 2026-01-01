@@ -108,7 +108,7 @@ start(){
     COMMAND=$(cat "$SERVER_BASE/bin/command.txt")
     eval "$COMMAND" --server "$SERVER_BASE/conf/server.xml"  "$SERVER_OPTS" >> "$SERVER_OUT" 2>&1 "&"
   else
-    echo "Unrecognized engine,launch is aborted."
+    echo "Unrecognized engine,$SERVER_NAME's launching is aborted."
     return 1
   fi
 

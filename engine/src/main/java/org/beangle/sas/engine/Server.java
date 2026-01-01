@@ -40,10 +40,22 @@ public interface Server {
     public Map<String, String> properties = new HashMap<String, String>();
     public String docBase;
 
+
     public Config(String base, String contextPath, int port) {
       this.base = base;
-      this.contextPath = contextPath;
+      this.contextPath = normalizePath(contextPath);
       this.port = port;
+    }
+
+    public static String normalizePath(String p) {
+      if (p == null || p.equals("/")) return "";
+      else {
+        String path = p;
+        if (!path.startsWith("/")) path = "/" + path;
+        if (path.endsWith("/")) path = path.substring(0, path.length() - 1);
+        path = path.replaceAll("//", "/");
+        return path;
+      }
     }
 
     public Integer getInt(String propertyName) {
