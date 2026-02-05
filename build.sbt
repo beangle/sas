@@ -2,7 +2,7 @@ import org.beangle.parent.Dependencies.*
 import org.beangle.parent.Settings.*
 
 ThisBuild / organization := "org.beangle.sas"
-ThisBuild / version := "0.13.9-SNAPSHOT"
+ThisBuild / version := "0.13.9"
 
 ThisBuild / scmInfo := Some(
   ScmInfo(
@@ -25,11 +25,11 @@ ThisBuild / homepage := Some(url("https://beangle.github.io/sas/index.html"))
 ThisBuild / crossPaths := false
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-val beangle_commons_ver = "5.6.33"
-val beangle_template_ver = "0.2.1"
-val beangle_boot_ver = "0.1.21"
-val apache_tomcat_ver = "11.0.14"
-val io_undertow_ver = "2.3.20.Final"
+val beangle_commons_ver = "6.0.1"
+val beangle_template_ver = "0.2.4"
+val beangle_boot_ver = "0.1.25"
+val apache_tomcat_ver = "11.0.18"
+val io_undertow_ver = "2.3.22.Final"
 
 val beangle_commons = "org.beangle.commons" % "beangle-commons" % beangle_commons_ver
 val beangle_boot = "org.beangle.boot" % "beangle-boot" % beangle_boot_ver
@@ -38,7 +38,7 @@ val beangle_template = "org.beangle.template" % "beangle-template" % beangle_tem
 val tomcat_juli = "org.apache.tomcat" % "tomcat-juli" % apache_tomcat_ver
 val undertow_servlet = "io.undertow" % "undertow-servlet" % io_undertow_ver % "optional"
 val tomcat_embeded_core = "org.apache.tomcat.embed" % "tomcat-embed-core" % apache_tomcat_ver % "optional" exclude("org.apache.tomcat", "tomcat-annotations-api")
-val commonDeps = Seq(beangle_commons, beangle_boot, scalaxml, scalatest)
+val commonDeps = Seq(beangle_commons, beangle_boot, scalatest)
 val jcl_over_slf4j = "org.slf4j" % "jcl-over-slf4j" % "2.0.17"
 
 lazy val root = (project in file("."))

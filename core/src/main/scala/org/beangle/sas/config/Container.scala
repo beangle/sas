@@ -22,12 +22,13 @@ import org.beangle.commons.lang.Numbers.toInt
 import org.beangle.commons.lang.Strings.{isEmpty, isNotEmpty}
 import org.beangle.commons.lang.{Numbers, Strings}
 import org.beangle.commons.logging.Logging
+import org.beangle.commons.xml.Node
 
 import scala.collection.mutable
 
 object Container extends Logging {
 
-  def apply(xml: scala.xml.Elem): Container = {
+  def apply(xml: Node): Container = {
     val conf = new Container
     val sasVersion = (xml \ "@version").text
     if (isEmpty(sasVersion)) {
@@ -73,7 +74,7 @@ object Container extends Logging {
       }
       (engineElem \ "Listener").foreach { lsnElem =>
         val listener = new Listener((lsnElem \ "@className").text)
-        for ((k, v) <- lsnElem.attributes.asAttrMap -- Set("className")) {
+        for ((k, v) <- lsnElem.attrs.toMap -- Set("className")) {
           listener.properties.put(k, v)
         }
         engine.listeners += listener
@@ -83,14 +84,14 @@ object Container extends Logging {
         val context = new Context
         (ctxElem \ "Loader").foreach { ldElem =>
           val loader = new Loader((ldElem \ "@className").text)
-          for ((k, v) <- ldElem.attributes.asAttrMap -- Set("className")) {
+          for ((k, v) <- ldElem.attrs.toMap -- Set("className")) {
             loader.properties.put(k, v)
           }
           context.loader = loader
         }
         (ctxElem \ "JarScanner").foreach { scanElem =>
           val jarScanner = new JarScanner()
-          for ((k, v) <- scanElem.attributes.asAttrMap -- Set("className")) {
+          for ((k, v) <- scanElem.attrs.toMap -- Set("className")) {
             jarScanner.properties.put(k, v)
           }
           context.jarScanner = jarScanner
@@ -116,7 +117,7 @@ object Container extends Logging {
     // 4. register resources
     (xml \ "Resources" \ "Resource") foreach { resourceElem =>
       val ds = new Resource((resourceElem \ "@name").text)
-      for ((k, v) <- resourceElem.attributes.asAttrMap -- Set("name")) {
+      for ((k, v) <- resourceElem.attrs.toMap -- Set("name")) {
         ds.properties.put(k, v)
       }
       conf.resources.put(ds.name, ds)
@@ -192,7 +193,7 @@ object Container extends Logging {
     // 6. register webapps and deployments
     (xml \ "Webapps" \ "Webapp").foreach { webappElem =>
       val app = new Webapp((webappElem \ "@uri").text)
-      for ((k, v) <- webappElem.attributes.asAttrMap -- Set("name", "uri", "reloadable", "path", "runAt", "docBase", "libs")) {
+      for ((k, v) <- webappElem.attrs.toMap -- Set("name", "uri", "reloadable", "path", "runAt", "docBase", "libs")) {
         app.properties.put(k, v)
       }
       val libs = (webappElem \ "@libs").text
@@ -201,9 +202,9 @@ object Container extends Logging {
       }
       (webappElem \ "ResourceRef").foreach { dsElem => app.resources += conf.resources((dsElem \ "@ref").text) }
       (webappElem \ "Realm").foreach { realmElem =>
-        app.realms = realmElem.toString()
+        app.realms = realmElem.toString
       }
-      (webappElem \ "resolveSupport").foreach { resolveElem => app.resolveSupport = resolveElem.toString().toBoolean }
+      (webappElem \ "resolveSupport").foreach { resolveElem => app.resolveSupport = resolveElem.toString.toBoolean }
       app.updatePath((webappElem \ "@path").text)
       val runAt = (webappElem \ "@runAt").text
       Strings.split(runAt) foreach { s =>
@@ -288,7 +289,7 @@ object Container extends Logging {
     conf
   }
 
-  private def readHttpConnector(elem: scala.xml.Node, http: HttpConnector): Unit = {
+  private def readHttpConnector(elem: Node, http: HttpConnector): Unit = {
     if ((elem \ "@enableLookups").nonEmpty) http.enableLookups = (elem \ "@enableLookups").text == "true"
     if ((elem \ "@acceptCount").nonEmpty) http.acceptCount = Some(toInt((elem \ "@acceptCount").text))
     if ((elem \ "@maxThreads").nonEmpty) http.maxThreads = toInt((elem \ "@maxThreads").text)

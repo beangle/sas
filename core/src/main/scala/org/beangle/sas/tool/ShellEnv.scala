@@ -18,6 +18,7 @@
 package org.beangle.sas.tool
 
 import org.beangle.commons.logging.Logging
+import org.beangle.commons.xml.Document
 import org.beangle.sas.config.Container
 import org.beangle.template.freemarker.Configurator
 
@@ -37,7 +38,7 @@ trait ShellEnv extends Logging {
     val target = new File(workdir + configFile)
     if (target.exists) {
       logger.info(s"Read config file ${target.getName}")
-      container = Container(scala.xml.XML.load(new FileInputStream(target)))
+      container = Container(Document.parse(target))
     } else {
       logger.error(s"Missing config file ${target.getName}")
     }

@@ -21,6 +21,7 @@ import org.beangle.boot.artifact.Repo
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.io.Dirs
 import org.beangle.commons.net.Networks
+import org.beangle.commons.xml.Document
 import org.beangle.sas.config.{Container, Engine, EngineType, Server}
 import org.beangle.sas.maker.{TomcatMaker, VibedMaker}
 
@@ -34,11 +35,10 @@ object Maker {
       return
     }
     val configFile = new File(args(0))
-    val container = Container(scala.xml.XML.load(new FileInputStream(configFile)))
+    val container = Container(Document.parse(configFile))
     val serverPattern = args(1)
     val sasHome = configFile.getParentFile.getParentFile.getCanonicalPath
     make(container, sasHome, serverPattern)
-
   }
 
   def make(container: Container, sasHome: String, serverPattern: String): Unit = {
@@ -46,7 +46,7 @@ object Maker {
     val snapshotRepo = container.snapshotRepo.toSnapshot
 
     //1. catch ips servers and engines
-    val ips = Networks.localIPs
+    val ips = Networks.addresses(1)
     val engines = Collections.newSet[Engine]
     val servers = Collections.newBuffer[Server]
     container.farms foreach { farm =>

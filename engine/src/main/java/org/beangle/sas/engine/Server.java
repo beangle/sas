@@ -40,7 +40,6 @@ public interface Server {
     public Map<String, String> properties = new HashMap<String, String>();
     public String docBase;
 
-
     public Config(String base, String contextPath, int port) {
       this.base = base;
       this.contextPath = normalizePath(contextPath);

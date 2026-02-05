@@ -24,7 +24,7 @@ public class SasVersion {
       / __)  /__\\  / __)
       \\__ \\ /(__)\\ \\__ \\
       (___/(__)(__)(___/
-      beangle sas 0.13.8""";
+      beangle sas 0.13.9""";
     if (null != comments && !comments.isEmpty()) {
       str += "(" + comments + ")";
     }

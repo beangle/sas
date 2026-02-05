@@ -59,7 +59,7 @@ object VibedMaker {
     data.put("container", container)
     data.put("farm", server.farm)
     data.put("server", server)
-    data.put("ips", Networks.localIPs)
+    data.put("ips", Networks.addresses(1))
     data.put("webapps", container.getWebapps(server))
     val sw = new StringWriter()
     val freemarkerTemplate = SasTool.templateCfg.getTemplate(s"${farm.engine.typ}/conf/server.xml.ftl")

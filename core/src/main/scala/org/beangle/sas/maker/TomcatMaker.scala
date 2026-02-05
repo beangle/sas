@@ -19,10 +19,8 @@ package org.beangle.sas.maker
 
 import org.beangle.boot.artifact.*
 import org.beangle.commons.activation.MediaTypes
-import org.beangle.commons.config.Resources
 import org.beangle.commons.file.zip.Zipper
-import org.beangle.commons.io.{Dirs, Files, IOs}
-import org.beangle.commons.lang.ClassLoaders.getResource
+import org.beangle.commons.io.{Dirs, Files, IOs, Resources}
 import org.beangle.commons.lang.{ClassLoaders, Strings}
 import org.beangle.sas.config.*
 import org.beangle.sas.tool.SasTool
@@ -61,9 +59,9 @@ object TomcatMaker {
     //添加beangle-sas-engine and logback-access(bump version)
     engine.jars += Jar.gav("org.beangle.sas:beangle-sas-engine:" + container.version)
     if (engine.typ == EngineType.Tomcat) {
-      engine.jars += Jar.gav("ch.qos.logback:logback-core:1.5.21")
-      engine.jars += Jar.gav("ch.qos.logback.access:logback-access-common:2.0.6")
-      engine.jars += Jar.gav("ch.qos.logback.access:logback-access-tomcat:2.0.6")
+      engine.jars += Jar.gav("ch.qos.logback:logback-core:1.5.27")
+      engine.jars += Jar.gav("ch.qos.logback.access:logback-access-common:2.0.9")
+      engine.jars += Jar.gav("ch.qos.logback.access:logback-access-tomcat:2.0.9")
     }
   }
 
@@ -175,8 +173,7 @@ object TomcatMaker {
   protected[maker] def genEngineConfig(engine: Engine, engineDir: String): Unit = {
     val data = new collection.mutable.HashMap[String, Any]()
     data.put("engine", engine)
-    val mimetypes = MediaTypes.buildTypes(new Resources(None,
-      List.empty, getResource("sas/mime.types")))
+    val mimetypes = MediaTypes.buildTypes(Resources.load("classpath:sas/mime.types"))
     data.put("mimetypes", mimetypes)
     val envTemplate = SasTool.templateCfg.getTemplate(s"${engine.typ}/conf/web.xml.ftl")
     val nsw = new StringWriter()

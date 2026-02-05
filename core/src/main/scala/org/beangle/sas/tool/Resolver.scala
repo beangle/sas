@@ -25,10 +25,11 @@ import org.beangle.commons.lang.Strings
 import org.beangle.commons.lang.Strings.substringAfterLast
 import org.beangle.commons.net.Networks
 import org.beangle.commons.net.http.{HttpMethods, HttpUtils}
+import org.beangle.commons.xml.Document
 import org.beangle.sas.config.{ArchiveURI, Container, Webapp}
 
-import java.io.{File, FileInputStream, FileOutputStream}
-import java.net.URL
+import java.io.{File, FileOutputStream}
+import java.net.{HttpURLConnection, URL}
 import scala.collection.mutable
 
 /**
@@ -43,11 +44,11 @@ object Resolver {
       System.exit(-1)
     }
     val configFile = new File(args(0))
-    val container = Container(scala.xml.XML.load(new FileInputStream(configFile)))
+    val container = Container(Document.parse(configFile))
     val sasHome = configFile.getParentFile.getParentFile.getCanonicalPath
 
     //try to find webapps which run at these ips
-    val ips = Networks.localIPs
+    val ips = Networks.addresses(1)
     val webapps = Collections.newSet[Webapp]
     container.farms foreach { farm =>
       for (server <- farm.servers; if ips.contains(server.host.ip)) {
@@ -134,7 +135,7 @@ object Resolver {
             localFile.getParentFile.mkdirs()
             val snapshotUrl = Strings.substringBeforeLast(remoteUrl, "/") + "/" + status._2
             println(s"Downloading ${snapshotUrl}")
-            HttpUtils.download(Networks.openURL(snapshotUrl), new File(localFile.getParent + "/" + status._2))
+            HttpUtils.download(snapshotUrl, new File(localFile.getParent + "/" + status._2))
           }
         }
       }
@@ -143,7 +144,8 @@ object Resolver {
 
   private def access(url: URL): (Long, String) = {
     try {
-      val hc = HttpUtils.followRedirect(url.openConnection(), HttpMethods.HEAD)
+      val hc = url.openConnection().asInstanceOf[HttpURLConnection]
+      hc.setRequestMethod(HttpMethods.HEAD)
       val rc = hc.getResponseCode
       import java.net.HttpURLConnection.*
       rc match {

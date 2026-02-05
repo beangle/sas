@@ -25,7 +25,7 @@ object Version {
   def main(args: Array[String]): Unit = {
     val version = findJarVersion(Version.getClass)
     println(org.beangle.sas.Version.logo(version))
-    println("hosts:" + Networks.localIPs.toBuffer.sorted.mkString(","))
+    println("hosts:" + Networks.addresses(1).toBuffer.sorted.mkString(","))
   }
 
   private def findJarVersion(clazz: Class[_]): String = {
