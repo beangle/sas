@@ -39,6 +39,8 @@ defaults
     stats realm haproxy-user
     stats auth ${proxy.status.auth}
 [/#if]
+    compression algo gzip
+    compression type text/html text/css text/plain text/xml application/json application/javascript application/xml+rss application/vnd.api+json
 
 frontend main
     bind *:${proxy.httpPort}
