@@ -30,6 +30,7 @@ import org.beangle.sas.engine.Server;
 
 import java.util.ArrayList;
 import java.util.ServiceLoader;
+import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
 public class TomcatServerBuilder {
@@ -80,13 +81,16 @@ public class TomcatServerBuilder {
     if (config.devMode) {
       protocol.setTcpNoDelay(true);// 禁用 TCP 延迟（Nagle 算法），提升实时性
     }
-    //最大工作线程数
-    var maxThreads = config.getInt("connector.maxThreads");
-    if (null != maxThreads) protocol.setMaxThreads(maxThreads);
+    //启用虚拟线程
+    protocol.setExecutor(Executors.newThreadPerTaskExecutor(
+      Thread.ofVirtual().name("tomcat-vt-", 0).factory()
+    ));
+
+    protocol.setMaxConnections(config.getInt("connector.maxConnections", 10000));
 
     //等待队列大小，超过最大线程时，最多排队 acceptCount 个请求
-    var acceptCount = config.getInt("connector.acceptCount");
-    if (null != acceptCount) protocol.setAcceptCount(acceptCount);
+    var acceptCount = config.getInt("connector.acceptCount", 1000);
+    protocol.setAcceptCount(acceptCount);
 
     var connectionTimeout = config.getInt("connector.connectionTimeout");
     if (null != connectionTimeout) protocol.setConnectionTimeout(connectionTimeout);

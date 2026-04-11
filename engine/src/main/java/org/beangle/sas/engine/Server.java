@@ -63,6 +63,12 @@ public interface Server {
       else return Integer.valueOf(v);
     }
 
+    public int getInt(String propertyName, int defaultValue) {
+      String v = properties.get(propertyName);
+      if (null == v || v.isEmpty()) return defaultValue;
+      else return Integer.parseInt(v);
+    }
+
     public String getDefaultDocBase() {
       if (contextPath.isEmpty() || contextPath.equals("/")) {
         return base + "/webapps/ROOT";

@@ -31,14 +31,14 @@ object Firewall extends ShellEnv {
     workdir = if (args.length == 0) SystemInfo.user.dir else args(0)
     read() foreach { container =>
       info()
-      shell("firewall> ", Set("exit", "quit", "q"), {
+      shell("firewall> ", Set("exit", "quit", "q")) {
         case "?" => printHelp()
         case "info" => info()
         case "help" => printHelp()
         case "conf" => println(generate())
         case "apply" => apply()
         case t => if (isNotEmpty(t)) println(t + ": command not found...")
-      })
+      }
     }
   }
 
