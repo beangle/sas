@@ -23,7 +23,7 @@ import org.beangle.commons.io.Dirs
 import org.beangle.commons.net.Networks
 import org.beangle.commons.xml.Document
 import org.beangle.sas.config.{Container, Engine, EngineType, Server}
-import org.beangle.sas.maker.{TomcatMaker, VibedMaker}
+import org.beangle.sas.maker.TomcatMaker
 
 import java.io.{File, FileInputStream}
 
@@ -66,8 +66,6 @@ object Maker {
         case EngineType.Tomcat =>
           TomcatMaker.applyEngineDefault(container, engine)
           TomcatMaker.makeEngine(sasHome, engine, releaseRepo)
-        case EngineType.Vibed =>
-          VibedMaker.makeEngine(sasHome, engine, releaseRepo)
         case _ =>
           System.err.println("Cannot recognize engine type " + engine.typ)
           System.exit(1)
@@ -104,7 +102,6 @@ object Maker {
     } else {
       server.farm.engine.typ match {
         case EngineType.Tomcat => TomcatMaker.makeServer(sasHome, container, server)
-        case EngineType.Vibed => VibedMaker.makeServer(sasHome, container, server)
         case _ =>
       }
     }

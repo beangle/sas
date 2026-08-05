@@ -26,7 +26,6 @@ object EngineType {
   val Tomcat = "tomcat"
   val Undertow = "undertow"
   val Jetty = "jetty"
-  val Vibed = "vibed"
   val Any = "any"
 }
 

@@ -152,20 +152,12 @@ object Container extends Logging {
         farm.http = http
       }
 
-      (farmElem \ "Http2") foreach { elem =>
-        val http2 = new Http2Connector
-        readHttpConnector(elem, http2)
-        if ((elem \ "@caKeyFile").nonEmpty) http2.caKeyFile = (elem \ "@caKeyFile").text
-        if ((elem \ "@caFile").nonEmpty) http2.caFile = (elem \ "@caFile").text
-        farm.http2 = http2
-      }
       (farmElem \ "ProxyOptions") foreach { selem =>
         farm.proxyOptions = Some(trimlines(selem.text))
       }
       (farmElem \ "Server") foreach { serverElem =>
         val server = new Server(farm, (serverElem \ "@name").text)
         server.http = toInt((serverElem \ "@http").text)
-        server.http2 = toInt((serverElem \ "@http2").text)
         farm.servers += server
 
         val host = (serverElem \ "@host").text
@@ -292,15 +284,10 @@ object Container extends Logging {
   private def readHttpConnector(elem: Node, http: HttpConnector): Unit = {
     if ((elem \ "@enableLookups").nonEmpty) http.enableLookups = (elem \ "@enableLookups").text == "true"
     if ((elem \ "@acceptCount").nonEmpty) http.acceptCount = Some(toInt((elem \ "@acceptCount").text))
-    if ((elem \ "@maxThreads").nonEmpty) http.maxThreads = toInt((elem \ "@maxThreads").text)
     if ((elem \ "@maxConnections").nonEmpty) http.maxConnections = Some(toInt((elem \ "@maxConnections").text))
-    if ((elem \ "@minSpareThreads").nonEmpty) http.minSpareThreads = toInt((elem \ "@minSpareThreads").text)
 
     if ((elem \ "@disableUploadTimeout").nonEmpty) http.disableUploadTimeout = (elem \ "@disableUploadTimeout").text == "true"
     if ((elem \ "@connectionTimeout").nonEmpty) http.connectionTimeout = toInt((elem \ "@connectionTimeout").text)
-    if ((elem \ "@compression").nonEmpty) http.compression = (elem \ "@compression").text
-    if ((elem \ "@compressionMinSize").nonEmpty) http.compressionMinSize = toInt((elem \ "@compressionMinSize").text)
-    if ((elem \ "@compressionMimeType").nonEmpty) http.compressionMimeType = (elem \ "@compressionMimeType").text
   }
 
   private def trimlines(content: String): String = {

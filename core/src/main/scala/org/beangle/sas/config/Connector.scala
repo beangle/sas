@@ -52,30 +52,15 @@ sealed class Connector {
   var acceptCount: Option[Int] = None
 
   /**
-   * The maximum number of request processing threads to be created by this Connector,
-   * which therefore determines the maximum number of simultaneous requests that can be handled.
-   * If not specified, this attribute is set to 200. If an executor is associated with this connector,
-   * this attribute is ignored as the connector will execute tasks using the executor rather than an internal thread pool.
-   */
-  var maxThreads: Int = 200
-
-  /**
    * The maximum number of connections that the server will accept and process at any given time.
    * When this number has been reached, the server will not accept any more connections until the number of connections falls below this value.
    * The operating system may still accept connections based on the acceptCount setting.
    *
    * Default value varies by connector type.
    *
-   * For BIO the default is the value of maxThreads unless an Executor is used
-   * in which case the default will be the value of maxThreads from the executor. For NIO the default is 10000.
-   * For APR/native, the default is 8192.
+   * For NIO the default is 10000. For APR/native, the default is 8192.
    */
   var maxConnections: Option[Int] = None
-
-  /**
-   * The minimum number of threads always kept running. If not specified, the default of 10 is used.
-   */
-  var minSpareThreads: Int = 10
 }
 
 class HttpConnector extends Connector {
@@ -93,45 +78,4 @@ class HttpConnector extends Connector {
    * If not specified, this attribute is set to true which disables this longer timeout.
    */
   var disableUploadTimeout: Boolean = true
-
-  /**
-   * The Connector may use HTTP/1.1 GZIP compression in an attempt to save server bandwidth.
-   *  The acceptable values for the parameter is
-   *  "off" (disable compression),
-   *  "on" (allow compression, which causes text data to be compressed),
-   *  "force" (forces compression in all cases),
-   *  or a numerical integer value (which is equivalent to "on",
-   *   but specifies the minimum amount of data before the output is compressed).
-   *  If the content-length is not known and compression is set to "on" or more aggressive,
-   *  the output will also be compressed.
-   *  If not specified, this attribute is set to "off".
-   */
-  var compression: String = "off"
-
-  /**
-   * If compression is set to "on" then
-   * this attribute may be used to specify the minimum amount of data before the output is compressed.
-   * If not specified, this attribute is defaults to "2048"(2k).
-   */
-  var compressionMinSize: Int = 2048
-
-  /**
-   * The value is a comma separated list of MIME types for which HTTP compression may be used.
-   * The default value is text/html,text/xml,text/javascript,text/css,text/plain.
-   */
-  var compressionMimeType: String = "text/html,text/xml,text/javascript,text/css,text/plain"
-}
-
-/**
- * Http/2 Connector
- */
-class Http2Connector extends HttpConnector {
-  this.protocol = "org.apache.coyote.http11.Http11AprProtocol"
-
-  /**证书密钥文件地址*/
-  var caKeyFile: String = _
-
-  /**证书文件地址*/
-  var caFile: String = _
-
 }

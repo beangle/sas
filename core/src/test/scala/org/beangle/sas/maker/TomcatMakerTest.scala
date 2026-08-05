@@ -22,6 +22,7 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
 import java.io.File
+import java.nio.file.{Files, Path}
 
 class TomcatMakerTest extends AnyFunSpec with Matchers {
   describe("Resolver") {
@@ -38,6 +39,21 @@ class TomcatMakerTest extends AnyFunSpec with Matchers {
         TomcatMaker.doMakeEngine("/tmp/sas", engine, file)
         TomcatMaker.doMakeBase(sasHome, container, server)
       }
+    }
+
+    it("render useVirtualThreads in server.xml") {
+      val engine = new Engine("tomcat11", "tomcat", "11.0.21")
+      val farm = new Farm("farm", engine)
+      val server = new Server(farm, "server")
+      server.http = 8080
+      server.maxHeapSize = "300M"
+      val container = new Container
+      container.farms += farm
+      val target = "/tmp/sas-test"
+      TomcatMaker.genBaseConfig(container, server, target)
+      val xml = Files.readString(Path.of(target + "/servers/farm.server/conf/server.xml"))
+      xml should include("""useVirtualThreads="true"""")
+      xml should not include ("maxThreads")
     }
   }
 }

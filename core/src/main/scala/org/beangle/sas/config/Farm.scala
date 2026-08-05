@@ -46,8 +46,6 @@ object Farm {
 class Farm(var name: String, var engine: Engine) {
   /** http连接配置 */
   var http = new HttpConnector
-  /** http2连接定义 */
-  var http2: Http2Connector = _
   /** 内部服务 */
   var servers: mutable.Buffer[Server] = Collections.newBuffer[Server]
   /** 是否启用访问日志 */
@@ -63,8 +61,6 @@ class Farm(var name: String, var engine: Engine) {
 class Server(val farm: Farm, var name: String) {
   /** http/1 端口 */
   var http: Int = _
-  /** http/2 端口 */
-  var http2: Int = _
   /** 主机 */
   var host: Host = _
   /** 最大堆内存 */
