@@ -24,7 +24,7 @@ import java.net.URL
 object Version {
   def main(args: Array[String]): Unit = {
     val version = findJarVersion(Version.getClass)
-    println(org.beangle.sas.Version.logo(version))
+    println(org.beangle.sas.Logo.render(version))
     println("hosts:" + Networks.addresses(1).toBuffer.sorted.mkString(","))
   }
 
