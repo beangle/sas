@@ -173,7 +173,7 @@ object TomcatMaker {
   protected[maker] def genEngineConfig(engine: Engine, engineDir: String): Unit = {
     val data = new collection.mutable.HashMap[String, Any]()
     data.put("engine", engine)
-    val mimetypes = MediaTypes.buildTypes(Resources.load("classpath:sas/mime.types"))
+    val mimetypes = MediaTypes.build(Resources.load("classpath:sas/mime.types"))
     data.put("mimetypes", mimetypes)
     val envTemplate = SasTool.templateCfg.getTemplate(s"${engine.typ}/conf/web.xml.ftl")
     val nsw = new StringWriter()
