@@ -85,6 +85,7 @@ public class DependencyClassLoader extends ParallelWebappClassLoader {
       if (artifact.groupId.equals("org.apache.tomcat.embed")) continue;
       if (artifact.groupId.equals("org.beangle.sas")) continue;
       if (artifact.groupId.equals("io.undertow")) continue;
+      if (artifact.groupId.equals("io.undertow.ee")) continue;
       try {
         this.addURL(file.toURI().toURL());
         added.add(artifact);

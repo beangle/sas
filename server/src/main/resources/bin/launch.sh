@@ -111,18 +111,23 @@ download org.apache.tomcat.embed tomcat-embed-core $tomcat_ver
 download org.apache.tomcat.embed tomcat-embed-websocket $tomcat_ver
 
 download io.undertow undertow-core $undertow_ver
-download io.undertow undertow-servlet $undertow_ver
-download org.jboss.logging jboss-logging 3.6.1.Final
-download org.jboss.threads jboss-threads 3.7.0.Final
+download io.undertow.ee undertow-servlet $undertow_ee_ver
+download io.undertow.ee undertow-websockets $undertow_ee_ver
+download org.jboss.logging jboss-logging 3.6.3.Final
+download org.jboss.threads jboss-threads 3.9.2
 download org.jboss.xnio xnio-api 3.8.16.Final
 download org.jboss.xnio xnio-nio 3.8.16.Final
 download jakarta.annotation jakarta.annotation-api 2.1.1
+download jakarta.servlet jakarta.servlet-api 6.1.0
+download jakarta.websocket jakarta.websocket-api 2.2.0
+download jakarta.websocket jakarta.websocket-client-api 2.2.0
 download org.wildfly.client wildfly-client-config 1.0.1.Final
-download org.wildfly.common wildfly-common 1.5.4.Final
-download io.smallrye.common smallrye-common-annotation 2.6.0
-download io.smallrye.common smallrye-common-constraint 2.6.0
-download io.smallrye.common smallrye-common-cpu 2.6.0
-download io.smallrye.common smallrye-common-function 2.6.0
+download org.wildfly.common wildfly-common 2.0.1
+download io.smallrye.common smallrye-common-annotation 2.14.0
+download io.smallrye.common smallrye-common-constraint 2.14.0
+download io.smallrye.common smallrye-common-cpu 2.14.0
+download io.smallrye.common smallrye-common-function 2.14.0
+download io.smallrye.common smallrye-common-net 2.4.0
 
 bootpath="${bootpath:1}" #omit head :
 
@@ -157,18 +162,23 @@ if [ $? = 0 ]; then
     mainclass="org.beangle.sas.engine.undertow.Bootstrap"
     classpath="${bootinfo#*@}"
     classpath=$classpath":"$(local_file io.undertow undertow-core $undertow_ver)
-    classpath=$classpath":"$(local_file io.undertow undertow-servlet $undertow_ver)
-    classpath=$classpath":"$(local_file org.jboss.logging jboss-logging 3.6.1.Final)
-    classpath=$classpath":"$(local_file org.jboss.threads jboss-threads 3.7.0.Final)
+    classpath=$classpath":"$(local_file io.undertow.ee undertow-servlet $undertow_ee_ver)
+    classpath=$classpath":"$(local_file io.undertow.ee undertow-websockets $undertow_ee_ver)
+    classpath=$classpath":"$(local_file org.jboss.logging jboss-logging 3.6.3.Final)
+    classpath=$classpath":"$(local_file org.jboss.threads jboss-threads 3.9.2)
     classpath=$classpath":"$(local_file org.jboss.xnio xnio-api 3.8.16.Final)
     classpath=$classpath":"$(local_file org.jboss.xnio xnio-nio 3.8.16.Final)
     classpath=$classpath":"$(local_file jakarta.annotation jakarta.annotation-api 2.1.1)
+    classpath=$classpath":"$(local_file jakarta.servlet jakarta.servlet-api 6.1.0)
+    classpath=$classpath":"$(local_file jakarta.websocket jakarta.websocket-api 2.2.0)
+    classpath=$classpath":"$(local_file jakarta.websocket jakarta.websocket-client-api 2.2.0)
     classpath=$classpath":"$(local_file org.wildfly.client wildfly-client-config 1.0.1.Final)
-    classpath=$classpath":"$(local_file org.wildfly.common wildfly-common 1.5.4.Final)
-    classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-annotation 2.6.0)
-    classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-constraint 2.6.0)
-    classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-cpu 2.6.0)
-    classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-function 2.6.0)
+    classpath=$classpath":"$(local_file org.wildfly.common wildfly-common 2.0.1)
+    classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-annotation 2.14.0)
+    classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-constraint 2.14.0)
+    classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-cpu 2.14.0)
+    classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-function 2.14.0)
+    classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-net 2.4.0)
 
     classpath=$classpath":"$(local_file org.beangle.sas beangle-sas-engine $beangle_sas_ver)
     java -cp "$classpath" $options "$mainclass" --base=$sas_home $args

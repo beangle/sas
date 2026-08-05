@@ -29,14 +29,16 @@ val beangle_commons_ver = "6.1.0"
 val beangle_template_ver = "0.2.6"
 val beangle_boot_ver = "0.1.27"
 val apache_tomcat_ver = "11.0.21"
-val io_undertow_ver = "2.3.24.Final"
+val io_undertow_ver = "2.4.2.Final"
+val undertow_ee_ver = "2.0.1.Final"
 
 val beangle_commons = "org.beangle.commons" % "beangle-commons" % beangle_commons_ver
 val beangle_boot = "org.beangle.boot" % "beangle-boot" % beangle_boot_ver
 val beangle_template = "org.beangle.template" % "beangle-template" % beangle_template_ver
 
 val tomcat_juli = "org.apache.tomcat" % "tomcat-juli" % apache_tomcat_ver
-val undertow_servlet = "io.undertow" % "undertow-servlet" % io_undertow_ver % "optional"
+val undertow_core = "io.undertow" % "undertow-core" % io_undertow_ver % "optional"
+val undertow_servlet = "io.undertow.ee" % "undertow-servlet" % undertow_ee_ver % "optional"
 val tomcat_embeded_core = "org.apache.tomcat.embed" % "tomcat-embed-core" % apache_tomcat_ver % "optional" exclude("org.apache.tomcat", "tomcat-annotations-api")
 val commonDeps = Seq(beangle_commons, beangle_boot, scalatest)
 val jcl_over_slf4j = "org.slf4j" % "jcl-over-slf4j" % "2.0.17"
@@ -59,7 +61,7 @@ lazy val engine = (project in file("engine"))
     name := "beangle-sas-engine",
     common,
     crossPaths := false,
-    libraryDependencies ++= Seq(tomcat_embeded_core, undertow_servlet)
+    libraryDependencies ++= Seq(tomcat_embeded_core, undertow_core, undertow_servlet)
   )
 
 lazy val juli = (project in file("juli"))

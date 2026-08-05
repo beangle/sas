@@ -24,4 +24,5 @@ export logback_access_ver=2.0.9
 export freemarker_ver=2.3.34
 export commons_compress_ver=1.28.0
 export tomcat_ver=11.0.21
-export undertow_ver=2.3.24.Final
+export undertow_ver=2.4.2.Final
+export undertow_ee_ver=2.0.1.Final
