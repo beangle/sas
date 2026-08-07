@@ -23,11 +23,14 @@ import java.net.URI;
 public class Desktops {
 
   public static void openBrowser(String url) {
-    GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-    if (ge.isHeadlessInstance()) {
-      return;
-    }
     try {
+      if (GraphicsEnvironment.isHeadless()) {
+        return;
+      }
+      GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+      if (ge.isHeadlessInstance()) {
+        return;
+      }
       var desktopClass = Class.forName("java.awt.Desktop");
       var supported = (boolean) desktopClass.getMethod("isDesktopSupported").invoke(null);
       var uri = new URI(url);
@@ -44,19 +47,16 @@ public class Desktops {
         rt.exec(new String[]{"open", url});
       } else {
         var browsers = new String[]{"xdg-open", "chromium", "google-chrome", "firefox", "konqueror", "netscape", "opera", "midori"};
-        var ok = false;
         for (String b : browsers) {
           try {
             rt.exec(new String[]{b, url});
-            ok = true;
             break;
           } catch (Throwable e) {
           }
         }
-        if (!ok) throw new RuntimeException("Cannot open browser.");
       }
     } catch (Throwable e) {
-      throw new RuntimeException("Cannot open browser.", e);
+      //opening browser is optional,never block or crash server startup
     }
   }
 }

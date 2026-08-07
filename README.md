@@ -34,10 +34,12 @@ beangle-sas
 
 ### 嵌入模式（单应用启动）
 
+参数顺序无关，JVM 选项（`-Xmx`、`-D`）可放在任意位置：
+
 ```bash
 launch.sh /path/to/app.war [--port=8080] [--path=/app] [jvm_options]
-launch.sh group:artifact:version [--engine=undertow] [other_args]
-launch.sh http://host.com/path/app.war [other_args]
+launch.sh [jvm_options] group:artifact:version [--engine=undertow] [other_args]
+launch.sh http://host.com/path/app.war [--port=8080] [other_args]
 ```
 
 ### 多实例模式

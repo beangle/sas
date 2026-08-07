@@ -82,7 +82,6 @@ lazy val juli = (project in file("juli"))
       ShadeRule.rename("org.apache.commons.logging.**" -> "org.apache.juli.logging.@1").inAll,
       ShadeRule.rename("org.slf4j.**" -> "org.beangle.sas.slf4j.@1").inAll,
       ShadeRule.rename("ch.qos.logback.**" -> "org.beangle.sas.logback.@1").inAll,
-      ShadeRule.rename("logback.configurationFile" -> "juli.logback.configurationFile").inAll,
       ShadeRule.rename("logback.ContextSelector" -> "juli.logback.ContextSelector").inAll,
     ),
     assemblyMergeStrategy := {

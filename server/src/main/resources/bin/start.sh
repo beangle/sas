@@ -77,7 +77,7 @@ start(){
   fi
 
   touch "$SERVER_OUT"
-  if [ -f $dir/bin/bootstrap.jar ]; then
+  if [ -f "$SERVER_BASE/bin/bootstrap.jar" ]; then
 
     LOGGING_CONFIG="-Dnop"
     LOGGING_MANAGER="-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager"

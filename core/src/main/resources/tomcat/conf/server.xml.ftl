@@ -20,7 +20,7 @@
     <Connector port="${server.http}" protocol="HTTP/1.1"
       URIEncoding="${http.URIEncoding}" enableLookups="${http.enableLookups?c}" [#if http.acceptCount??]acceptCount="${http.acceptCount}"[/#if]
       connectionTimeout="${http.connectionTimeout}"
-      disableUploadTimeout="${http.disableUploadTimeout?c}" useVirtualThreads="true"/>
+      disableUploadTimeout="${http.disableUploadTimeout?c}" [#if farm.engine.version?starts_with("11")]useVirtualThreads="true"[/#if]/>
     [/#if]
 [#t/]
     <Engine name="Catalina" defaultHost="localhost">

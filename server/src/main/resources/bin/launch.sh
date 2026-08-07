@@ -13,8 +13,6 @@ export SAS_HOME=$(cd "$PRGDIR/../" >/dev/null; pwd)
 
 # launch classpath
 bootpath=""
-# full command line to java
-opts="$*"
 # war file,may be groupid/file/url
 warfile=""
 #contextpath
@@ -38,10 +36,10 @@ download(){
   group_id=$(echo "$1" | tr . /)
   URL="$M2_REMOTE_REPO/$group_id/$2/$3/$2-$3.jar"
   artifact_name="$2-$3.jar"
-  local_file="$M2_REPO/$group_id/$2/$3/$2-$3.jar"
-  bootpath=$bootpath":"$local_file
+  local_file_path="$M2_REPO/$group_id/$2/$3/$2-$3.jar"
+  bootpath=$bootpath":"$local_file_path
 
-  if [ ! -f $local_file ]; then
+  if [ ! -f $local_file_path ]; then
     if wget --spider $URL 2>/dev/null; then
       echo "fetching $URL"
     else
@@ -56,7 +54,7 @@ download(){
       mv $artifact_name.part $artifact_name
     fi
     mkdir -p "$M2_REPO/$group_id/$2/$3"
-    mv $artifact_name $local_file
+    mv $artifact_name $local_file_path
   fi
 }
 
@@ -69,18 +67,29 @@ extract_arg_value() {
   echo "$temp" | xargs  # 去首尾空格
 }
 
-#find warfile/content_path in all opts
+# find warfile, application args and jvm options among all opts,order independent
 parse_args(){
-  for arg in $opts
+  for arg in "$@"
   do
-    if [ "$arg" = "${arg#"-"}" ]; then
-      warfile="$arg"
-    elif [[ "$arg" == --path* ]] ; then
+    if [[ "$arg" == --path=* ]] ; then
       app_name=$(extract_arg_value "$arg")
       app_name=$(echo "$app_name" | tr '/' '#')
       app_name=${app_name#"#"}
-    elif [[ "$arg" == --engine* ]] ; then
+      args="$args $arg"
+    elif [[ "$arg" == --engine=* ]] ; then
       engine=$(extract_arg_value "$arg")
+    elif [[ "$arg" == --* ]] ; then
+      # sas options passed to Bootstrap (--port etc)
+      args="$args $arg"
+    elif [[ "$arg" == -D* || "$arg" == -X* || "$arg" == -XX* ]] ; then
+      # jvm options
+      options="$options $arg"
+    else
+      if [ -z "$warfile" ]; then
+        warfile="$arg"
+      else
+        args="$args $arg"
+      fi
     fi
   done
 
@@ -89,13 +98,9 @@ parse_args(){
     echo "Cannot find jar file in args,launch was aborted."
     exit
   fi
-
-  #get options and args of java program,(format is options warfile args)
-  options="${opts%%$warfile*}"
-  args="${opts#*$warfile}"
 }
 
-parse_args
+parse_args "$@"
 
 download org.scala-lang scala3-library_3 $scala_ver
 download org.scala-lang scala-library $scala_lib_ver
@@ -103,6 +108,7 @@ download org.beangle.commons beangle-commons $beangle_commons_ver
 download org.apache.commons commons-compress $commons_compress_ver
 download org.beangle.boot beangle-boot $beangle_boot_ver
 download org.slf4j slf4j-api $slf4j_ver
+download org.slf4j jul-to-slf4j $slf4j_ver
 download ch.qos.logback logback-core $logback_ver
 download ch.qos.logback logback-classic $logback_ver
 download org.beangle.sas beangle-sas-engine $beangle_sas_ver
@@ -160,6 +166,10 @@ if [ $? = 0 ]; then
     classpath=$classpath":"$(local_file org.apache.tomcat.embed tomcat-embed-core $tomcat_ver)
     classpath=$classpath":"$(local_file org.apache.tomcat.embed tomcat-embed-websocket $tomcat_ver)
     classpath=$classpath":"$(local_file org.beangle.sas beangle-sas-engine $beangle_sas_ver)
+    classpath=$classpath":"$(local_file org.slf4j slf4j-api $slf4j_ver)
+    classpath=$classpath":"$(local_file org.slf4j jul-to-slf4j $slf4j_ver)
+    classpath=$classpath":"$(local_file ch.qos.logback logback-core $logback_ver)
+    classpath=$classpath":"$(local_file ch.qos.logback logback-classic $logback_ver)
     java -cp "$classpath" $options "$mainclass" --base=$sas_home $args
   elif [ "$engine" = "undertow" ]; then
     mainclass="org.beangle.sas.engine.undertow.Bootstrap"
@@ -187,6 +197,10 @@ if [ $? = 0 ]; then
     classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-ref 2.4.0)
 
     classpath=$classpath":"$(local_file org.beangle.sas beangle-sas-engine $beangle_sas_ver)
+    classpath=$classpath":"$(local_file org.slf4j slf4j-api $slf4j_ver)
+    classpath=$classpath":"$(local_file org.slf4j jul-to-slf4j $slf4j_ver)
+    classpath=$classpath":"$(local_file ch.qos.logback logback-core $logback_ver)
+    classpath=$classpath":"$(local_file ch.qos.logback logback-classic $logback_ver)
     java -cp "$classpath" $options "$mainclass" --base=$sas_home $args
   else
     echo "unknown engine $engine,launch failed."

@@ -34,11 +34,6 @@ object Farm {
       farm.servers += server1
     }
     if (1 == serverCount) farm.servers.head.name = "server"
-    import EngineType.*
-    engine.typ match {
-      case Jetty | Undertow | Tomcat => Some("-Djava.awt.headless=true -Xmx1G -Xms1G")
-      case _ => None
-    }
     farm
   }
 }

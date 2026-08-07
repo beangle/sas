@@ -35,21 +35,20 @@ public class SLF4JConfigurator extends ContextAwareBase implements Configurator 
 
   @Override
   public ExecutionStatus configure(LoggerContext lc) {
-    String confProperty = System.getProperty("juli.logback.configurationFile");
     var sasHome = System.getProperty("sas.home");
-    String url = null;
+    String url;
     try {
-      if (null == confProperty) {
-        File confFile = new File(sasHome + "/conf/logback-catalina.xml");
-        if (confFile.exists()) {
-          url = confFile.toURI().toURL().toString();
-        } else {
-          url = getClass().getClassLoader().getResource("logback-catalina.xml").toString();
-        }
+      File confFile = new File(sasHome + "/conf/logback-catalina.xml");
+      if (confFile.exists()) {
+        url = confFile.toURI().toURL().toString();
+      } else {
+        var resource = getClass().getClassLoader().getResource("logback-catalina.xml");
+        if (null == resource) throw new RuntimeException("Cannot find logback-catalina.xml in classpath");
+        url = resource.toString();
       }
       JoranConfigurator configurator = new JoranConfigurator();
       configurator.setContext(lc);
-      lc.getStatusManager().add(new InfoStatus("Found resource [" + url.toString() + "]", this));
+      lc.getStatusManager().add(new InfoStatus("Found resource [" + url + "]", this));
       lc.reset();
 
       configurator.doConfigure(new URL(url));
