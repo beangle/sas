@@ -9,7 +9,7 @@ version := "0.13.11-SNAPSHOT"
 
 scmInfo := Some(
   ScmInfo(
-    url("https://github.com/beangle/sas"),
+    uri("https://github.com/beangle/sas"),
     "scm:git@github.com:beangle/sas.git"
   )
 )
@@ -26,7 +26,7 @@ developers := List(
 description := "The Beangle Simple Application Server (SAS)"
 homepage := Some(uri("https://beangle.github.io/sas/index.html"))
 
-val beangle_commons_ver = "6.2.1"
+val beangle_commons_ver = "6.2.2"
 val beangle_template_ver = "0.2.8"
 val beangle_boot_ver = "0.1.28"
 val apache_tomcat_ver = "11.0.24"
@@ -45,6 +45,7 @@ val commonDeps = Seq(beangle_commons, beangle_boot, scalatest)
 val jcl_over_slf4j = "org.slf4j" % "jcl-over-slf4j" % "2.0.18"
 
 lazy val root = (project in file("."))
+  .settings(publish / skip := true)
   .aggregate(core, engine, juli, server)
 
 lazy val core = (project in file("core"))
@@ -109,5 +110,3 @@ lazy val server = (project in file("server"))
     common,
     packageBin / artifact := Artifact(moduleName.value).withType("zip").withExtension("zip")
   )
-
-LocalRootProject / publish / skip := true

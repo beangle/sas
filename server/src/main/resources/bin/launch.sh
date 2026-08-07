@@ -124,10 +124,13 @@ download jakarta.websocket jakarta.websocket-client-api 2.2.0
 download org.wildfly.client wildfly-client-config 1.0.1.Final
 download org.wildfly.common wildfly-common 2.0.1
 download io.smallrye.common smallrye-common-annotation 2.14.0
-download io.smallrye.common smallrye-common-constraint 2.14.0
+download io.smallrye.common smallrye-common-constraint 2.12.0
 download io.smallrye.common smallrye-common-cpu 2.14.0
+download io.smallrye.common smallrye-common-expression 2.4.0
 download io.smallrye.common smallrye-common-function 2.14.0
-download io.smallrye.common smallrye-common-net 2.4.0
+download io.smallrye.common smallrye-common-net 2.12.0
+download io.smallrye.common smallrye-common-os 2.4.0
+download io.smallrye.common smallrye-common-ref 2.4.0
 
 bootpath="${bootpath:1}" #omit head :
 
@@ -175,10 +178,13 @@ if [ $? = 0 ]; then
     classpath=$classpath":"$(local_file org.wildfly.client wildfly-client-config 1.0.1.Final)
     classpath=$classpath":"$(local_file org.wildfly.common wildfly-common 2.0.1)
     classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-annotation 2.14.0)
-    classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-constraint 2.14.0)
+    classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-constraint 2.12.0)
     classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-cpu 2.14.0)
+    classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-expression 2.4.0)
     classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-function 2.14.0)
-    classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-net 2.4.0)
+    classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-net 2.12.0)
+    classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-os 2.4.0)
+    classpath=$classpath":"$(local_file io.smallrye.common smallrye-common-ref 2.4.0)
 
     classpath=$classpath":"$(local_file org.beangle.sas beangle-sas-engine $beangle_sas_ver)
     java -cp "$classpath" $options "$mainclass" --base=$sas_home $args
