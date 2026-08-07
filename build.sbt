@@ -45,7 +45,7 @@ val commonDeps = Seq(beangle_commons, beangle_boot, scalatest)
 val jcl_over_slf4j = "org.slf4j" % "jcl-over-slf4j" % "2.0.18"
 
 lazy val root = (project in file("."))
-  .settings(publish / skip := true)
+  .settings(common,publish / skip := true)
   .aggregate(core, engine, juli, server)
 
 lazy val core = (project in file("core"))
@@ -99,7 +99,7 @@ lazy val juli = (project in file("juli"))
       case _ => MergeStrategy.first
     },
     assemblyJarName := "beangle-sas-juli-" + version.value + ".jar",
-    Compile / packageBin := assembly.value
+    Compile / packageBin := Def.uncached(assembly).value
   )
 
 lazy val server = (project in file("server"))
