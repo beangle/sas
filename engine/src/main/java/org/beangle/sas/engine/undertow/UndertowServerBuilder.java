@@ -56,8 +56,8 @@ public class UndertowServerBuilder {
     Integer workerThreads = config.getInt("worker-threads");
     if (null != workerThreads) builder.setWorkerThreads(workerThreads);
 
-    Integer directBuffers = config.getInt("direct-buffers");
-    if (null != directBuffers) builder.setBufferSize(directBuffers);
+    Boolean directBuffers = config.getBoolean("direct-buffers");
+    if (null != directBuffers) builder.setDirectBuffers(directBuffers);
 
     builder.addHttpListener(config.port, null);
     builder.setServerOption(UndertowOptions.SHUTDOWN_TIMEOUT, 0);
@@ -116,8 +116,9 @@ public class UndertowServerBuilder {
 
     var h = manager.start();
     var ctxPath = config.contextPath.isEmpty() ? "/" : config.contextPath;
-    Handlers.path().addPrefixPath(ctxPath, h);
-    return h;
+    var pathHandler = Handlers.path();
+    pathHandler.addPrefixPath(ctxPath, h);
+    return pathHandler;
   }
 
   private String readServiceName(URL url) {

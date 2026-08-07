@@ -31,7 +31,7 @@ public class Bootstrap {
     if (EnvProfile.isDevMode()) {
       System.out.println(SasVersion.logo("undertow"));
     }
-    var logger = Logger.getLogger(org.beangle.sas.engine.tomcat.Bootstrap.class.toString());
+    var logger = Logger.getLogger(Bootstrap.class.toString());
     Server.Config config = CmdOptions.parse(args);
     if (config.port < 0) {
       logger.severe("port " + Math.abs(config.port) + " is not available.");

@@ -63,6 +63,12 @@ public interface Server {
       else return Integer.valueOf(v);
     }
 
+    public Boolean getBoolean(String propertyName) {
+      String v = properties.get(propertyName);
+      if (null == v || v.isEmpty()) return null;
+      else return Boolean.valueOf(v);
+    }
+
     public int getInt(String propertyName, int defaultValue) {
       String v = properties.get(propertyName);
       if (null == v || v.isEmpty()) return defaultValue;

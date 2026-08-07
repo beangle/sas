@@ -185,8 +185,11 @@ object Container extends Logging {
     // 6. register webapps and deployments
     (xml \ "Webapps" \ "Webapp").foreach { webappElem =>
       val app = new Webapp((webappElem \ "@uri").text)
-      for ((k, v) <- webappElem.attrs.toMap -- Set("name", "uri", "reloadable", "path", "runAt", "docBase", "libs")) {
+      for ((k, v) <- webappElem.attrs.toMap -- Set("name", "uri", "reloadable", "path", "runAt", "docBase", "libs", "jspSupport")) {
         app.properties.put(k, v)
+      }
+      (webappElem \ "@jspSupport") foreach { j =>
+        app.jspSupport = j.text == "true"
       }
       val libs = (webappElem \ "@libs").text
       if (null != libs && !libs.isBlank) {
