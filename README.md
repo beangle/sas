@@ -5,8 +5,8 @@
 ## 特性
 
 - **多实例管理**：一套安装目录下，通过配置文件管理多个 JVM/应用实例（Farm / Server），支持一键启停、状态查看
-- **双引擎支持**：Tomcat 11（JDK 21 虚拟线程）与 Undertow 2.4，按实例选择
-- **嵌入模式**：`launch.sh` 直接启动单个 war / Maven 坐标 / 远端 URL，无需手工配置
+- **双引擎支持**：Tomcat 10 / 11（11 默认虚拟线程，JDK 21+）与 Undertow 2.4，按实例选择
+- **嵌入模式**：`launch.sh` 直接启动单个 war / Maven 坐标 / 远端 URL，参数顺序无关，无需手工配置
 - **依赖自动解析**：通过 `beangle-boot` 从 Maven 仓库解析并下载 war 及其传递依赖
 - **远程配置分发**：`sas.sh pull` 从控制端拉取 `server.xml`，`start.sh` 启动前自动检查远端配置
 - **统一日志**：`juli` 模块将 Tomcat 日志桥接到 SLF4J / Logback，集中管理
@@ -69,7 +69,7 @@ bin/sas.sh update 0.13.11   # 升级到指定版本
 | --- | --- |
 | `Repository` | 依赖本地/远程仓库（release） |
 | `SnapshotRepo` | SNAPSHOT 仓库，支持 `${sas_remote_url}` 占位 |
-| `Engines/Engine` | 引擎定义（Tomcat / Undertow），含版本、JSP 支持、Listener、Jar |
+| `Engines/Engine` | 引擎定义（Tomcat 10/11 / Undertow），含版本、JSP 支持、Listener、Jar |
 | `Hosts/Host` | 主机定义（name/ip） |
 | `Resources/Resource` | JNDI 资源，供 Webapp 引用 |
 | `Farms/Farm` | 实例组：堆大小、访问日志、HTTP Connector、Server 列表 |
@@ -84,7 +84,8 @@ sbt test       # 测试
 sbt package    # 打包（juli assembly + server zip）
 ```
 
-- sbt 2.0.x / Scala 3.3.x / JDK 21+
+- sbt 2.0.x / Scala 3.3.x
+- 嵌入式模式需要 JDK 21+（虚拟线程）；server 部署模式 Tomcat 10.x 可用 JDK 17+，Tomcat 11 需 JDK 21+
 - 依赖管理基于 [sbt-beangle-parent](https://github.com/beangle/parent)
 
 ## License

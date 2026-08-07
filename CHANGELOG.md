@@ -7,6 +7,7 @@
 ### Added
 - Tomcat Connector 默认启用虚拟线程（JDK 21+），并移除 `maxThreads` / `minSpareThreads` 配置
 - 构建迁移到 sbt 2.0.x，复用 `sbt-beangle-parent` 0.16.1 公共设置与依赖管理
+- `launch.sh` 参数顺序无关，JVM 选项（`-Xmx`、`-D`）可放在任意位置
 
 ### Changed
 - Undertow 升级到 2.4.2.Final，servlet 迁移到 `io.undertow.ee`（undertow-servlet 2.0.1.Final）
@@ -14,11 +15,24 @@
 - Tomcat 升级到 11.0.24，slf4j 2.0.18，logback 1.6.1，logback-access 2.0.14
 - Scala 升级到 3.3.8（scala-library 2.13.18）
 - `logo` 渲染从 `Version` 重构为 `Logo`
+- server 部署版仅对 Tomcat 11 生成 `useVirtualThreads`，兼容 Tomcat 10.x
+- 嵌入式模式 classpath 补充 `jul-to-slf4j` 桥接，Tomcat JUL 日志可接入 SLF4J/Logback
+
+### Fixed
+- 修复 Tomcat 11 生成的默认 web.xml 命名空间错误，按版本渲染 Servlet 6.1 / 6.0 / 5.0
+- 修复 Webapp `jspSupport` 配置未解析导致 JSP 无法启用
+- 修复 Undertow 非根 contextPath 前缀路由失效、`direct-buffers` 误用 `setBufferSize`
+- 修复 Undertow Bootstrap 误用 Tomcat logger
+- 修复 `launch.sh` 的 `--path` 未传给 Bootstrap 导致解压目录与 docBase 不一致
+- `Desktops.openBrowser` 增加异常防护，不再因打开浏览器失败而中断服务器启动
+- `Firewall.apply` 改用 ProcessBuilder 并校验 `firewall-cmd` 退出码
+- `start.sh` 使用 `$SERVER_BASE` 替代循环变量 `$dir`
 
 ### Removed
 - Tomcat 侧 HTTP/2 与 HTTPS 支持（改由前端代理承担）
 - Connector `compression*` 配置
 - Vibed 引擎支持（`VibedMaker`）
+- `juli.logback.configurationFile` 系统属性支持（`SLF4JConfigurator` 固定查找 `conf/logback-catalina.xml`）
 
 ## [v0.13.10] - 2026-04-12
 
