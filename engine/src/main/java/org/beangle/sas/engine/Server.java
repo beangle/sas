@@ -83,6 +83,10 @@ public interface Server {
       }
     }
 
+    public static boolean isNativeImage() {
+      return System.getProperty("org.graalvm.nativeimage.imagecode") != null;
+    }
+
     public static File initBase(String base) {
       var logger = Logger.getLogger(Server.class.toString());
       try {
@@ -105,14 +109,23 @@ public interface Server {
     }
 
     public void guessDocBase() {
+      // native 模式下无法通过 getResource("").getFile() 探测 IDE 路径
+      if (isNativeImage()) {
+        this.docBase = this.getDefaultDocBase();
+        new File(this.docBase).mkdirs();
+        return;
+      }
       var loader = Thread.currentThread().getContextClassLoader();
       //是否处于IDE开发环境
-      String targetClassPath = loader.getResource("").getFile();
-      int targetIdx = targetClassPath.indexOf("/target/");
-      if (targetIdx > 0) {
-        String projectWebapp = targetClassPath.substring(0, targetIdx) + "/src/main/webapp";
-        if (new File(projectWebapp).exists()) {
-          this.docBase = projectWebapp;
+      var resource = loader.getResource("");
+      if (resource != null) {
+        String targetClassPath = resource.getFile();
+        int targetIdx = targetClassPath.indexOf("/target/");
+        if (targetIdx > 0) {
+          String projectWebapp = targetClassPath.substring(0, targetIdx) + "/src/main/webapp";
+          if (new File(projectWebapp).exists()) {
+            this.docBase = projectWebapp;
+          }
         }
       }
       if (null == this.docBase) {

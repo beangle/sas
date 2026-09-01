@@ -42,7 +42,7 @@ class TomcatMakerTest extends AnyFunSpec with Matchers {
     }
 
     it("render useVirtualThreads in server.xml") {
-      val engine = new Engine("tomcat11", "tomcat", "11.0.24")
+      val engine = new Engine("tomcat11", "tomcat", "11.0.25")
       val farm = new Farm("farm", engine)
       val server = new Server(farm, "server")
       server.http = 8080

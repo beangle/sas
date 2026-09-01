@@ -135,7 +135,8 @@ public class TomcatServerBuilder {
     //under graalvm or jvm
     if (JreCompat.isGraalAvailable()) {
       System.setProperty("org.apache.tomcat.util.modeler.disable", "true");
-      context.setDocBase("classpath:webapp");
+      // native 模式下使用 config.docBase（已由 guessDocBase 解析为有效路径）
+      context.setDocBase(config.docBase);
       loader.setLoaderInstance(new EmbeddedClassLoader(parentClassLoader));
       loader.setDelegate(true);
       context.addLifecycleListener(new FixContextListener());

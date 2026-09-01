@@ -1,0 +1,10 @@
+{
+  "resources": {
+    "includes": [
+      { "pattern": "META-INF/services/.*" },
+      { "pattern": "META-INF/catalina/.*" },
+      { "pattern": "org/apache/catalina/util/ServerInfo.properties" },
+      { "pattern": "org/apache/catalina/mbeans/MBeanUtils.properties" }
+    ]
+  }
+}

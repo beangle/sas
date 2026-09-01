@@ -131,7 +131,8 @@ public class DependencyClassLoader extends ParallelWebappClassLoader {
         log.info("Disable Tomcat NotFoundClassResourceCache");
       }
     } catch (Throwable e) {
-      //ignore ,maybe tomcat 10 or lower
+      // ignore: MethodHandles.findSpecial may not work in GraalVM native-image,
+      // or tomcat 10 or lower may not have this method
     }
   }
 }

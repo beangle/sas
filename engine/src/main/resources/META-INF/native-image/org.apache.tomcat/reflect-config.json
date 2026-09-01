@@ -1,0 +1,137 @@
+[
+  {
+    "name": "org.apache.catalina.Container"
+  },
+  {
+    "name": "org.apache.catalina.CredentialHandler"
+  },
+  {
+    "name": "org.apache.catalina.LifecycleListener"
+  },
+  {
+    "name": "org.apache.catalina.LifecycleState"
+  },
+  {
+    "name": "org.apache.catalina.Valve"
+  },
+  {
+    "name": "org.apache.catalina.WebResourceRoot"
+  },
+  {
+    "name": "org.apache.catalina.Wrapper"
+  },
+  {
+    "name": "org.apache.catalina.connector.Request"
+  },
+  {
+    "name": "org.apache.catalina.connector.RequestFacade"
+  },
+  {
+    "name": "org.apache.catalina.loader.JdbcLeakPrevention"
+  },
+  {
+    "name": "org.apache.catalina.mbeans.ClassNameMBean"
+  },
+  {
+    "name": "org.apache.catalina.mbeans.ConnectorMBean"
+  },
+  {
+    "name": "org.apache.catalina.mbeans.ContainerMBean"
+  },
+  {
+    "name": "org.apache.catalina.mbeans.ContextMBean"
+  },
+  {
+    "name": "org.apache.catalina.mbeans.NamingResourcesMBean"
+  },
+  {
+    "name": "org.apache.catalina.mbeans.ServiceMBean"
+  },
+  {
+    "name": "org.apache.catalina.servlets.DefaultServlet"
+  },
+  {
+    "name": "org.apache.catalina.startup.Tomcat$SimpleRealm"
+  },
+  {
+    "name": "org.apache.catalina.util.CharsetMapper"
+  },
+  {
+    "name": "org.apache.coyote.AbstractProtocol"
+  },
+  {
+    "name": "org.apache.coyote.Adapter"
+  },
+  {
+    "name": "org.apache.coyote.ContinueResponseTiming"
+  },
+  {
+    "name": "org.apache.coyote.Processor"
+  },
+  {
+    "name": "org.apache.coyote.Request"
+  },
+  {
+    "name": "org.apache.coyote.RequestGroupInfo"
+  },
+  {
+    "name": "org.apache.coyote.RequestInfo"
+  },
+  {
+    "name": "org.apache.coyote.Response"
+  },
+  {
+    "name": "org.apache.coyote.UpgradeProtocol"
+  },
+  {
+    "name": "org.apache.coyote.http11.AbstractHttp11Protocol"
+  },
+  {
+    "name": "org.apache.coyote.http11.Http11NioProtocol"
+  },
+  {
+    "name": "org.apache.tomcat.util.buf.StringCache"
+  },
+  {
+    "name": "org.apache.tomcat.util.http.parser.HttpParser"
+  },
+  {
+    "name": "org.apache.tomcat.util.modeler.AttributeInfo"
+  },
+  {
+    "name": "org.apache.tomcat.util.modeler.BaseModelMBean"
+  },
+  {
+    "name": "org.apache.tomcat.util.modeler.FeatureInfo"
+  },
+  {
+    "name": "org.apache.tomcat.util.modeler.ManagedBean"
+  },
+  {
+    "name": "org.apache.tomcat.util.modeler.OperationInfo"
+  },
+  {
+    "name": "org.apache.tomcat.util.modeler.ParameterInfo"
+  },
+  {
+    "name": "org.apache.tomcat.util.modeler.modules.MbeansDescriptorsDigesterSource"
+  },
+  {
+    "name": "org.apache.tomcat.util.modeler.modules.MbeansDescriptorsIntrospectionSource"
+  },
+  {
+    "name": "org.apache.tomcat.util.net.AbstractEndpoint"
+  },
+  {
+    "name": "org.apache.tomcat.util.net.AbstractEndpoint$Handler"
+  },
+  {
+    "name": "org.apache.tomcat.util.net.NioEndpoint"
+  },
+  {
+    "name": "org.apache.tomcat.util.net.SSLHostConfig"
+  },
+  {
+    "name": "org.apache.tomcat.util.net.SocketProperties"
+  }
+]
