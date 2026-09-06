@@ -25,6 +25,7 @@ import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.startup.Constants;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.tomcat.util.compat.JreCompat;
+import org.apache.tomcat.util.modeler.Registry;
 import org.apache.tomcat.util.scan.StandardJarScanner;
 import org.beangle.sas.engine.Server;
 
@@ -41,6 +42,9 @@ public class TomcatServerBuilder {
   }
 
   public Tomcat build() {
+    // 禁用 MBean 注册，避免解析 mbeans-descriptors.xml 失败；须在 Registry 首次使用前调用
+    Registry.disableRegistry();
+
     Tomcat tomcat = new Tomcat();
     tomcat.setBaseDir(config.base);
     //tomcat is startup class
@@ -134,7 +138,6 @@ public class TomcatServerBuilder {
     WebappLoader loader = new WebappLoader();
     //under graalvm or jvm
     if (JreCompat.isGraalAvailable()) {
-      System.setProperty("org.apache.tomcat.util.modeler.disable", "true");
       // native 模式下使用 config.docBase（已由 guessDocBase 解析为有效路径）
       context.setDocBase(config.docBase);
       loader.setLoaderInstance(new EmbeddedClassLoader(parentClassLoader));
@@ -145,8 +148,6 @@ public class TomcatServerBuilder {
       disableTomcatSSL();
     } else {
       //embedded 模式
-      //禁用监控
-      System.setProperty("org.apache.tomcat.util.modeler.disable", "true");
       disableTomcatSSL();
       context.setDocBase(config.docBase);
       loader.setLoaderInstance(new EmbeddedClassLoader(parentClassLoader));

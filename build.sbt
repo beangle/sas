@@ -26,9 +26,9 @@ developers := List(
 description := "The Beangle Simple Application Server (SAS)"
 homepage := Some(uri("https://beangle.github.io/sas/index.html"))
 
-val beangle_commons_ver = "6.3.0-SNAPSHOT"
-val beangle_template_ver = "0.2.10-SNAPSHOT"
-val beangle_boot_ver = "0.1.28"
+val beangle_commons_ver = "6.3.2"
+val beangle_template_ver = "0.2.11"
+val beangle_boot_ver = "0.1.29"
 val apache_tomcat_ver = "11.0.25"
 val io_undertow_ver = "2.4.3.Final"
 val undertow_ee_ver = "2.0.2.Final"
@@ -42,7 +42,7 @@ val undertow_core = "io.undertow" % "undertow-core" % io_undertow_ver % "optiona
 val undertow_servlet = "io.undertow.ee" % "undertow-servlet" % undertow_ee_ver % "optional"
 val tomcat_embeded_core = ("org.apache.tomcat.embed" % "tomcat-embed-core" % apache_tomcat_ver % "optional").exclude("org.apache.tomcat", "tomcat-annotations-api")
 val commonDeps = Seq(beangle_commons, beangle_boot, scalatest)
-val jcl_over_slf4j = "org.slf4j" % "jcl-over-slf4j" % "2.0.18"
+val jcl_over_slf4j = "org.slf4j" % "jcl-over-slf4j" % "2.0.19"
 
 lazy val root = (project in file("."))
   .settings(common,publish / skip := true)

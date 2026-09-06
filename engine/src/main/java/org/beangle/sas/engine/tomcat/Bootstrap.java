@@ -25,8 +25,7 @@ import java.util.logging.Logger;
 public class Bootstrap {
 
   public static void main(String[] args) {
-    // 禁用 Tomcat MBean 注册（native-image 下无需 JMX 监控，且 XML 解析会失败）
-    System.setProperty("org.apache.tomcat.util.modeler.disable", "true");
+    boolean isNativeImage = Server.Config.isNativeImage();
     var startAt = System.currentTimeMillis();
     SLF4J.enableLogbackDevConfig();
     SLF4J.bridgeJul2Slf4j();
@@ -52,7 +51,7 @@ public class Bootstrap {
     }));
     // native 镜像下 AWT 不可用（GraphicsEnvironment 初始化会触发 JNI 致命错误），
     // 且服务端场景无桌面可打开浏览器，直接跳过
-    if (!Server.Config.isNativeImage()) {
+    if (!isNativeImage) {
       Desktops.openBrowser(url);
     }
   }

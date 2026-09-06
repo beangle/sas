@@ -1,5 +1,0 @@
-# SAS Engine native-image arguments
--H:+ReportExceptionStackTraces
---enable-url-protocols=jar,resource
-# Tomcat internal反射/资源已通过 reflect-config.json / resource-config.json 注册
-# logback/slf4j 需在使用方（ems native等）的 build.sbt 中配置 --initialize-at-build-time

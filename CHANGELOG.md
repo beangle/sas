@@ -2,6 +2,25 @@
 
 本项目所有重要变更均记录在此文件中。
 
+## [0.13.12] - 2026-09-06
+
+### Added
+- 补充 GraalVM native-image 反射与资源注册配置（`reflect-config.json`、`resource-config.json`），覆盖 Tomcat 内部类与 SAS 引擎
+
+### Changed
+- Tomcat 升级到 11.0.25，Undertow 2.4.3.Final / undertow-servlet 2.0.2.Final，logback 1.6.3，freemarker 2.3.35
+- beangle-commons 升级到 6.3.2，beangle-template 0.2.11，beangle-boot 0.1.29，jcl-over-slf4j 2.0.19
+- 构建升级到 sbt 2.0.8、sbt-beangle-parent 0.16.2，新增 sbt-beangle-build 0.1.5
+- native-image 下 `Server.Config.guessDocBase` 不再依赖 classpath 探测，直接使用默认 webapps 目录
+
+### Fixed
+- 修复 native-image 启动时解析 `mbeans-descriptors.xml` 失败：禁用 MBean 注册改在 `TomcatServerBuilder.build()` 入口调用 `Registry.disableRegistry()`；`org.apache.tomcat.util.modeler.disable` 等系统属性 Tomcat 并不读取，予以移除，JVM 嵌入式模式同样不再注册 MBean
+- native-image 下跳过 `Desktops.openBrowser`，避免 AWT 初始化触发 JNI 致命错误
+- `guessDocBase` 在 classpath 资源缺失（如 native-image）时不再抛出空指针异常
+
+### Removed
+- 移除 engine 内嵌的 `native-image-args.txt`
+
 ## [0.13.11] - 2026-08-07
 
 ### Added
