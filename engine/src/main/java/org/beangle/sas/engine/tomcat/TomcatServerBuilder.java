@@ -49,19 +49,11 @@ public class TomcatServerBuilder {
     tomcat.setBaseDir(config.base);
     //tomcat is startup class
     //server{service{engine{host{context}}}}
-    configServer((StandardServer) tomcat.getServer());
     configConnector(tomcat);
     configEngine(tomcat.getEngine());
     configHost((StandardHost) tomcat.getHost());
     prepareContext(tomcat, tomcat.getHost());
     return tomcat;
-  }
-
-  protected void configServer(StandardServer server) {
-    if (!config.devMode) {
-      server.addLifecycleListener(new JreMemoryLeakPreventionListener());
-      server.addLifecycleListener(new ThreadLocalLeakPreventionListener());
-    }
   }
 
   /**
@@ -130,6 +122,12 @@ public class TomcatServerBuilder {
     context.setName(config.contextPath);
     context.setPath(config.contextPath);
     skipScanning(context); // disable scanning
+    // 嵌入式单应用不存在重载/卸载后继续运行的场景，关闭这两项泄漏检查：
+    // 它们靠反射扫描 ThreadLocal/RMI Target，没有 --add-opens 时只会打出警告。
+    // 注意 setClearReferences* 的读取方是 context 而非 classloader（StandardContext.startInternal 会下发到 classloader）。
+    // 停掉 webapp 线程(clearReferencesThreads)与注销 JDBC 驱动(clearReferencesJdbc)不受影响。
+    context.setClearReferencesThreadLocals(false);
+    context.setClearReferencesRmiTargets(false);
     // container sci support,which one should be filtered and ignored
     String sciFilter = "JasperInitializer";
     context.setContainerSciFilter(sciFilter);
