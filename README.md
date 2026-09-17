@@ -95,7 +95,7 @@ bin/sas.sh update 0.13.12   # 升级到指定版本
 | `Engines/Engine` | 引擎定义（Tomcat 10/11 / Undertow），含版本、JSP 支持、Listener、Jar |
 | `Hosts/Host` | 主机定义（name/ip） |
 | `Resources/Resource` | JNDI 资源，供 Webapp 引用 |
-| `Farms/Farm` | 实例组：堆大小、访问日志、HTTP Connector、Server 列表 |
+| `Farms/Farm` | 实例组：堆大小、HTTP Connector、Server 列表 |
 | `Webapps/Webapp` | 应用：uri、contextPath、runAt（部署目标）、libs、ResourceRef |
 | `Proxy` | 前端代理（Nginx/HAProxy）：后端映射、HTTPS、状态页 |
 

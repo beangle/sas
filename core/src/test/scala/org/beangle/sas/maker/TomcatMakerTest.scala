@@ -18,6 +18,7 @@
 package org.beangle.sas.maker
 
 import org.beangle.sas.config.*
+import org.beangle.commons.xml.Document
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -69,6 +70,40 @@ class TomcatMakerTest extends AnyFunSpec with Matchers {
       val xml = Files.readString(Path.of(target + "/servers/farm.server/conf/server.xml"))
       xml should not include ("useVirtualThreads")
       xml should include("""<Connector port="8080"""")
+    }
+
+    it("render server.xml without access log valve") {
+      val engine = new Engine("tomcat11", "tomcat", "11.0.25")
+      val farm = new Farm("farm", engine)
+      val server = new Server(farm, "server")
+      server.http = 8080
+      server.maxHeapSize = "300M"
+      val container = new Container
+      container.farms += farm
+      val target = "/tmp/sas-test"
+      TomcatMaker.genBaseConfig(container, server, target)
+      val xml = Files.readString(Path.of(target + "/servers/farm.server/conf/server.xml"))
+      xml should not include ("LogbackValve")
+      xml should not include ("logback-access")
+    }
+
+    it("ignore enableAccessLog in exists container.xml") {
+      val xml =
+        """<Container version="0.13.13">
+          |  <Engines>
+          |    <Engine name="tomcat11" type="tomcat" version="11.0.25"/>
+          |  </Engines>
+          |  <Farms>
+          |    <Farm name="farm" engine="tomcat11" enableAccessLog="true" maxHeapSize="300M">
+          |      <Server name="server" http="8080" enableAccessLog="false"/>
+          |    </Farm>
+          |  </Farms>
+          |</Container>""".stripMargin
+      val container = Container(Document.parse(xml))
+      container.farms.size should be(1)
+      container.farms.head.name should be("farm")
+      container.farms.head.servers.size should be(1)
+      container.farms.head.servers.head.http should be(8080)
     }
   }
 }

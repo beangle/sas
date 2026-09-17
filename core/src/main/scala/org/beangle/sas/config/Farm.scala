@@ -43,8 +43,6 @@ class Farm(var name: String, var engine: Engine) {
   var http = new HttpConnector
   /** 内部服务 */
   var servers: mutable.Buffer[Server] = Collections.newBuffer[Server]
-  /** 是否启用访问日志 */
-  var enableAccessLog: Boolean = _
   /** 最大堆内存 */
   var maxHeapSize: String = _
   /** 进程参数 */
@@ -60,8 +58,6 @@ class Server(val farm: Farm, var name: String) {
   var host: Host = _
   /** 最大堆内存 */
   var maxHeapSize: String = _
-  /** 是否启用访问日志 */
-  var enableAccessLog: Boolean = _
   /** 代理http端口 */
   var proxyHttpPort: Option[Int] = None
   /** 代理参数 */

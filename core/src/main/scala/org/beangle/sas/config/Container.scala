@@ -132,9 +132,6 @@ object Container extends Logging {
       require(!farm.name.contains("."), s"farm name ${farm.name} cannot contains dot")
       val maxHeapSize = (farmElem \ "@maxHeapSize").text
       farm.maxHeapSize = if isEmpty(maxHeapSize) then "300M" else maxHeapSize
-      (farmElem \ "@enableAccessLog") foreach { n =>
-        farm.enableAccessLog = java.lang.Boolean.valueOf(n.text)
-      }
       var serverOpts = (farmElem \ "ServerOptions").text
       if (!isEmpty(serverOpts)) {
         if (serverOpts.contains("${sas_remote_url}")) {
@@ -162,12 +159,6 @@ object Container extends Logging {
 
         val host = (serverElem \ "@host").text
         server.host = if isEmpty(host) then Host.Localhost else conf.getHost(host)
-
-        val accessEnabled = serverElem \ "@enableAccessLog"
-        accessEnabled foreach { n =>
-          server.enableAccessLog = java.lang.Boolean.valueOf(n.text)
-        }
-        if accessEnabled.isEmpty then server.enableAccessLog = farm.enableAccessLog
 
         val maxHeapSize = (serverElem \ "@maxHeapSize").text
         server.maxHeapSize = if isEmpty(maxHeapSize) then farm.maxHeapSize else maxHeapSize
