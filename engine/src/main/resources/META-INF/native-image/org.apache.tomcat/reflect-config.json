@@ -84,7 +84,13 @@
     "name": "org.apache.coyote.UpgradeProtocol"
   },
   {
-    "name": "org.apache.coyote.http11.AbstractHttp11Protocol"
+    "name": "org.apache.coyote.http11.AbstractHttp11Protocol",
+    "methods": [
+      {
+        "name": "isSSLEnabled",
+        "parameterTypes": []
+      }
+    ]
   },
   {
     "name": "org.apache.coyote.http11.Http11NioProtocol"
