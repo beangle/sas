@@ -37,6 +37,8 @@ public interface Server {
     public boolean devMode = false;
     public boolean defaultServletSupport = true;
     public int defaultSessionTimeout = 30;//minutes
+    /** 容器后台处理间隔(秒)，驱动会话过期、静态资源缓存回收与 dev 热加载；不允许为 0 */
+    public int backgroundProcessorDelay = 10;
     public Map<String, String> properties = new HashMap<String, String>();
     public String docBase;
 
