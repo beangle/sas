@@ -113,9 +113,7 @@ public class TomcatServerBuilder {
     //engine.addLifecycleListener(new GlobalResourcesLifecycleListener());
     // backgroundProcessorDelay 是 host/context 后台处理的唯一驱动(ContainerBase.threadStart 仅在 delay>0 时调度)，
     // 设为 0 会使会话永不过期、静态资源缓存不回收、dev 热加载失效。会话实际过期粒度 = delay × processExpiresFrequency(默认 6)。
-    var delay = config.properties.containsKey("engine.backgroundProcessorDelay")
-      ? config.getInt("engine.backgroundProcessorDelay", config.backgroundProcessorDelay)
-      : (config.devMode ? 5 : config.backgroundProcessorDelay);
+    var delay = config.getInt("engine.backgroundProcessorDelay", config.devMode ? 5 : config.backgroundProcessorDelay);
     engine.setBackgroundProcessorDelay(Math.max(1, delay));
   }
 

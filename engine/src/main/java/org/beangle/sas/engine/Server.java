@@ -60,21 +60,34 @@ public interface Server {
     }
 
     public Integer getInt(String propertyName) {
-      String v = properties.get(propertyName);
+      String v = getProperty(propertyName);
       if (null == v || v.isEmpty()) return null;
       else return Integer.valueOf(v);
     }
 
     public Boolean getBoolean(String propertyName) {
-      String v = properties.get(propertyName);
+      String v = getProperty(propertyName);
       if (null == v || v.isEmpty()) return null;
       else return Boolean.valueOf(v);
     }
 
     public int getInt(String propertyName, int defaultValue) {
-      String v = properties.get(propertyName);
+      String v = getProperty(propertyName);
       if (null == v || v.isEmpty()) return defaultValue;
       else return Integer.parseInt(v);
+    }
+
+    /**
+     * 读取引擎属性，先查启动参数(--Dkey=value)，再回退到系统属性(-Dkey=value)
+     *
+     * @return 未配置时返回 null
+     */
+    public String getProperty(String propertyName) {
+      String v = properties.get(propertyName);
+      if (null == v || v.isEmpty()) v = System.getProperty(propertyName);
+      if (null == v) return null;
+      v = v.trim();
+      return v.isEmpty() ? null : v;
     }
 
     public String getDefaultDocBase() {

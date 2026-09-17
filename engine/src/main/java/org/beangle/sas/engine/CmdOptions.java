@@ -17,6 +17,9 @@
 
 package org.beangle.sas.engine;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class CmdOptions {
 
   public static Server.Config parse(String[] args) {
@@ -24,6 +27,7 @@ public class CmdOptions {
     String path = "";
     int port = -1;
     boolean devMode = false;
+    Map<String, String> properties = new HashMap<>();
     for (String arg : args) {
       if (arg.startsWith("--")) {
         if (arg.startsWith("--path=")) {
@@ -35,6 +39,16 @@ public class CmdOptions {
           if (devMode) EnvProfile.enableDevMode();
         } else if (arg.startsWith("--base=")) {
           base = arg.substring("--base=".length()).trim();
+        } else if (arg.startsWith("--D")) {
+          //引擎属性，形如 --Dconnector.maxConnections=20000，无值(如 --Dxxx)时视为 true
+          int idx = arg.indexOf('=');
+          if (idx > 3) {
+            properties.put(arg.substring(3, idx).trim(), arg.substring(idx + 1).trim());
+          } else if (idx < 0 && arg.length() > 3) {
+            properties.put(arg.substring(3).trim(), "true");
+          } else {
+            System.out.println("ignore param " + arg);
+          }
         }
       } else {
         System.out.println("ignore param " + arg);
@@ -52,6 +66,7 @@ public class CmdOptions {
     }
 
     Server.Config config = new Server.Config(Server.Config.initBase(base).getAbsolutePath(), path, port);
+    config.properties.putAll(properties);
     config.devMode = devMode || EnvProfile.isDevMode();
     config.guessDocBase();
     return config;

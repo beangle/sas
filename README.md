@@ -42,6 +42,24 @@ launch.sh [jvm_options] group:artifact:version [--engine=undertow] [other_args]
 launch.sh http://host.com/path/app.war [--port=8080] [other_args]
 ```
 
+#### 引擎参数
+
+`--Dkey=value` 设置引擎参数，等价于 JVM 的 `-Dkey=value`（同时存在时 `--D` 优先）：
+
+```bash
+launch.sh /path/to/app.war --port=8080 --Dconnector.maxKeepAliveRequests=1000 --Dengine.backgroundProcessorDelay=30
+```
+
+| key | 默认 | 说明 |
+| --- | --- | --- |
+| `connector.maxConnections` | 10000 | 最大连接数 |
+| `connector.acceptCount` | 1000 | 等待队列长度 |
+| `connector.connectionTimeout` | 20000 | 建连/读超时（ms） |
+| `connector.keepAliveTimeout` | 同 connectionTimeout | keep-alive 空闲超时（ms） |
+| `connector.maxKeepAliveRequests` | 100 | 单个 keep-alive 连接的最大请求数 |
+| `engine.backgroundProcessorDelay` | 10（dev 5） | 容器后台处理间隔（秒），驱动会话过期、静态资源缓存回收与热加载。0 会关闭这些功能，会被夹到 1；会话实际过期粒度 = 该值 × `processExpiresFrequency`(默认 6) |
+| `buffer-size`、`io-thread`、`worker-threads`、`direct-buffers` | Undertow 默认 | 仅 `--engine=undertow` 生效 |
+
 ### 多实例模式
 
 1. 编辑 `conf/server.xml`，声明引擎、实例（Farm/Server）与应用（Webapp）
