@@ -18,32 +18,44 @@
 package org.beangle.sas.engine;
 
 import java.lang.management.ManagementFactory;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class EnvProfile {
 
-  private static final String devKey = "beangle.cdi.profiles";
+  /** 与 beangle-commons 的 Environment.ProfileKey 保持一致 */
+  private static final String profileKey = "beangle.config.profiles";
 
   public static boolean isDebugMode() {
     var args = ManagementFactory.getRuntimeMXBean().getInputArguments();
     return args.toString().indexOf("-agentlib:jdwp") > 0;
   }
 
-  public static boolean isDevMode() {
-    String cdiProfiles = System.getProperty(devKey);
-    if (null != cdiProfiles && cdiProfiles.contains("dev")) {
-      return true;
+  /**
+   * 当前激活的 profile 集合，逻辑对齐 beangle-commons 的 Environment.profiles：
+   * 逗号分隔、去空格与空项，调试模式(JDWP)下自动加入 dev，除非显式声明了 -dev。
+   */
+  public static Set<String> profiles() {
+    Set<String> profiles = new LinkedHashSet<String>();
+    String value = System.getProperty(profileKey);
+    if (null != value) {
+      for (String profile : value.split(",")) {
+        String p = profile.trim();
+        if (!p.isEmpty()) profiles.add(p);
+      }
     }
-    return isDebugMode();
+    if (isDebugMode() && !profiles.contains("-dev")) profiles.add("dev");
+    return profiles;
+  }
+
+  public static boolean isDevMode() {
+    return profiles().contains("dev");
   }
 
   public static void enableDevMode() {
-    String p = System.getProperty(devKey);
-    if (null == p) {
-      System.setProperty(devKey, "true");
-    } else {
-      if (!p.contains("dev")) {
-        System.setProperty(devKey, p + ",dev");
-      }
-    }
+    Set<String> profiles = profiles();
+    if (profiles.contains("dev")) return;
+    profiles.add("dev");
+    System.setProperty(profileKey, String.join(",", profiles));
   }
 }

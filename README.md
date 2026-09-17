@@ -42,6 +42,9 @@ launch.sh [jvm_options] group:artifact:version [--engine=undertow] [other_args]
 launch.sh http://host.com/path/app.war [--port=8080] [other_args]
 ```
 
+`--dev=true` 开启开发模式（热加载、错误页），等价于 `-Dbeangle.config.profiles=dev`。该 profile 与 beangle-commons 的
+`Environment` 共用同一个 key 与语义（逗号分隔、调试模式自动视为 dev、`-dev` 可关闭自动行为）。
+
 #### 引擎参数
 
 `--Dkey=value` 设置引擎参数，等价于 JVM 的 `-Dkey=value`（同时存在时 `--D` 优先）：
