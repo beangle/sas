@@ -24,11 +24,72 @@ public class ConfigTest {
     assertEquals("/api", Server.Config.normalizePath("api"));
     assertEquals("/api", Server.Config.normalizePath("api/"));
     assertEquals("/api", Server.Config.normalizePath("//api"));
+
+    var config = new Server.Config("/tmp/sas-config-test", "/", 8080);
+
+    // 未配置时返回 empty，而不是 null
+    assertTrue(config.getInt("missing").isEmpty(), "missing int should be empty");
+    assertTrue(config.getBoolean("missing").isEmpty(), "missing boolean should be empty");
+    assertTrue(config.getProperty("missing").isEmpty(), "missing property should be empty");
+
+    config.properties.put("counter", "42");
+    assertEquals(42, config.getInt("counter").getAsInt());
+    assertEquals(42, config.getInt("counter").orElse(7));
+    assertEquals(7, config.getInt("missing").orElse(7));
+
+    // 布尔值只认 true/false(忽略大小写)
+    config.properties.put("flag", "TRUE");
+    assertTrue(config.getBoolean("flag").orElse(false), "TRUE should parse as true");
+
+    // 空白值等同于未配置
+    config.properties.put("blank", "   ");
+    assertTrue(config.getProperty("blank").isEmpty(), "blank property should be empty");
+
+    // --Dkey=value 优先于系统属性 -Dkey=value
+    try {
+      System.setProperty("counter", "9");
+      assertEquals(42, config.getInt("counter").getAsInt());
+      config.properties.remove("counter");
+      assertEquals(9, config.getInt("counter").getAsInt());
+    } finally {
+      System.clearProperty("counter");
+    }
+
+    config.properties.put("bad", "abc");
+    assertErrorContains(() -> config.getInt("bad"), "Property [bad] expects a number");
+
+    config.properties.put("flag", "yes");
+    assertErrorContains(() -> config.getBoolean("flag"), "Property [flag] expects true/false");
+
+    // 命令行 --Dkey=value 落到 properties
+    var parsed = CmdOptions.parse(new String[] { "--base=/tmp/sas-config-test", "--port=0", "--Dcounter=5", "--Dflag" });
+    assertEquals(5, parsed.getInt("counter").getAsInt());
+    assertTrue(parsed.getBoolean("flag").orElse(false), "--Dflag should be true");
   }
 
   private static void assertEquals(String expected, String result) {
     if (!expected.equals(result)) {
       throw new IllegalArgumentException("not equals:[" + expected + "] , result is [" + result + "]");
     }
+  }
+
+  private static void assertEquals(int expected, int result) {
+    if (expected != result) {
+      throw new IllegalArgumentException("not equals:[" + expected + "] , result is [" + result + "]");
+    }
+  }
+
+  private static void assertTrue(boolean result, String message) {
+    if (!result) throw new IllegalArgumentException(message);
+  }
+
+  private static void assertErrorContains(Runnable action, String expected) {
+    try {
+      action.run();
+    } catch (IllegalArgumentException e) {
+      if (null != e.getMessage() && e.getMessage().contains(expected)) return;
+      throw new IllegalArgumentException("error message [" + e.getMessage() + "] does not contain [" + expected + "]");
+    }
+    throw new IllegalArgumentException("expected IllegalArgumentException containing [" + expected + "]");
   }
 }

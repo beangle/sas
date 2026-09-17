@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.logging.Logger;
 
 public interface Server {
@@ -59,22 +61,19 @@ public interface Server {
       }
     }
 
-    public Integer getInt(String propertyName) {
-      String v = getProperty(propertyName);
-      return (null == v) ? null : toInt(propertyName, v);
+    /** 读取整数属性，未配置时返回 {@link OptionalInt#empty()} */
+    public OptionalInt getInt(String propertyName) {
+      var v = getProperty(propertyName);
+      return v.map(s -> OptionalInt.of(toInt(propertyName, s))).orElseGet(OptionalInt::empty);
     }
 
-    public Boolean getBoolean(String propertyName) {
-      String v = getProperty(propertyName);
-      if (null == v) return null;
-      if (v.equalsIgnoreCase("true")) return Boolean.TRUE;
-      if (v.equalsIgnoreCase("false")) return Boolean.FALSE;
-      throw new IllegalArgumentException("Property [" + propertyName + "] expects true/false but was [" + v + "]");
-    }
-
-    public int getInt(String propertyName, int defaultValue) {
-      String v = getProperty(propertyName);
-      return (null == v) ? defaultValue : toInt(propertyName, v);
+    /** 读取布尔属性，未配置时返回 {@link Optional#empty()}，取值只接受 true/false（忽略大小写） */
+    public Optional<Boolean> getBoolean(String propertyName) {
+      return getProperty(propertyName).map(v -> {
+        if (v.equalsIgnoreCase("true")) return Boolean.TRUE;
+        if (v.equalsIgnoreCase("false")) return Boolean.FALSE;
+        throw new IllegalArgumentException("Property [" + propertyName + "] expects true/false but was [" + v + "]");
+      });
     }
 
     /** 解析整数，失败时报出属性名，避免只看到 "For input string: xxx" */
@@ -88,15 +87,13 @@ public interface Server {
 
     /**
      * 读取引擎属性，先查启动参数(--Dkey=value)，再回退到系统属性(-Dkey=value)
-     *
-     * @return 未配置时返回 null
      */
-    public String getProperty(String propertyName) {
+    public Optional<String> getProperty(String propertyName) {
       String v = properties.get(propertyName);
       if (null == v || v.isEmpty()) v = System.getProperty(propertyName);
-      if (null == v) return null;
+      if (null == v) return Optional.empty();
       v = v.trim();
-      return v.isEmpty() ? null : v;
+      return v.isEmpty() ? Optional.empty() : Optional.of(v);
     }
 
     public String getDefaultDocBase() {

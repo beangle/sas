@@ -47,17 +47,10 @@ public class UndertowServerBuilder {
   public Undertow build() throws ServletException {
     Undertow.Builder builder = Undertow.builder();
 
-    Integer bufferSize = config.getInt("buffer-size");
-    if (null != bufferSize) builder.setBufferSize(bufferSize);
-
-    Integer ioThread = config.getInt("io-thread");
-    if (null != ioThread) builder.setIoThreads(ioThread);
-
-    Integer workerThreads = config.getInt("worker-threads");
-    if (null != workerThreads) builder.setWorkerThreads(workerThreads);
-
-    Boolean directBuffers = config.getBoolean("direct-buffers");
-    if (null != directBuffers) builder.setDirectBuffers(directBuffers);
+    config.getInt("buffer-size").ifPresent(builder::setBufferSize);
+    config.getInt("io-thread").ifPresent(builder::setIoThreads);
+    config.getInt("worker-threads").ifPresent(builder::setWorkerThreads);
+    config.getBoolean("direct-buffers").ifPresent(builder::setDirectBuffers);
 
     builder.addHttpListener(config.port, null);
     builder.setServerOption(UndertowOptions.SHUTDOWN_TIMEOUT, 0);

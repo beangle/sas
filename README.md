@@ -59,7 +59,9 @@ launch.sh /path/to/app.war --port=8080 --Dconnector.maxKeepAliveRequests=1000 --
 | `connector.acceptCount` | 1000 | 等待队列长度 |
 | `connector.connectionTimeout` | 20000 | 建连/读超时（ms） |
 | `connector.keepAliveTimeout` | 同 connectionTimeout | keep-alive 空闲超时（ms） |
-| `connector.maxKeepAliveRequests` | 100 | 单个 keep-alive 连接的最大请求数 |
+| `connector.maxKeepAliveRequests` | 100 | 单个 keep-alive 连接的最大请求数。实测 10 万请求：默认 100 会重建 1000 次连接，提到 10000 后为 0 次，直连吞吐 +2~5%；前面挂 nginx（upstream keepalive）时实测无差异 |
+| `connector.processorCache` | 200 | 空闲 Processor 池上限，`-1` 表示不限。实测并发 ≤1000 的稳定长连接负载下与 2000 无差异（池只在空闲数超过上限时丢弃） |
+| `connector.appReadBufSize`、`connector.appWriteBufSize` | 8192 | 每连接应用层读写缓冲（转发到 Tomcat 的 `socket.appReadBufSize/appWriteBufSize`，须为正数）。实测 1KB 与 64KB 对 1MB 静态文件吞吐无差异（响应走 sendfile），主要影响请求体与非 sendfile 的动态输出 |
 | `engine.backgroundProcessorDelay` | 10（dev 5） | 容器后台处理间隔（秒），驱动会话过期、静态资源缓存回收与热加载。0 会关闭这些功能，会被夹到 1；会话实际过期粒度 = 该值 × `processExpiresFrequency`(默认 6) |
 | `buffer-size`、`io-thread`、`worker-threads`、`direct-buffers` | Undertow 默认 | 仅 `--engine=undertow` 生效 |
 

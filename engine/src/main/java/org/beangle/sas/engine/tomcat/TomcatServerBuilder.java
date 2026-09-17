@@ -24,6 +24,7 @@ import org.apache.catalina.core.*;
 import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.startup.Constants;
 import org.apache.catalina.startup.Tomcat;
+import org.apache.coyote.http11.Http11NioProtocol;
 import org.apache.tomcat.util.compat.JreCompat;
 import org.apache.tomcat.util.modeler.Registry;
 import org.apache.tomcat.util.scan.StandardJarScanner;
@@ -82,30 +83,47 @@ public class TomcatServerBuilder {
       Thread.ofVirtual().name("tomcat-vt-", 0).factory()
     ));
 
-    protocol.setMaxConnections(config.getInt("connector.maxConnections", 10000));
+    protocol.setMaxConnections(config.getInt("connector.maxConnections").orElse(10000));
 
     //等待队列大小，超过最大线程时，最多排队 acceptCount 个请求
-    var acceptCount = config.getInt("connector.acceptCount", 1000);
-    protocol.setAcceptCount(acceptCount);
+    protocol.setAcceptCount(config.getInt("connector.acceptCount").orElse(1000));
 
-    var connectionTimeout = config.getInt("connector.connectionTimeout");
-    if (null != connectionTimeout) protocol.setConnectionTimeout(connectionTimeout);
+    config.getInt("connector.connectionTimeout").ifPresent(protocol::setConnectionTimeout);
+    config.getInt("connector.keepAliveTimeout").ifPresent(protocol::setKeepAliveTimeout);
+    config.getInt("connector.maxKeepAliveRequests").ifPresent(protocol::setMaxKeepAliveRequests);
 
-    var keepAliveTimeout = config.getInt("connector.keepAliveTimeout");
-    if (null != keepAliveTimeout) protocol.setKeepAliveTimeout(keepAliveTimeout);
+    config.getInt("connector.processorCache").ifPresent(processorCache -> {
+      // Tomcat 语义：-1 表示不限制（AbstractProtocol.ConnectionHandler.push）
+      if (processorCache < -1) {
+        throw new IllegalArgumentException("Property [connector.processorCache] expects -1(unlimited) or a non-negative number but was [" + processorCache + "]");
+      }
+      protocol.setProcessorCache(processorCache);
+    });
 
-    var maxKeepAliveRequests = config.getInt("connector.maxKeepAliveRequests");
-    if (null != maxKeepAliveRequests) protocol.setMaxKeepAliveRequests(maxKeepAliveRequests);
+    // 每连接的应用层读写缓冲，默认 8K（大文件响应走 sendfile，不经过这两个缓冲）
+    config.getInt("connector.appReadBufSize")
+      .ifPresent(size -> setSocketProperty(protocol, "appReadBufSize", size));
+    config.getInt("connector.appWriteBufSize")
+      .ifPresent(size -> setSocketProperty(protocol, "appWriteBufSize", size));
 
     tomcat.getService().addConnector(connector);
     tomcat.setConnector(connector);
+  }
+
+  private static void setSocketProperty(Http11NioProtocol protocol, String name, int size) {
+    if (size <= 0) {
+      throw new IllegalArgumentException("Property [connector." + name + "] expects a positive number but was [" + size + "]");
+    }
+    if (!protocol.setProperty("socket." + name, String.valueOf(size))) {
+      throw new IllegalArgumentException("Property [connector." + name + "] is not supported by " + protocol.getClass().getName());
+    }
   }
 
   protected void configEngine(Engine engine) {
     //engine.addLifecycleListener(new GlobalResourcesLifecycleListener());
     // backgroundProcessorDelay 是 host/context 后台处理的唯一驱动(ContainerBase.threadStart 仅在 delay>0 时调度)，
     // 设为 0 会使会话永不过期、静态资源缓存不回收、dev 热加载失效。会话实际过期粒度 = delay × processExpiresFrequency(默认 6)。
-    var delay = config.getInt("engine.backgroundProcessorDelay", config.devMode ? 5 : config.backgroundProcessorDelay);
+    var delay = config.getInt("engine.backgroundProcessorDelay").orElse(config.devMode ? 5 : config.backgroundProcessorDelay);
     engine.setBackgroundProcessorDelay(Math.max(1, delay));
   }
 
