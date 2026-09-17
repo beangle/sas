@@ -61,20 +61,29 @@ public interface Server {
 
     public Integer getInt(String propertyName) {
       String v = getProperty(propertyName);
-      if (null == v || v.isEmpty()) return null;
-      else return Integer.valueOf(v);
+      return (null == v) ? null : toInt(propertyName, v);
     }
 
     public Boolean getBoolean(String propertyName) {
       String v = getProperty(propertyName);
-      if (null == v || v.isEmpty()) return null;
-      else return Boolean.valueOf(v);
+      if (null == v) return null;
+      if (v.equalsIgnoreCase("true")) return Boolean.TRUE;
+      if (v.equalsIgnoreCase("false")) return Boolean.FALSE;
+      throw new IllegalArgumentException("Property [" + propertyName + "] expects true/false but was [" + v + "]");
     }
 
     public int getInt(String propertyName, int defaultValue) {
       String v = getProperty(propertyName);
-      if (null == v || v.isEmpty()) return defaultValue;
-      else return Integer.parseInt(v);
+      return (null == v) ? defaultValue : toInt(propertyName, v);
+    }
+
+    /** 解析整数，失败时报出属性名，避免只看到 "For input string: xxx" */
+    private static int toInt(String propertyName, String value) {
+      try {
+        return Integer.parseInt(value);
+      } catch (NumberFormatException e) {
+        throw new IllegalArgumentException("Property [" + propertyName + "] expects a number but was [" + value + "]", e);
+      }
     }
 
     /**

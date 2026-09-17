@@ -19,8 +19,11 @@ package org.beangle.sas.engine;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class CmdOptions {
+
+  private static final Logger logger = Logger.getLogger(CmdOptions.class.getName());
 
   public static Server.Config parse(String[] args) {
     String base = null;
@@ -33,7 +36,7 @@ public class CmdOptions {
         if (arg.startsWith("--path=")) {
           path = arg.substring("--path=".length());
         } else if (arg.startsWith("--port=")) {
-          port = Integer.parseInt(arg.substring("--port=".length()));
+          port = toInt("--port", arg.substring("--port=".length()));
         } else if (arg.startsWith("--dev=")) {
           devMode = Boolean.parseBoolean(arg.substring("--dev=".length()));
           if (devMode) EnvProfile.enableDevMode();
@@ -47,11 +50,13 @@ public class CmdOptions {
           } else if (idx < 0 && arg.length() > 3) {
             properties.put(arg.substring(3).trim(), "true");
           } else {
-            System.out.println("ignore param " + arg);
+            logger.warning("Malformed engine property [" + arg + "] ignored, expected --Dkey=value.");
           }
+        } else {
+          logger.warning("Unknown option [" + arg + "] ignored, engine properties are passed as --Dkey=value.");
         }
       } else {
-        System.out.println("ignore param " + arg);
+        logger.warning("Unknown argument [" + arg + "] ignored, JVM options(-D/-X) should be given to java.");
       }
     }
     if (port == -1) {
@@ -72,4 +77,11 @@ public class CmdOptions {
     return config;
   }
 
+  private static int toInt(String name, String value) {
+    try {
+      return Integer.parseInt(value.trim());
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException(name + " expects a number but was [" + value + "]", e);
+    }
+  }
 }
