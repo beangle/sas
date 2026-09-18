@@ -159,6 +159,7 @@ public class TomcatServerBuilder {
 
     var parentClassLoader = Thread.currentThread().getContextClassLoader();
     context.setParentClassLoader(parentClassLoader);
+    context.setUseNaming(false);//嵌入式单应用不使用 JNDI，避免创建 NamingResources/NamingContextListener
 
     WebappLoader loader = new WebappLoader();
     //under graalvm or jvm
@@ -178,7 +179,6 @@ public class TomcatServerBuilder {
       loader.setLoaderInstance(new EmbeddedClassLoader(parentClassLoader));
       loader.setDelegate(true);
       context.addLifecycleListener(new FixContextListener());
-      context.setUseNaming(false);//禁用JNDI
 
       addInitializers(context, sciFilterPattern);
     }
@@ -257,10 +257,6 @@ public class TomcatServerBuilder {
 
     // MIME type mappings
     Tomcat.addDefaultMimeTypeMappings(ctx);
-
-    // Welcome files
-    ctx.addWelcomeFile("index.html");
-    ctx.addWelcomeFile("index.htm");
   }
 
   static class FixContextListener implements LifecycleListener {
