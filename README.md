@@ -63,7 +63,13 @@ launch.sh /path/to/app.war --port=8080 --Dconnector.maxKeepAliveRequests=1000 --
 | `connector.processorCache` | 200 | 空闲 Processor 池上限，`-1` 表示不限。实测并发 ≤1000 的稳定长连接负载下与 2000 无差异（池只在空闲数超过上限时丢弃） |
 | `connector.appReadBufSize`、`connector.appWriteBufSize` | 8192 | 每连接应用层读写缓冲（转发到 Tomcat 的 `socket.appReadBufSize/appWriteBufSize`，须为正数）。实测 1KB 与 64KB 对 1MB 静态文件吞吐无差异（响应走 sendfile），主要影响请求体与非 sendfile 的动态输出 |
 | `engine.backgroundProcessorDelay` | 10（dev 5） | 容器后台处理间隔（秒），驱动会话过期、静态资源缓存回收与热加载。0 会关闭这些功能，会被夹到 1；会话实际过期粒度 = 该值 × `processExpiresFrequency`(默认 6) |
+| `server.defaultServletSupport` | false | 是否注册容器的默认 servlet（war 根下的静态文件与 welcome file）。默认关：`/index.html`、`/` 等直接 404，静态资源交给前端代理或应用自身（webmvc 的 `/static/**` 不受影响）；需要时用 `--Dserver.defaultServletSupport=true` 打开 |
 | `buffer-size`、`io-thread`、`worker-threads`、`direct-buffers` | Undertow 默认 | 仅 `--engine=undertow` 生效 |
+
+嵌入式模式不支持 JSP 与 access log；会话只保留 Cookie 跟踪，不会出现 `;jsessionid` 形式的 URL 重写。
+会话仍由 `StandardManager` 管理，但会话 id 生成器不在启动时预热 SecureRandom（Tomcat 默认会预热，实测
+25~35ms，低熵环境或旧 JDK 上可能到秒级），这份开销推迟到第一次真正创建会话时（一次性）；SecureRandom
+算法交给平台默认（Linux/macOS 为 NativePRNG，其余平台由 JDK 选择），不再固定 Tomcat 的 SHA1PRNG。
 
 ### 多实例模式
 

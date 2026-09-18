@@ -65,6 +65,12 @@ public class ConfigTest {
     var parsed = CmdOptions.parse(new String[] { "--base=/tmp/sas-config-test", "--port=0", "--Dcounter=5", "--Dflag" });
     assertEquals(5, parsed.getInt("counter").getAsInt());
     assertTrue(parsed.getBoolean("flag").orElse(false), "--Dflag should be true");
+
+    // 默认 servlet 默认关闭，可用 --D 打开
+    var noDefaultServlet = CmdOptions.parse(new String[] { "--base=/tmp/sas-config-test", "--port=0" });
+    assertTrue(!noDefaultServlet.defaultServletSupport, "default servlet should be off by default");
+    var withDefaultServlet = CmdOptions.parse(new String[] { "--base=/tmp/sas-config-test", "--port=0", "--Dserver.defaultServletSupport=true" });
+    assertTrue(withDefaultServlet.defaultServletSupport, "default servlet should be enabled by --D");
   }
 
   private static void assertEquals(String expected, String result) {

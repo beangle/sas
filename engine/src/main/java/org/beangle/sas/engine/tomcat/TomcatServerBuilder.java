@@ -18,10 +18,12 @@
 package org.beangle.sas.engine.tomcat;
 
 import jakarta.servlet.ServletContainerInitializer;
+import jakarta.servlet.SessionTrackingMode;
 import org.apache.catalina.*;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.*;
 import org.apache.catalina.loader.WebappLoader;
+import org.apache.catalina.session.StandardManager;
 import org.apache.catalina.startup.Constants;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.coyote.http11.Http11NioProtocol;
@@ -31,6 +33,7 @@ import org.apache.tomcat.util.scan.StandardJarScanner;
 import org.beangle.sas.engine.Server;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.ServiceLoader;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
@@ -54,6 +57,9 @@ public class TomcatServerBuilder {
     configEngine(tomcat.getEngine());
     configHost((StandardHost) tomcat.getHost());
     prepareContext(tomcat, tomcat.getHost());
+    // 嵌入式单应用没有重载/自动部署，server 级 PERIODIC_EVENT 无人消费：
+    // 消费方只有 HostConfig.check()(autoDeploy=false 时直接返回) 与 TLS 证书重载监听的注册；ContainerBase 自己的事件不受影响
+    ((StandardServer) tomcat.getServer()).setPeriodicEventDelay(0);
     return tomcat;
   }
 
@@ -146,7 +152,7 @@ public class TomcatServerBuilder {
     // 停掉 webapp 线程(clearReferencesThreads)与注销 JDBC 驱动(clearReferencesJdbc)不受影响。
     context.setClearReferencesThreadLocals(false);
     context.setClearReferencesRmiTargets(false);
-    // container sci support,which one should be filtered and ignored
+    // 嵌入式不支持 JSP，挡掉 Jasper 的 SCI（容器侧与应用侧同一个过滤正则）
     String sciFilter = "JasperInitializer";
     context.setContainerSciFilter(sciFilter);
     Pattern sciFilterPattern = Pattern.compile(sciFilter);
@@ -241,6 +247,13 @@ public class TomcatServerBuilder {
 
     // Sessions(minutes)
     ctx.setSessionTimeout(config.defaultSessionTimeout);
+    // 会话 id 生成器推迟 SecureRandom 初始化（Tomcat 默认在启动时预热，实测 25~35ms）
+    var manager = new StandardManager();
+    manager.setSessionIdGenerator(new LazySessionIdGenerator());
+    // 空串表示交给 JDK 的平台默认：NativePRNG 可用则用它(Linux/macOS)，否则用平台实现(如 DRBG)。
+    // Tomcat 默认固定 SHA1PRNG，首次播种实测多花 ~10ms，且它自己也只在没有 SHA1PRNG 的 JRE 上才回退平台默认。
+    manager.setSecureRandomAlgorithm("");
+    ctx.setManager(manager);
 
     // MIME type mappings
     Tomcat.addDefaultMimeTypeMappings(ctx);
@@ -255,7 +268,11 @@ public class TomcatServerBuilder {
     public void lifecycleEvent(LifecycleEvent event) {
       try {
         Context context = (Context) event.getLifecycle();
-        if (event.getType().equals(Lifecycle.CONFIGURE_START_EVENT)) context.setConfigured(true);
+        if (event.getType().equals(Lifecycle.CONFIGURE_START_EVENT)) {
+          context.setConfigured(true);
+          // 只保留 Cookie 会话跟踪，避免 ;jsessionid 出现在 URL/Referer/日志中；必须在 STARTING_PREP 期间设置
+          context.getServletContext().setSessionTrackingModes(EnumSet.of(SessionTrackingMode.COOKIE));
+        }
       } catch (ClassCastException e) {
       }
     }

@@ -37,7 +37,8 @@ public interface Server {
     public final String contextPath;
     public final int port;
     public boolean devMode = false;
-    public boolean defaultServletSupport = true;
+    /** 是否注册容器的默认 servlet（war 根下的静态文件与 welcome file）。静态资源交给前端代理时设为 false */
+    public boolean defaultServletSupport = false;
     public int defaultSessionTimeout = 30;//minutes
     /** 容器后台处理间隔(秒)，驱动会话过期、静态资源缓存回收与 dev 热加载；不允许为 0 */
     public int backgroundProcessorDelay = 10;

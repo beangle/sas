@@ -72,6 +72,7 @@ public class CmdOptions {
 
     Server.Config config = new Server.Config(Server.Config.initBase(base).getAbsolutePath(), path, port);
     config.properties.putAll(properties);
+    config.defaultServletSupport = config.getBoolean("server.defaultServletSupport").orElse(config.defaultServletSupport);
     config.devMode = devMode || EnvProfile.isDevMode();
     config.guessDocBase();
     return config;
