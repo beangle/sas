@@ -2,6 +2,32 @@
 
 本项目所有重要变更均记录在此文件中。
 
+## [0.13.13] - 2026-09-18
+
+### Added
+- 新增引擎启动参数 `--Dkey=value`，可在命令行设置引擎参数（等价于 JVM `-Dkey=value`，同时存在时 `--D` 优先）
+- 新增 `server.defaultServletSupport` 配置项，控制是否注册容器的默认 servlet
+- 嵌入式模式可配置 Processor 池上限（`connector.processorCache`）与应用层读写缓冲（`connector.appReadBufSize`、`connector.appWriteBufSize`）
+
+### Changed
+- 引擎参数读取改用 `OptionalInt`/`Optional<Boolean>`/`Optional<String>`，未配置即 empty，不再用默认值重载区分“没配”与“配成默认值”
+- `engine.backgroundProcessorDelay` 可配（默认 10 秒，dev 模式 5 秒），驱动会话过期、静态资源缓存回收与热加载
+- `EnvProfile.isDevMode` 对齐 beangle-commons 的 `Environment` 语义，profile 统一使用 `beangle.config.profiles`
+- 嵌入式模式默认不再注册容器默认 servlet：`/index.html`、`/` 等直接 404，静态资源交给前端代理或应用自身（webmvc 的 `/static/**` 不受影响），需要时用 `--Dserver.defaultServletSupport=true` 打开
+- 会话只保留 Cookie 跟踪，不再出现 `;jsessionid` 形式的 URL 重写
+- 会话 id 生成器不再在启动时预热 SecureRandom（实测冷启动 116~121ms -> 80~86ms），SecureRandom 算法跟随平台默认（Linux/macOS 为 NativePRNG），不再固定 SHA1PRNG，会话语义不变
+- 嵌入式模式不再向 `StandardServer` 投递无人消费的 PERIODIC_EVENT
+- Tomcat 升级到 11.0.26，beangle-commons 升级到 6.3.6，beangle-template 0.2.13，beangle-boot 0.1.29，构建升级 sbt-beangle-build 0.1.8
+
+### Fixed
+- 修复 `engine.backgroundProcessorDelay` 只能取 Tomcat 默认值、且设为 0 会导致会话永不过期的问题
+- 未识别的命令行参数不再被静默忽略，现在给出警告；数值解析失败会报出参数名
+- native-image 补充 `AbstractHttp11Protocol.isSSLEnabled` 反射注册
+
+### Removed
+- 移除 access log 支持：`enableAccessLog` 配置项、`LogbackValve` 渲染与 logback-access 依赖一并删除，旧 server.xml 中的该属性读取时忽略
+- 移除两个 leak-prevention listener 及单应用下无意义的 ThreadLocal/RMI 泄漏检查（实测冷启动中位 207ms -> 195ms，温启动无差异）
+
 ## [0.13.12] - 2026-09-06
 
 ### Added

@@ -26,10 +26,10 @@ developers := List(
 description := "The Beangle Simple Application Server (SAS)"
 homepage := Some(uri("https://beangle.github.io/sas/index.html"))
 
-val beangle_commons_ver = "6.3.2"
-val beangle_template_ver = "0.2.11"
+val beangle_commons_ver = "6.3.6"
+val beangle_template_ver = "0.2.13"
 val beangle_boot_ver = "0.1.29"
-val apache_tomcat_ver = "11.0.25"
+val apache_tomcat_ver = "11.0.26"
 val io_undertow_ver = "2.4.3.Final"
 val undertow_ee_ver = "2.0.2.Final"
 
