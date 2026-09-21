@@ -21,6 +21,7 @@ import org.beangle.commons.lang.Strings
 import org.beangle.commons.net.Networks
 
 import java.io.File
+import scala.compiletime.uninitialized
 
 object EngineType {
   val Tomcat = "tomcat"
@@ -32,7 +33,7 @@ object EngineType {
 class Engine(var name: String, var typ: String, var version: String) {
   val listeners = new collection.mutable.ListBuffer[Listener]
   val jars = new collection.mutable.ListBuffer[Jar]
-  var context: Context = _
+  var context: Context = uninitialized
   var jspSupport = false
 
   override def toString: String = {
@@ -70,8 +71,8 @@ class Listener(val className: String) {
 }
 
 class Context {
-  var loader: Loader = _
-  var jarScanner: JarScanner = _
+  var loader: Loader = uninitialized
+  var jarScanner: JarScanner = uninitialized
 }
 
 class Loader(var className: String) {

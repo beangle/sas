@@ -21,17 +21,18 @@ import org.beangle.commons.lang.Strings
 import org.beangle.sas.config.Proxy.Backend
 
 import scala.collection.mutable
+import scala.compiletime.uninitialized
 
 class Webapp(var uri: String) {
   val resources = new collection.mutable.ListBuffer[Resource]
   val properties = new java.util.Properties
   var resolveSupport: Boolean = true
-  var docBase: String = _
-  var realms: String = _
+  var docBase: String = uninitialized
+  var realms: String = uninitialized
   var jspSupport: Boolean = false
   var runAt: mutable.ArrayBuffer[Server] = new mutable.ArrayBuffer[Server]
-  var entryPoint: Proxy.Backend = _
-  var contextPath: String = _
+  var entryPoint: Proxy.Backend = uninitialized
+  var contextPath: String = uninitialized
   var unpack: Option[Boolean] = None
   /** prefix extension libraries */
   var libs: Option[String] = None

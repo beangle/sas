@@ -25,6 +25,7 @@ import org.beangle.commons.logging.Logging
 import org.beangle.commons.xml.Node
 
 import scala.collection.mutable
+import scala.compiletime.uninitialized
 
 object Container extends Logging {
 
@@ -296,10 +297,10 @@ class Container {
   val farms = new collection.mutable.ListBuffer[Farm]
   val webapps = new collection.mutable.ListBuffer[Webapp]
   val resources = new collection.mutable.HashMap[String, Resource]
-  var version: String = _
-  var repository: Repository = _
-  var snapshotRepo: SnapshotRepo = _
-  var proxy: Proxy = _
+  var version: String = uninitialized
+  var repository: Repository = uninitialized
+  var snapshotRepo: SnapshotRepo = uninitialized
+  var proxy: Proxy = uninitialized
 
   /** 可运行的webapp
    * 过滤掉webapp没有entryPoint的应用，并按照上下文排序，根放在最后

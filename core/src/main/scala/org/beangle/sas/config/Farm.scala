@@ -21,6 +21,7 @@ import org.beangle.commons.collection.Collections
 import org.beangle.commons.lang.Strings
 
 import scala.collection.mutable
+import scala.compiletime.uninitialized
 
 object Farm {
   def build(name: String, engine: Engine, serverCount: Int): Farm = {
@@ -44,7 +45,7 @@ class Farm(var name: String, var engine: Engine) {
   /** 内部服务 */
   var servers: mutable.Buffer[Server] = Collections.newBuffer[Server]
   /** 最大堆内存 */
-  var maxHeapSize: String = _
+  var maxHeapSize: String = uninitialized
   /** 进程参数 */
   var serverOptions: Option[String] = None
   /** 代理参数 */
@@ -53,11 +54,11 @@ class Farm(var name: String, var engine: Engine) {
 
 class Server(val farm: Farm, var name: String) {
   /** http/1 端口 */
-  var http: Int = _
+  var http: Int = uninitialized
   /** 主机 */
-  var host: Host = _
+  var host: Host = uninitialized
   /** 最大堆内存 */
-  var maxHeapSize: String = _
+  var maxHeapSize: String = uninitialized
   /** 代理http端口 */
   var proxyHttpPort: Option[Int] = None
   /** 代理参数 */

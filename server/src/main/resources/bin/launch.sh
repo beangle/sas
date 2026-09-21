@@ -103,7 +103,7 @@ parse_args(){
 parse_args "$@"
 
 download org.scala-lang scala3-library_3 $scala_ver
-download org.scala-lang scala-library $scala_lib_ver
+download org.scala-lang scala-library $scala_ver
 download org.beangle.commons beangle-commons $beangle_commons_ver
 download org.apache.commons commons-compress $commons_compress_ver
 download org.beangle.boot beangle-boot $beangle_boot_ver

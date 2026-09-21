@@ -17,6 +17,8 @@
 
 package org.beangle.sas.config
 
+import scala.compiletime.uninitialized
+
 /**
  * Sas Connector
  */
@@ -25,7 +27,7 @@ sealed class Connector {
   /**
    * Sets the protocol to handle incoming traffic
    */
-  var protocol: String = _
+  var protocol: String = uninitialized
 
   /**
    * This specifies the character encoding used to decode the URI bytes, after %xx decoding the URL.

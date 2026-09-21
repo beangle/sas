@@ -61,8 +61,9 @@ checkEnv() {
   fi
 
   version=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
-  if  [[ "$version" < "17" ]]; then
-    abort "Find java version $version,but at least 17 needed."
+  major=${version%%.*}
+  if [ "$major" -lt 25 ]; then
+    abort "Find java version $version,but at least 25 needed."
   fi
 }
 
@@ -76,7 +77,7 @@ abort(){
 
   checkEnv
   artifacts=("org.scala-lang:scala3-library_3:$scala_ver"
-             "org.scala-lang:scala-library:$scala_lib_ver"
+             "org.scala-lang:scala-library:$scala_ver"
              "org.scala-lang.modules:scala-xml_3:$scalaxml_ver"
              "org.beangle.commons:beangle-commons:$beangle_commons_ver"
              "org.beangle.template:beangle-template:$beangle_template_ver"

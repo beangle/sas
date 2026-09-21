@@ -22,6 +22,7 @@ import org.beangle.commons.lang.Strings
 import org.beangle.sas.config.Proxy.{Https, Status}
 
 import scala.collection.mutable
+import scala.compiletime.uninitialized
 
 object Proxy {
   class Server(var name: String, var ip: String, var port: Int, var options: Option[String])
@@ -59,12 +60,12 @@ object Proxy {
   }
 
   class Https {
-    var certificate: String = _
-    var certificateKey: String = _
+    var certificate: String = uninitialized
+    var certificateKey: String = uninitialized
     /** ssl密码套件 */
-    var ciphers: String = _
+    var ciphers: String = uninitialized
     /** ssl协议,TLSv1.1 TLSv1.2 */
-    var protocols: String = _
+    var protocols: String = uninitialized
     var port: Int = 443
     var forceHttps: Boolean = true
   }

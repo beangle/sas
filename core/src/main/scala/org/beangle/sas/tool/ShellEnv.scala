@@ -23,12 +23,13 @@ import org.beangle.sas.config.Container
 import org.beangle.template.freemarker.Configurator
 
 import java.io.{File, FileInputStream, StringWriter}
+import scala.compiletime.uninitialized
 
 trait ShellEnv extends Logging {
 
-  var workdir: String = _
+  var workdir: String = uninitialized
 
-  var container: Container = _
+  var container: Container = uninitialized
 
   var configFile = "/conf/server.xml"
 

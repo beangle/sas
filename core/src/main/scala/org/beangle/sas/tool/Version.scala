@@ -28,7 +28,7 @@ object Version {
     println("hosts:" + Networks.addresses(1).toBuffer.sorted.mkString(","))
   }
 
-  private def findJarVersion(clazz: Class[_]): String = {
+  private def findJarVersion(clazz: Class[?]): String = {
     val className = "/" + clazz.getName.replace(".", "/") + ".class"
     val classPath = clazz.getResource(className).toString
     if (classPath.startsWith("jar")) {

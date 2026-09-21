@@ -11,14 +11,13 @@ if [ -z "$M2_REPO" ]; then
   export M2_REPO="$HOME/.m2/repository"
 fi
 
-export scala_ver=3.3.8
-export scala_lib_ver=2.13.18
-export scalaxml_ver=2.4.0
-export beangle_sas_ver=0.13.13
-export beangle_commons_ver=6.3.6
-export beangle_template_ver=0.2.13
+export scala_ver=3.9.0
+export scalaxml_ver=2.5.0
+export beangle_sas_ver=0.13.14
+export beangle_commons_ver=6.3.7
+export beangle_template_ver=0.2.14
 export beangle_boot_ver=0.1.29
-export slf4j_ver=2.0.18
+export slf4j_ver=2.0.19
 export logback_ver=1.6.3
 export freemarker_ver=2.3.35
 export commons_compress_ver=1.28.0

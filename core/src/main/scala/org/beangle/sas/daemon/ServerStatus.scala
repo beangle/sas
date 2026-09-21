@@ -17,9 +17,11 @@
 
 package org.beangle.sas.daemon
 
+import scala.compiletime.uninitialized
+
 class ServerStatus {
-  var processId: Int = _
-  var processDesc: String = _
+  var processId: Int = uninitialized
+  var processDesc: String = uninitialized
 
   def this(pid: Int, desc: String) = {
     this()
