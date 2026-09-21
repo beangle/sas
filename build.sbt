@@ -5,7 +5,7 @@ import sbtassembly.AssemblyPlugin.autoImport.*
 import sbtassembly.{MergeStrategy, PathList}
 
 organization := "org.beangle.sas"
-version := "0.13.14"
+version := "0.13.15-SNAPSHOT"
 
 scmInfo := Some(
   ScmInfo(
