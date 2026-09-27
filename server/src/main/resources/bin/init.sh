@@ -78,7 +78,6 @@ abort(){
   checkEnv
   artifacts=("org.scala-lang:scala3-library_3:$scala_ver"
              "org.scala-lang:scala-library:$scala_ver"
-             "org.scala-lang.modules:scala-xml_3:$scalaxml_ver"
              "org.beangle.commons:beangle-commons:$beangle_commons_ver"
              "org.beangle.template:beangle-template:$beangle_template_ver"
              "org.beangle.boot:beangle-boot:$beangle_boot_ver"
