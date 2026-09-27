@@ -28,7 +28,7 @@ beangle-sas
 ### 网络安装
 
 ```bash
-./netinstall.sh            # 默认安装 0.13.14
+./netinstall.sh            # 默认安装 0.13.15
 ./netinstall.sh 0.13.10    # 指定版本
 ```
 
