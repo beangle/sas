@@ -74,8 +74,8 @@ object Resolver {
 
         if (gav.isSnapshot) {
           webapp.docBase = snapshotRepos.local.latest(gav).getAbsolutePath
-          val snapshortWar = s"${sasHome}/webapps/" + s"${gav.artifactId}-${gav.version}.war"
-          val lw = new File(snapshortWar)
+          val snapshotWar = s"${sasHome}/webapps/" + s"${gav.artifactId}-${gav.version}.war"
+          val lw = new File(snapshotWar)
           val rw = new File(webapp.docBase)
           if (lw.exists()) {
             if (!rw.exists() || rw.exists() && rw.lastModified() < lw.lastModified()) {
