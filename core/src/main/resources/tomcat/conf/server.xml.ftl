@@ -1,6 +1,7 @@
 [#ftl]
 <?xml version="1.0" encoding="UTF-8"?>
 <Server port="-1" shutdown="SHUTDOWN">
+  <Listener className="org.beangle.sas.engine.tomcat.WebappFailFastListener"/>
 [#list farm.engine.listeners as listener]
   <Listener className="${listener.className}" [#list listener.properties?keys as k]${k}="${listener.properties[k]}"[/#list]/>
 [/#list]

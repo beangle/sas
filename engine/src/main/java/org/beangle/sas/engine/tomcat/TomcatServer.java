@@ -17,6 +17,7 @@
 
 package org.beangle.sas.engine.tomcat;
 
+import org.apache.catalina.Container;
 import org.apache.catalina.startup.Tomcat;
 import org.beangle.sas.engine.AbstractServer;
 
@@ -30,6 +31,12 @@ public class TomcatServer extends AbstractServer {
   @Override
   public void doStart() throws Exception {
     this.tomcat.start();
+    //Tomcat对webapp启动失败只把context置为不可用而不抛异常，这里补上检查，避免占着端口却不可用
+    for (Container webapp : tomcat.getHost().findChildren()) {
+      if (!webapp.getState().isAvailable()) {
+        throw new IllegalStateException("Webapp " + WebappFailFastListener.name(webapp) + " failed to start, see logs.");
+      }
+    }
   }
 
   @Override

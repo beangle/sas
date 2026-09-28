@@ -77,6 +77,10 @@ launch.sh /path/to/app.war --port=8080 --Dconnector.maxKeepAliveRequests=1000 --
 2. 启动：`bin/start.sh farm_name`（或 `server_name`、`all`）
 3. 停止：`bin/stop.sh all`
 
+实例上的应用全部启动失败时（只部署一个就是它起不来，部署多个就是都没起来），进程会打印错误并退出以释放端口，
+修好问题后直接 `bin/start.sh server_name` 即可；只要还剩一个应用可用就只报错，不影响同机其他应用。
+嵌入式模式（`launch.sh`）行为一致：Tomcat 起不来会以非 0 退出并释放端口，Undertow 在绑定端口前就会失败。
+
 ### 管理命令
 
 ```bash
