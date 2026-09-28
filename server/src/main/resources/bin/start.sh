@@ -42,11 +42,6 @@ if [ ! -f $SAS_HOME/conf/server.xml ]; then
   exit 1
 fi
 
-if [ -z "$sas_restart" ]; then
-  export sas_restart="0"
-fi
-
-
 # start servername
 start(){
   export SERVER_NAME="$1"
