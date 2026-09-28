@@ -85,7 +85,7 @@ bin/sas.sh version    # 显示版本
 bin/sas.sh proxy      # 生成 Nginx/HAProxy 配置
 bin/sas.sh firewall   # 生成防火墙配置
 bin/sas.sh aes key plain|encoded   # AES 加解密
-bin/sas.sh resolve    # 解析 server.xml 依赖
+bin/sas.sh resolve [farm_name|server_name|all]   # 解析实例依赖，缺省为 all
 bin/sas.sh pull       # 从控制端拉取 server.xml
 bin/sas.sh update 0.13.13   # 升级到指定版本
 ```

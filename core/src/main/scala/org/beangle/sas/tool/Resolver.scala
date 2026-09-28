@@ -26,7 +26,7 @@ import org.beangle.commons.lang.Strings.substringAfterLast
 import org.beangle.commons.net.Networks
 import org.beangle.commons.net.http.{HttpMethods, HttpUtils}
 import org.beangle.commons.xml.Document
-import org.beangle.sas.config.{ArchiveURI, Container, Webapp}
+import org.beangle.sas.config.{ArchiveURI, Container, Server, Webapp}
 
 import java.io.{File, FileOutputStream}
 import java.net.{HttpURLConnection, URL}
@@ -40,7 +40,7 @@ object Resolver {
 
   def main(args: Array[String]): Unit = {
     if (args.length < 1) {
-      println("Usage: Resolve /path/to/server.xml")
+      println("Usage: Resolve /path/to/server.xml [farm_name|server_name|all]...")
       System.exit(-1)
     }
     val configFile = new File(args(0))
@@ -49,12 +49,15 @@ object Resolver {
 
     //try to find webapps which run at these ips
     val ips = Networks.addresses(1)
+    val patterns = args.drop(1).toSeq
+    val servers: collection.Seq[Server] =
+      if patterns.isEmpty || patterns.contains("all") then
+        container.farms.flatMap(_.servers).filter(s => ips.contains(s.host.ip))
+      else
+        patterns.flatMap(p => container.getMatchedServers(p)).filter(s => ips.contains(s.host.ip)).distinct
+
     val webapps = Collections.newSet[Webapp]
-    container.farms foreach { farm =>
-      for (server <- farm.servers; if ips.contains(server.host.ip)) {
-        webapps ++= container.getWebapps(server)
-      }
-    }
+    servers foreach { server => webapps ++= container.getWebapps(server) }
 
     //两个repo会配置在server.xml中的Repository和SapshotRepo节点上
     val missing = resolve(sasHome, container.repository.toRelease, container.snapshotRepo.toSnapshot, webapps.toSeq)

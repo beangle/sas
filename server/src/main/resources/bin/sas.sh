@@ -35,7 +35,7 @@ elif [ "$sas_command" = "firewall" ] ; then
 
 elif [ "$sas_command" = "resolve" ] ; then
 
-  java -cp "$sas_classpath" org.beangle.sas.tool.Resolver $SAS_HOME/conf/server.xml
+  java -cp "$sas_classpath" org.beangle.sas.tool.Resolver $SAS_HOME/conf/server.xml "${@:2}"
 
 elif [ "$sas_command" = "pull" ] ; then
 
