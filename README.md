@@ -28,7 +28,7 @@ beangle-sas
 ### 网络安装
 
 ```bash
-./netinstall.sh            # 默认安装 0.13.15
+./netinstall.sh            # 默认安装 0.13.16
 ./netinstall.sh 0.13.10    # 指定版本
 ```
 
@@ -91,7 +91,7 @@ bin/sas.sh firewall   # 生成防火墙配置
 bin/sas.sh aes key plain|encoded   # AES 加解密
 bin/sas.sh resolve [farm_name|server_name|all]   # 解析实例依赖，缺省为 all
 bin/sas.sh pull       # 从控制端拉取 server.xml
-bin/sas.sh update 0.13.13   # 升级到指定版本
+bin/sas.sh update 0.13.16   # 升级到指定版本
 ```
 
 ## 配置（conf/server.xml）

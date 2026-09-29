@@ -12,7 +12,7 @@ if [ -z "$M2_REPO" ]; then
 fi
 
 export scala_ver=3.9.0
-export beangle_sas_ver=0.13.15
+export beangle_sas_ver=0.13.16
 export beangle_commons_ver=6.3.7
 export beangle_template_ver=0.2.14
 export beangle_boot_ver=0.1.30
